@@ -1,0 +1,36 @@
+name: mobile_app
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  cupertino_icons: ^1.0.9
+  http: ^1.6.0
+  camera: ^0.12.0+2
+  shared_preferences: ^2.5.5
+  intl: ^0.20.3
+  
+  # Packages for PDF Export
+  pdf: ^3.10.8
+  printing: ^5.13.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/sbc_logo.png
+    - assets/images/sbc_building.jpg

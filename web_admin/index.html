@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SBC Dean's Administrative Suite | Internship Attendance System</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- ==================== 1. SPLIT-SCREEN AUTHENTICATION SCREEN ==================== -->
+  <div id="authScreen" class="auth-wrapper">
+    <!-- Left Hero Panel -->
+    <div class="auth-hero">
+      <div class="auth-hero-header">
+        <div class="auth-hero-logo">
+          <img src="assets/images/sbc_logo.png" alt="SBC Logo">
+        </div>
+        <div class="auth-hero-title">
+          <h1>Southern Baptist College</h1>
+          <p>Dean's Administrative Suite</p>
+        </div>
+      </div>
+      
+      <div class="auth-hero-body">
+        <h2>Institutional OJT Attendance & Verification Portal</h2>
+        <p>A secure administrative platform for tracking student intern placement, live facial photo verification, total hours rendered, and compliance monitoring.</p>
+      </div>
+
+      <div class="auth-hero-footer">
+        &copy; 2026 Southern Baptist College &bull; Office of Student Affairs & Internship Coordination
+      </div>
+    </div>
+
+    <!-- Right Login Card Panel -->
+    <div class="auth-card-container">
+      <div class="auth-card">
+        <div id="loginView">
+          <div class="auth-card-header" style="text-align: center;">
+            <img src="assets/images/sbc_logo.png" alt="SBC Logo" style="width: 72px; height: 72px; margin-bottom: 0.75rem;">
+            <h3>Administrator Sign In</h3>
+            <p>Enter your institutional Dean / Administrator credentials to access the suite.</p>
+          </div>
+
+          <div id="loginError" class="badge badge-danger hidden" style="width:100%; padding:0.65rem; margin-bottom:1rem; text-align:center;"></div>
+
+          <form id="loginForm">
+            <div class="form-group">
+              <label for="adminEmail">Administrator Email</label>
+              <input type="email" id="adminEmail" class="form-control" value="dean@sbc.edu.ph" placeholder="dean@sbc.edu.ph" required>
+            </div>
+
+            <div class="form-group">
+              <label for="adminPassword">Security Password</label>
+              <input type="password" id="adminPassword" class="form-control" value="admin123" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top: 1.5rem;">
+              <span>SIGN IN TO SUITE</span> &rarr;
+            </button>
+
+            <div style="text-align: center; margin-top: 1.25rem;">
+              <a href="#" id="showRegisterBtn" style="color: var(--navy-primary); font-size: 0.85rem; font-weight: 600; text-decoration: none;">Need a new Dean account? Create Account</a>
+            </div>
+          </form>
+        </div>
+
+        <!-- Register Dean Form View -->
+        <div id="registerView" class="hidden">
+          <div class="auth-card-header" style="text-align: center;">
+            <img src="assets/images/sbc_logo.png" alt="SBC Logo" style="width: 72px; height: 72px; margin-bottom: 0.75rem;">
+            <h3>Create Dean Account</h3>
+            <p>Register a new institutional Dean / Administrator account.</p>
+          </div>
+
+          <div id="registerMsg" class="badge hidden" style="width:100%; padding:0.65rem; margin-bottom:1rem; text-align:center;"></div>
+
+          <form id="registerForm">
+            <div class="form-group">
+              <label for="regFullName">Full Name & Title</label>
+              <input type="text" id="regFullName" class="form-control" placeholder="Dr. Maria Santos" required>
+            </div>
+
+            <div class="form-group">
+              <label for="regEmail">Institutional Email</label>
+              <input type="email" id="regEmail" class="form-control" placeholder="dean_santos@sbc.edu.ph" required>
+            </div>
+
+            <div class="form-group">
+              <label for="regRole">Administrative Designation</label>
+              <select id="regRole" class="form-control">
+                <option value="Dean">Dean of Student Affairs</option>
+                <option value="Admin">Academic Coordinator / Admin</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="regPassword">Security Password</label>
+              <input type="password" id="regPassword" class="form-control" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-primary" style="margin-top: 1.5rem;">
+              <span>REGISTER ACCOUNT</span> &rarr;
+            </button>
+
+            <div style="text-align: center; margin-top: 1.25rem;">
+              <a href="#" id="showLoginBtn" style="color: var(--navy-primary); font-size: 0.85rem; font-weight: 600; text-decoration: none;">Already have an account? Sign In</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== 2. MAIN APPLICATION GLOBAL SHELL ==================== -->
+  <div id="appShell" class="app-container hidden">
+
+    <!-- Persistent Left Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <img src="assets/images/sbc_logo.png" alt="SBC Logo">
+        </div>
+        <div class="sidebar-brand">
+          <h2>SBC Portal</h2>
+          <p>Dean's Suite</p>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Core Management</div>
+        
+        <a class="nav-item active" data-tab="overview">
+          <span class="nav-icon">📊</span>
+          <span>Overview</span>
+        </a>
+
+        <a class="nav-item" data-tab="students">
+          <span class="nav-icon">👨‍🎓</span>
+          <span>Student Tracking</span>
+        </a>
+
+        <a class="nav-item" data-tab="logs">
+          <span class="nav-icon">📸</span>
+          <span>Attendance Logs</span>
+        </a>
+
+        <a class="nav-item" data-tab="absences">
+          <span class="nav-icon">📄</span>
+          <span>Absence Requests</span>
+        </a>
+
+        <div class="nav-section-title">Institutional</div>
+
+        <a class="nav-item" data-tab="sites">
+          <span class="nav-icon">🏥</span>
+          <span>Partner Management</span>
+        </a>
+
+        <a class="nav-item" data-tab="reports">
+          <span class="nav-icon">📈</span>
+          <span>Compliance Reports</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-badge">
+          <div class="user-avatar">D</div>
+          <div class="user-info">
+            <h4 id="adminNameDisplay">Dean Admin</h4>
+            <p>Dean of Student Affairs</p>
+          </div>
+        </div>
+        <button class="btn btn-outline" style="width:100%; margin-top:0.75rem; justify-content:center;" onclick="logout()">
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Shell Wrapper -->
+    <div class="main-wrapper">
+      
+      <!-- Top Bar -->
+      <header class="topbar">
+        <div class="topbar-search">
+          <span style="color: var(--text-muted);">🔍</span>
+          <input type="text" id="globalSearch" placeholder="Search student name, ID #, course, or partner facility...">
+        </div>
+
+        <div class="topbar-actions">
+          <button class="icon-btn" title="System Notifications">
+            🔔
+            <span class="badge-dot"></span>
+          </button>
+          <button class="icon-btn" title="Help & Documentation">❓</button>
+          <button class="btn btn-outline" style="border-color: var(--border-light); font-size: 0.8rem; font-weight: 600;" onclick="logout()">
+            🚪 Log Out
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area">
+
+        <!-- PANE 1: OVERVIEW DASHBOARD -->
+        <section id="view-overview" class="view-pane">
+          <div class="page-header">
+            <div class="page-header-title">
+              <h1>Executive Overview</h1>
+              <p>Real-time metrics and verification snapshots across active internship placements.</p>
+            </div>
+          </div>
+
+          <!-- KPI Grid -->
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-title">Active Shifts Today</div>
+              <div class="kpi-value-row">
+                <div id="kpiActiveShifts" class="kpi-value">0</div>
+                <span class="kpi-badge gold">Live Feed</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-title">Total Registered Interns</div>
+              <div class="kpi-value-row">
+                <div id="kpiTotalInterns" class="kpi-value">0</div>
+                <span class="kpi-badge green">Active Enrolled</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-title">Overall Completion Rate</div>
+              <div class="kpi-value-row">
+                <div id="kpiCompletionRate" class="kpi-value">0%</div>
+                <span class="kpi-badge green">480h Goal</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-title">Pending Absence Requests</div>
+              <div class="kpi-value-row">
+                <div id="kpiPendingAbsences" class="kpi-value">0</div>
+                <span class="kpi-badge gold">Action Req.</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-title">Total Hours Rendered</div>
+              <div class="kpi-value-row">
+                <div id="kpiTotalHours" class="kpi-value">0 hrs</div>
+                <span class="kpi-badge green">Cumulative</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Facial Capture Verification Feed -->
+          <div class="card">
+            <div class="card-header">
+              <h3>Live Facial Photo Verification Stream</h3>
+              <span class="badge badge-warning">Real-time Captures</span>
+            </div>
+            <div id="liveCaptureFeed" class="capture-grid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- PANE 2: STUDENT TRACKING -->
+        <section id="view-students" class="view-pane hidden">
+          <div class="page-header">
+            <div class="page-header-title">
+              <h1>Student Intern Tracking</h1>
+              <p>Monitor individual placement progress, hours rendered, and completion status (480 Hours Goal).</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Student Details</th>
+                    <th>Academic Program</th>
+                    <th>Assigned Dean</th>
+                    <th>Training Facility Assignment</th>
+                    <th>Hours Progress (480h Goal)</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- PANE 3: ATTENDANCE LOGS -->
+        <section id="view-logs" class="view-pane hidden">
+          <div class="page-header">
+            <div class="page-header-title">
+              <h1>Attendance Verification Logs</h1>
+              <p>High-density verification logs featuring facial snapshot thumbnails and timestamp records.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Student Intern</th>
+                    <th>Assigned Dean</th>
+                    <th>Morning In</th>
+                    <th>Morning Out</th>
+                    <th>Afternoon In</th>
+                    <th>Afternoon Out</th>
+                    <th>Verification Status</th>
+                    <th>Facial Photos</th>
+                  </tr>
+                </thead>
+                <tbody id="logsTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- PANE 4: ABSENCE REQUESTS -->
+        <section id="view-absences" class="view-pane hidden">
+          <div class="page-header">
+            <div class="page-header-title">
+              <h1>Absence Request Queue</h1>
+              <p>Evaluate student absence applications, supporting documents, and record administrative decisions.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date Absent</th>
+                    <th>Student Intern</th>
+                    <th>Assigned Dean</th>
+                    <th>Reason</th>
+                    <th>Supporting Attachment</th>
+                    <th>Status</th>
+                    <th>Administrative Remarks</th>
+                    <th>Evaluation Controls</th>
+                  </tr>
+                </thead>
+                <tbody id="absencesTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- PANE 5: PARTNER MANAGEMENT -->
+        <section id="view-sites" class="view-pane hidden">
+          <div class="page-header">
+            <div class="page-header-title">
+              <h1>Partner Management</h1>
+              <p>Track corporate, hospital, and institutional training facility placements.</p>
+            </div>
+            <button class="btn btn-navy" onclick="openAddSiteModal()">+ Add Partner Facility</button>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Facility Code</th>
+                    <th>Partner Facility Name</th>
+                    <th>Location / Address</th>
+                    <th>Active Assigned Interns</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="sitesTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- PANE 6: COMPLIANCE REPORTS -->
+        <section id="view-reports" class="view-pane hidden">
+          <div class="page-header">
+            <div class="page-header-title">
+              <h1>Institutional Compliance Reports</h1>
+              <p>Generate year-over-year attendance compliance statistics and export reports for Dean approval.</p>
+            </div>
+          </div>
+
+          <div id="reportsContainer">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+
+  <!-- ==================== 3. MODAL DIALOG OVERLAYS ==================== -->
+
+  <!-- Live Photo Verification Preview Modal -->
+  <div id="photoModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Captured Live Facial Verification Photos</h3>
+        <button class="close-btn" onclick="closePhotoModal()">&times;</button>
+      </div>
+      <div id="photoModalContent" style="max-height: 420px; overflow-y: auto;">
+        <!-- Dynamically rendered images -->
+      </div>
+      <div style="margin-top: 1rem; text-align: right;">
+        <button class="btn btn-navy" onclick="closePhotoModal()">Close Verification</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Partner Facility Modal -->
+  <div id="siteModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="siteModalTitle">Add Partner Training Facility</h3>
+        <button class="close-btn" onclick="closeSiteModal()">&times;</button>
+      </div>
+      <form onsubmit="savePartnerSite(event)">
+        <input type="hidden" id="siteIdInput">
+        
+        <div class="form-group">
+          <label for="siteCodeInput">Facility Code (e.g., HOSP-01, CORP-02)</label>
+          <input type="text" id="siteCodeInput" class="form-control" required placeholder="HOSP-01">
+        </div>
+
+        <div class="form-group">
+          <label for="siteNameInput">Facility / Organization Name</label>
+          <input type="text" id="siteNameInput" class="form-control" required placeholder="M'lang Doctor's Hospital">
+        </div>
+
+        <div class="form-group">
+          <label for="siteLocationInput">Facility Location</label>
+          <input type="text" id="siteLocationInput" class="form-control" placeholder="Poblacion, M'lang, Cotabato">
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
+          <button type="button" class="btn btn-outline" onclick="closeSiteModal()">Cancel</button>
+          <button type="submit" class="btn btn-navy">Save Facility</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
