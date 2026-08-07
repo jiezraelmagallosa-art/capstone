@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SBC Dean's Administrative Suite | Internship Attendance System</title>
   <link rel="stylesheet" href="css/admin.css?v=2.0">
 </head>
+
 <body>
 
   <!-- ==================== 1. SPLIT-SCREEN AUTHENTICATION SCREEN ==================== -->
@@ -21,10 +23,11 @@
           <p>Dean's Administrative Suite</p>
         </div>
       </div>
-      
+
       <div class="auth-hero-body">
         <h2>Institutional OJT Attendance & Verification Portal</h2>
-        <p>A secure administrative platform for tracking student intern placement, live facial photo verification, total hours rendered, and compliance monitoring.</p>
+        <p>A secure administrative platform for tracking student intern placement, live facial photo verification, total
+          hours rendered, and compliance monitoring.</p>
       </div>
 
       <div class="auth-hero-footer">
@@ -37,22 +40,26 @@
       <div class="auth-card">
         <div id="loginView">
           <div class="auth-card-header" style="text-align: center;">
-            <img src="assets/images/sbc_logo.png" alt="SBC Logo" style="width: 72px; height: 72px; margin-bottom: 0.75rem;">
+            <img src="assets/images/sbc_logo.png" alt="SBC Logo"
+              style="width: 72px; height: 72px; margin-bottom: 0.75rem;">
             <h3>Administrator Sign In</h3>
             <p>Enter your institutional Dean / Administrator credentials to access the suite.</p>
           </div>
 
-          <div id="loginError" class="badge badge-danger hidden" style="width:100%; padding:0.65rem; margin-bottom:1rem; text-align:center;"></div>
+          <div id="loginError" class="badge badge-danger hidden"
+            style="width:100%; padding:0.65rem; margin-bottom:1rem; text-align:center;"></div>
 
           <form id="loginForm">
             <div class="form-group">
               <label for="adminEmail">Administrator Email</label>
-              <input type="email" id="adminEmail" class="form-control" value="dean@sbc.edu.ph" placeholder="dean@sbc.edu.ph" required>
+              <input type="email" id="adminEmail" class="form-control" value="dean@sbc.edu.ph"
+                placeholder="dean@sbc.edu.ph" required>
             </div>
 
             <div class="form-group">
               <label for="adminPassword">Security Password</label>
-              <input type="password" id="adminPassword" class="form-control" value="admin123" placeholder="••••••••" required>
+              <input type="password" id="adminPassword" class="form-control" value="admin123" placeholder="••••••••"
+                required>
             </div>
 
             <button type="submit" class="btn-primary" style="margin-top: 1.5rem;">
@@ -60,7 +67,9 @@
             </button>
 
             <div style="text-align: center; margin-top: 1.25rem;">
-              <a href="#" id="showRegisterBtn" style="color: var(--navy-primary); font-size: 0.85rem; font-weight: 600; text-decoration: none;">Need a new Dean account? Create Account</a>
+              <a href="#" id="showRegisterBtn"
+                style="color: var(--navy-primary); font-size: 0.85rem; font-weight: 600; text-decoration: none;">Need a
+                new Dean account? Create Account</a>
             </div>
           </form>
         </div>
@@ -68,12 +77,14 @@
         <!-- Register Dean Form View -->
         <div id="registerView" class="hidden">
           <div class="auth-card-header" style="text-align: center;">
-            <img src="assets/images/sbc_logo.png" alt="SBC Logo" style="width: 72px; height: 72px; margin-bottom: 0.75rem;">
+            <img src="assets/images/sbc_logo.png" alt="SBC Logo"
+              style="width: 72px; height: 72px; margin-bottom: 0.75rem;">
             <h3>Create Dean Account</h3>
             <p>Register a new institutional Dean / Administrator account.</p>
           </div>
 
-          <div id="registerMsg" class="badge hidden" style="width:100%; padding:0.65rem; margin-bottom:1rem; text-align:center;"></div>
+          <div id="registerMsg" class="badge hidden"
+            style="width:100%; padding:0.65rem; margin-bottom:1rem; text-align:center;"></div>
 
           <form id="registerForm">
             <div class="form-group">
@@ -104,7 +115,9 @@
             </button>
 
             <div style="text-align: center; margin-top: 1.25rem;">
-              <a href="#" id="showLoginBtn" style="color: var(--navy-primary); font-size: 0.85rem; font-weight: 600; text-decoration: none;">Already have an account? Sign In</a>
+              <a href="#" id="showLoginBtn"
+                style="color: var(--navy-primary); font-size: 0.85rem; font-weight: 600; text-decoration: none;">Already
+                have an account? Sign In</a>
             </div>
           </form>
         </div>
@@ -130,7 +143,7 @@
 
       <nav class="sidebar-nav">
         <div class="nav-section-title">Core Management</div>
-        
+
         <a class="nav-item active" data-tab="overview">
           <span class="nav-icon">📊</span>
           <span>Overview</span>
@@ -172,7 +185,8 @@
             <p>Dean of Student Affairs</p>
           </div>
         </div>
-        <button class="btn btn-outline" style="width:100%; margin-top:0.75rem; justify-content:center;" onclick="logout()">
+        <button class="btn btn-outline" style="width:100%; margin-top:0.75rem; justify-content:center;"
+          onclick="logout()">
           Sign Out
         </button>
       </div>
@@ -180,7 +194,7 @@
 
     <!-- Main Content Shell Wrapper -->
     <div class="main-wrapper">
-      
+
       <!-- Top Bar -->
       <header class="topbar">
         <div class="topbar-search">
@@ -194,7 +208,8 @@
             <span class="badge-dot"></span>
           </button>
           <button class="icon-btn" title="Help & Documentation">❓</button>
-          <button class="btn btn-outline" style="border-color: var(--border-light); font-size: 0.8rem; font-weight: 600;" onclick="logout()">
+          <button class="btn btn-outline"
+            style="border-color: var(--border-light); font-size: 0.8rem; font-weight: 600;" onclick="logout()">
             🚪 Log Out
           </button>
         </div>
@@ -279,10 +294,12 @@
 
           <!-- Course Categorization Filter Dropdown for Dean View -->
           <div class="course-filter-bar" id="courseFilterContainer">
-            <label for="courseSelectFilter" style="font-size: 0.88rem; font-weight: 700; color: var(--navy-primary); margin-right: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+            <label for="courseSelectFilter"
+              style="font-size: 0.88rem; font-weight: 700; color: var(--navy-primary); margin-right: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
               <span>🎓</span> Filter by Course:
             </label>
-            <select id="courseSelectFilter" class="form-control course-select-dropdown" onchange="filterByCourse(this.value)">
+            <select id="courseSelectFilter" class="form-control course-select-dropdown"
+              onchange="filterByCourse(this.value)">
               <option value="ALL">All Programs (0)</option>
               <option value="BSCS">BSCS - Bachelor of Science in Computer Science (0)</option>
               <option value="BSIS">BSIS - Bachelor of Science in Information Systems (0)</option>
@@ -457,7 +474,7 @@
       </div>
       <form onsubmit="savePartnerSite(event)">
         <input type="hidden" id="siteIdInput">
-        
+
         <div class="form-group">
           <label for="siteCodeInput">Facility Code (e.g., HOSP-01, CORP-02)</label>
           <input type="text" id="siteCodeInput" class="form-control" required placeholder="HOSP-01">
@@ -483,4 +500,5 @@
 
   <script src="js/admin.js?v=2.0"></script>
 </body>
+
 </html>
