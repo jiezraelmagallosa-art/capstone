@@ -12,6 +12,8 @@ const API_BASE = '../backend/';
 // Cached Application State Variables
 let currentUser = null;
 let currentTab = 'overview';
+let currentCourseFilter = 'ALL';
+let selectedReportCourse = 'ALL';
 let cachedStudents = [];
 let cachedLogs = [];
 let cachedAbsences = [];
@@ -290,11 +292,58 @@ async function fetchStudents() {
     const data = await res.json();
     if (data.status === 'success') {
       cachedStudents = data.data || [];
-      renderStudentsTable(cachedStudents);
+      updateCourseCounts(data.course_counts || {});
+      filterByCourse(currentCourseFilter, false);
     }
   } catch (err) {
     console.error('Fetch students error:', err);
   }
+}
+
+function updateCourseCounts(counts) {
+  let bscsCount = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === 'BSCS').length;
+  let bsisCount = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === 'BSIS').length;
+  let blisCount = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === 'BLIS').length;
+  let allCount = cachedStudents.length;
+
+  if (counts && counts.ALL !== undefined && counts.ALL > allCount) {
+    allCount = counts.ALL;
+    if (counts.BSCS !== undefined) bscsCount = counts.BSCS;
+    if (counts.BSIS !== undefined) bsisCount = counts.BSIS;
+    if (counts.BLIS !== undefined) blisCount = counts.BLIS;
+  }
+
+  const selectEl = document.getElementById('courseSelectFilter');
+  if (selectEl) {
+    if (selectEl.options[0]) selectEl.options[0].text = `All Programs (${allCount})`;
+    if (selectEl.options[1]) selectEl.options[1].text = `BSCS - Bachelor of Science in Computer Science (${bscsCount})`;
+    if (selectEl.options[2]) selectEl.options[2].text = `BSIS - Bachelor of Science in Information Systems (${bsisCount})`;
+    if (selectEl.options[3]) selectEl.options[3].text = `BLIS - Bachelor of Library & Info Science (${blisCount})`;
+  }
+}
+
+function filterByCourse(courseCode, updateSelect = true) {
+  currentCourseFilter = courseCode || 'ALL';
+
+  const selectEl = document.getElementById('courseSelectFilter');
+  if (selectEl && updateSelect) {
+    selectEl.value = currentCourseFilter;
+  }
+
+  let filtered = cachedStudents;
+  if (currentCourseFilter !== 'ALL') {
+    filtered = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === currentCourseFilter.toUpperCase());
+  }
+
+  renderStudentsTable(filtered);
+}
+
+function getCourseBadgeClass(courseCode) {
+  const code = (courseCode || '').toUpperCase();
+  if (code === 'BSCS') return 'badge-bscs';
+  if (code === 'BSIS') return 'badge-bsis';
+  if (code === 'BLIS') return 'badge-blis';
+  return 'badge-navy';
 }
 
 function renderStudentsTable(students) {
@@ -302,12 +351,13 @@ function renderStudentsTable(students) {
   if (!tbody) return;
 
   if (students.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No student interns found.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No student interns enrolled in this course category.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = students.map(s => {
-    const badgeClass = s.status === 'Completed' ? 'badge-success' : 'badge-warning';
+    const statusBadgeClass = s.status === 'Completed' ? 'badge-success' : 'badge-warning';
+    const courseBadge = getCourseBadgeClass(s.course_code);
     return `
       <tr>
         <td>
@@ -315,8 +365,8 @@ function renderStudentsTable(students) {
           <div style="font-size: 0.75rem; color: var(--text-muted);">${s.student_number} &bull; ${s.id_no}</div>
         </td>
         <td>
-          <div style="font-weight: 600;">${escapeHtml(s.course_code)}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(s.course_name)}</div>
+          <div><span class="badge ${courseBadge}">${escapeHtml(s.course_code)}</span></div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">${escapeHtml(s.course_name)}</div>
         </td>
         <td>
           <div style="font-weight: 600; color: var(--navy-primary);">${escapeHtml(s.dean_name || 'Unassigned')}</div>
@@ -334,7 +384,7 @@ function renderStudentsTable(students) {
             <div class="progress-text">${s.formatted_time} / ${s.required_hours}h (${s.progress_percentage}%)</div>
           </div>
         </td>
-        <td><span class="badge ${badgeClass}">${s.status}</span></td>
+        <td><span class="badge ${statusBadgeClass}">${s.status}</span></td>
         <td>
           <button class="btn btn-outline" onclick="openStudentDrawer(${s.student_id})">Details</button>
         </td>
@@ -570,22 +620,60 @@ async function fetchReports() {
   renderComplianceSummary();
 }
 
+function filterReportByCourse(courseCode) {
+  selectedReportCourse = courseCode || 'ALL';
+  renderComplianceSummary();
+}
+
+function getReportStudents() {
+  if (selectedReportCourse === 'ALL') {
+    return cachedStudents;
+  }
+  return cachedStudents.filter(s => (s.course_code || '').toUpperCase() === selectedReportCourse.toUpperCase());
+}
+
 function renderComplianceSummary() {
   const container = document.getElementById('reportsContainer');
   if (!container) return;
 
-  const total = cachedStudents.length;
-  const completed = cachedStudents.filter(s => s.status === 'Completed').length;
-  const inProgress = cachedStudents.filter(s => s.status === 'In Progress').length;
-  const totalHours = cachedStudents.reduce((acc, s) => acc + s.rendered_hours, 0);
+  const targetStudents = getReportStudents();
+  const total = targetStudents.length;
+  const completed = targetStudents.filter(s => s.status === 'Completed').length;
+  const inProgress = targetStudents.filter(s => s.status === 'In Progress').length;
+  const totalHours = targetStudents.reduce((acc, s) => acc + s.rendered_hours, 0);
 
   container.innerHTML = `
+    <!-- Course Filter & Action Controls Header -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; background: #ffffff; padding: 1rem 1.25rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <label for="reportCourseFilterSelect" style="font-size: 0.88rem; font-weight: 700; color: var(--navy-primary); display: flex; align-items: center; gap: 0.4rem;">
+          <span>🎓</span> Select Program / Course for Report:
+        </label>
+        <select id="reportCourseFilterSelect" class="form-control course-select-dropdown" style="max-width: 340px;" onchange="filterReportByCourse(this.value)">
+          <option value="ALL" ${selectedReportCourse === 'ALL' ? 'selected' : ''}>All Academic Programs</option>
+          <option value="BSCS" ${selectedReportCourse === 'BSCS' ? 'selected' : ''}>BSCS - Bachelor of Science in Computer Science</option>
+          <option value="BSIS" ${selectedReportCourse === 'BSIS' ? 'selected' : ''}>BSIS - Bachelor of Science in Information Systems</option>
+          <option value="BLIS" ${selectedReportCourse === 'BLIS' ? 'selected' : ''}>BLIS - Bachelor of Library & Info Science</option>
+        </select>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <button class="btn btn-navy" onclick="generatePDFReport()" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1.25rem;">
+          <span>📄</span> Generate PDF Report
+        </button>
+        <button class="btn btn-outline" onclick="exportCSVReport()" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem;">
+          <span>📊</span> Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Executive KPI Grid -->
     <div class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-title">Total Enrolled Interns</div>
+        <div class="kpi-title">Selected Program Interns</div>
         <div class="kpi-value-row">
           <div class="kpi-value">${total}</div>
-          <span class="kpi-badge gold">100% Registered</span>
+          <span class="kpi-badge gold">${selectedReportCourse === 'ALL' ? 'All Programs' : selectedReportCourse}</span>
         </div>
       </div>
       <div class="kpi-card">
@@ -611,10 +699,11 @@ function renderComplianceSummary() {
       </div>
     </div>
 
+    <!-- Report Table Card -->
     <div class="card mt-3">
-      <div class="card-header">
-        <h3>Institutional Compliance Summary Report</h3>
-        <button class="btn btn-navy" onclick="exportCSVReport()">Export Institutional CSV Report</button>
+      <div class="card-header" style="display: flex; align-items: center; justify-content: space-between;">
+        <h3>Institutional Compliance Summary Report ${selectedReportCourse !== 'ALL' ? `(${selectedReportCourse})` : ''}</h3>
+        <span class="badge badge-navy" style="font-size: 0.8rem;">${total} Student Record(s)</span>
       </div>
       <div class="table-responsive">
         <table class="data-table">
@@ -631,18 +720,23 @@ function renderComplianceSummary() {
             </tr>
           </thead>
           <tbody>
-            ${cachedStudents.map(s => `
-              <tr>
-                <td style="font-weight:700;">${escapeHtml(s.full_name)}</td>
-                <td>${s.student_number}</td>
-                <td>${s.course_code}</td>
-                <td>${escapeHtml(s.site_name)}</td>
-                <td style="font-weight:700;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
-                <td>480h</td>
-                <td>${s.progress_percentage}%</td>
-                <td><span class="badge ${s.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td>
-              </tr>
-            `).join('')}
+            ${targetStudents.length === 0 ? `
+              <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No student interns enrolled in this course category.</td></tr>
+            ` : targetStudents.map(s => {
+              const courseBadge = getCourseBadgeClass(s.course_code);
+              return `
+                <tr>
+                  <td style="font-weight:700;">${escapeHtml(s.full_name)}</td>
+                  <td>${s.student_number}</td>
+                  <td><span class="badge ${courseBadge}">${s.course_code}</span></td>
+                  <td>${escapeHtml(s.site_name)}</td>
+                  <td style="font-weight:700;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
+                  <td>480h</td>
+                  <td>${s.progress_percentage}%</td>
+                  <td><span class="badge ${s.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td>
+                </tr>
+              `;
+            }).join('')}
           </tbody>
         </table>
       </div>
@@ -650,10 +744,171 @@ function renderComplianceSummary() {
   `;
 }
 
+function generatePDFReport() {
+  const targetStudents = getReportStudents();
+  if (targetStudents.length === 0) return alert('No student records found to generate PDF report.');
+
+  const total = targetStudents.length;
+  const completed = targetStudents.filter(s => s.status === 'Completed').length;
+  const inProgress = targetStudents.filter(s => s.status === 'In Progress').length;
+  const totalHours = targetStudents.reduce((acc, s) => acc + s.rendered_hours, 0);
+
+  let programTitle = 'All Academic Programs (BSCS, BSIS, BLIS)';
+  if (selectedReportCourse === 'BSCS') programTitle = 'BSCS - Bachelor of Science in Computer Science';
+  if (selectedReportCourse === 'BSIS') programTitle = 'BSIS - Bachelor of Science in Information Systems';
+  if (selectedReportCourse === 'BLIS') programTitle = 'BLIS - Bachelor of Library & Information Science';
+
+  const deanName = currentUser ? currentUser.full_name : 'Dean Admin';
+  const deanEmail = currentUser ? currentUser.email : 'dean@sbc.edu.ph';
+  const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const printHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>SBC OJT Compliance Report - ${selectedReportCourse}</title>
+      <style>
+        @page { size: A4 portrait; margin: 15mm; }
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; margin: 0; padding: 10px; font-size: 12px; }
+        .header-box { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 15px; margin-bottom: 20px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-logo { width: 65px; height: 65px; border-radius: 50%; }
+        .header-title h1 { font-size: 18px; font-weight: 800; color: #002d56; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .header-title h2 { font-size: 12px; font-weight: 600; color: #475569; margin: 3px 0 0 0; }
+        .header-title h3 { font-size: 13px; font-weight: 700; color: #d97706; margin: 4px 0 0 0; text-transform: uppercase; }
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; }
+        .meta-item { font-size: 11px; }
+        .meta-item strong { color: #002d56; }
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .kpi-box { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; }
+        .kpi-box-title { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .kpi-box-value { font-size: 16px; font-weight: 800; color: #002d56; margin-top: 4px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 11px; }
+        th { background-color: #002d56; color: #ffffff; text-align: left; padding: 8px 10px; font-weight: 700; text-transform: uppercase; font-size: 10px; }
+        td { border-bottom: 1px solid #e2e8f0; padding: 8px 10px; color: #334155; }
+        tr:nth-child(even) td { background-color: #f8fafc; }
+        .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
+        .badge-success { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .badge-warning { background-color: #fef3c7; color: #b45309; border: 1px solid #fde047; }
+        .sig-container { margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; }
+        .sig-box { width: 42%; text-align: center; }
+        .sig-line { border-bottom: 1.5px solid #002d56; height: 40px; margin-bottom: 6px; }
+        .sig-name { font-weight: 700; font-size: 12px; color: #002d56; margin: 0; }
+        .sig-title { font-size: 10px; color: #64748b; margin: 2px 0 0 0; }
+        .footer { margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px; text-align: center; font-size: 9px; color: #94a3b8; }
+      </style>
+    </head>
+    <body>
+      <div class="header-box">
+        <div class="header-left">
+          <img src="assets/images/sbc_logo.png" class="header-logo" alt="SBC Logo" onerror="this.style.display='none';">
+          <div class="header-title">
+            <h1>Southern Baptist College</h1>
+            <h2>Office of Student Affairs & Internship Coordination</h2>
+            <h3>Institutional OJT Compliance & Attendance Report</h3>
+          </div>
+        </div>
+        <div style="text-align: right; font-size: 10px; color: #64748b;">
+          <strong>Date Generated:</strong><br>${dateStr}
+        </div>
+      </div>
+
+      <div class="meta-grid">
+        <div class="meta-item"><strong>Target Program Scope:</strong> ${escapeHtml(programTitle)}</div>
+        <div class="meta-item"><strong>Issued By:</strong> ${escapeHtml(deanName)} (${escapeHtml(deanEmail)})</div>
+        <div class="meta-item"><strong>Required Target Goal:</strong> 480 Hours per Student</div>
+        <div class="meta-item"><strong>Report Type:</strong> Official Institutional Verification Summary</div>
+      </div>
+
+      <div class="kpi-row">
+        <div class="kpi-box">
+          <div class="kpi-box-title">Total Interns</div>
+          <div class="kpi-box-value">${total}</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-box-title">Completed (480h)</div>
+          <div class="kpi-box-value">${completed}</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-box-title">In-Progress</div>
+          <div class="kpi-box-value">${inProgress}</div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-box-title">Cumulative Hours</div>
+          <div class="kpi-box-value">${totalHours} hrs</div>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Student #</th>
+            <th>Course</th>
+            <th>Partner Facility Placement</th>
+            <th>Hours Rendered</th>
+            <th>Target Goal</th>
+            <th>Progress %</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${targetStudents.map(s => `
+            <tr>
+              <td style="font-weight: 700;">${escapeHtml(s.full_name)}</td>
+              <td>${s.student_number}</td>
+              <td style="font-weight: 700; color: #002d56;">${s.course_code}</td>
+              <td>${escapeHtml(s.site_name)}</td>
+              <td style="font-weight: 700;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
+              <td>480h</td>
+              <td>${s.progress_percentage}%</td>
+              <td><span class="badge ${s.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div class="sig-container">
+        <div class="sig-box">
+          <div class="sig-line"></div>
+          <p class="sig-name">${escapeHtml(deanName)}</p>
+          <p class="sig-title">Dean of Student Affairs / Department Head</p>
+        </div>
+        <div class="sig-box">
+          <div class="sig-line"></div>
+          <p class="sig-name">Institutional OJT Placement Coordinator</p>
+          <p class="sig-title">Office of Industrial Placement & Verification</p>
+        </div>
+      </div>
+
+      <div class="footer">
+        &copy; ${new Date().getFullYear()} Southern Baptist College &bull; Official Computer Generated OJT Compliance Document
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+        };
+      </script>
+    </body>
+    </html>
+  `;
+
+  const printWin = window.open('', '_blank', 'width=900,height=750');
+  if (printWin) {
+    printWin.document.write(printHtml);
+    printWin.document.close();
+  } else {
+    alert('Please allow popups for this site to generate the PDF report.');
+  }
+}
+
 function exportCSVReport() {
-  if (cachedStudents.length === 0) return alert('No data to export.');
+  const targetStudents = getReportStudents();
+  if (targetStudents.length === 0) return alert('No data to export.');
   let csv = 'Student Name,Student Number,Course,Partner Facility,Hours Rendered,Target Goal,Progress %,Status\n';
-  cachedStudents.forEach(s => {
+  targetStudents.forEach(s => {
     csv += `"${s.full_name}","${s.student_number}","${s.course_code}","${s.site_name}","${s.rendered_hours}h ${s.rendered_minutes}m","480h","${s.progress_percentage}%","${s.status}"\n`;
   });
 
@@ -661,7 +916,7 @@ function exportCSVReport() {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `SBC_Internship_Compliance_Report_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `SBC_Compliance_Report_${selectedReportCourse}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 }
 

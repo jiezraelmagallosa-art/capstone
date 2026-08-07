@@ -30,8 +30,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   List<Map<String, dynamic>> _courses = [
     {
       "course_id": 1,
+      "course_code": "BSCS",
+      "display_name": "BSCS - Bachelor of Science in Computer Science",
+    },
+    {
+      "course_id": 2,
       "course_code": "BSIS",
       "display_name": "BSIS - Bachelor of Science in Information Systems",
+    },
+    {
+      "course_id": 3,
+      "course_code": "BLIS",
+      "display_name": "BLIS - Bachelor of Library and Information Science",
     },
   ];
 

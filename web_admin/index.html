@@ -277,6 +277,19 @@
             </div>
           </div>
 
+          <!-- Course Categorization Filter Dropdown for Dean View -->
+          <div class="course-filter-bar" id="courseFilterContainer">
+            <label for="courseSelectFilter" style="font-size: 0.88rem; font-weight: 700; color: var(--navy-primary); margin-right: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+              <span>🎓</span> Filter by Course:
+            </label>
+            <select id="courseSelectFilter" class="form-control course-select-dropdown" onchange="filterByCourse(this.value)">
+              <option value="ALL">All Programs (0)</option>
+              <option value="BSCS">BSCS - Bachelor of Science in Computer Science (0)</option>
+              <option value="BSIS">BSIS - Bachelor of Science in Information Systems (0)</option>
+              <option value="BLIS">BLIS - Bachelor of Library & Info Science (0)</option>
+            </select>
+          </div>
+
           <div class="card">
             <div class="table-responsive">
               <table class="data-table">

@@ -35,6 +35,18 @@ if ($col_check && $col_check->num_rows == 0) {
     if ($dean_res && $dean_res->num_rows > 0) {
         $def_dean_id = intval($dean_res->fetch_assoc()['user_id']);
         @$conn->query("UPDATE student SET dean_id = $def_dean_id WHERE dean_id IS NULL");
+}
+}
+
+// Auto-seed required courses (BSCS, BSIS, BLIS) if not present
+$course_check = $conn->query("SELECT COUNT(*) as cnt FROM course");
+if ($course_check) {
+    $c_cnt = intval($course_check->fetch_assoc()['cnt'] ?? 0);
+    if ($c_cnt < 3) {
+        $conn->query("INSERT IGNORE INTO course (course_code, course_name) VALUES
+            ('BSCS', 'Bachelor of Science in Computer Science'),
+            ('BSIS', 'Bachelor of Science in Information Systems'),
+            ('BLIS', 'Bachelor of Library and Information Science')");
     }
 }
 

@@ -96,8 +96,11 @@ CREATE TABLE Absence_Requests (
 );
 
 
-INSERT INTO Course (course_code, course_name)
-VALUES ('BSIS', 'Bachelor of Science in Information Systems');
+INSERT INTO Course (course_code, course_name) VALUES
+('BSCS', 'Bachelor of Science in Computer Science'),
+('BSIS', 'Bachelor of Science in Information Systems'),
+('BLIS', 'Bachelor of Library and Information Science')
+ON DUPLICATE KEY UPDATE course_name=VALUES(course_name);
 
 INSERT INTO Training_Site (site_code, site_name, location)
 VALUES ('SBC-IT', 'SBC IT Department', 'M\'lang, Cotabato');

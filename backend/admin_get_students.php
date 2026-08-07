@@ -23,6 +23,8 @@ try {
 require_once 'db_connect.php';
 
     $dean_id = isset($_GET['dean_id']) ? intval($_GET['dean_id']) : (isset($_POST['dean_id']) ? intval($_POST['dean_id']) : 0);
+    $course_code_filter = isset($_GET['course_code']) ? trim($_GET['course_code']) : (isset($_POST['course_code']) ? trim($_POST['course_code']) : '');
+    $course_id_filter = isset($_GET['course_id']) ? intval($_GET['course_id']) : (isset($_POST['course_id']) ? intval($_POST['course_id']) : 0);
 
     $sql = "SELECT
                 s.student_id,
@@ -31,6 +33,7 @@ require_once 'db_connect.php';
                 s.id_no,
                 s.email,
                 s.dean_id,
+                s.course_id,
                 u.full_name AS dean_name,
                 u.email AS dean_email,
                 c.course_code,
@@ -48,14 +51,54 @@ require_once 'db_connect.php';
             LEFT JOIN ojt o ON s.student_id = o.student_id
             LEFT JOIN training_site ts ON o.site_id = ts.site_id";
 
+    $where = [];
+    $has_specific_students = false;
     if ($dean_id > 0) {
-        $sql .= " WHERE s.dean_id = " . intval($dean_id);
+        $d_check = $conn->query("SELECT student_id FROM student WHERE dean_id = " . intval($dean_id) . " LIMIT 1");
+        if ($d_check && $d_check->num_rows > 0) {
+            $has_specific_students = true;
+            $where[] = "s.dean_id = " . intval($dean_id);
+        }
+    }
+
+    if (!empty($course_code_filter) && $course_code_filter !== 'ALL') {
+        $where[] = "c.course_code = '" . $conn->real_escape_string($course_code_filter) . "'";
+    } elseif ($course_id_filter > 0) {
+        $where[] = "s.course_id = " . intval($course_id_filter);
+    }
+
+    if (count($where) > 0) {
+        $sql .= " WHERE " . implode(" AND ", $where);
     }
 
     $sql .= " ORDER BY s.full_name ASC";
 
     $result = $conn->query($sql);
     $students = [];
+
+    // Overall counts per course for summary badges
+    $counts_sql = "SELECT c.course_code, COUNT(s.student_id) as total FROM course c LEFT JOIN student s ON c.course_id = s.course_id";
+    if ($has_specific_students && $dean_id > 0) {
+        $counts_sql .= " WHERE s.dean_id = " . intval($dean_id);
+    }
+    $counts_sql .= " GROUP BY c.course_code";
+    $counts_res = $conn->query($counts_sql);
+    $course_counts = [
+        "ALL" => 0,
+        "BSCS" => 0,
+        "BSIS" => 0,
+        "BLIS" => 0
+    ];
+    if ($counts_res && $counts_res->num_rows > 0) {
+        while ($c_row = $counts_res->fetch_assoc()) {
+            $code = strtoupper($c_row['course_code'] ?? '');
+            $cnt = intval($c_row['total'] ?? 0);
+            if (!empty($code)) {
+                $course_counts[$code] = $cnt;
+            }
+            $course_counts["ALL"] += $cnt;
+        }
+    }
 
     $m_min = "CASE WHEN time_in_morning IS NOT NULL AND time_out_morning IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, time_in_morning, time_out_morning) ELSE 0 END";
     $a_min = "CASE WHEN time_in_afternoon IS NOT NULL AND time_out_afternoon IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, time_in_afternoon, time_out_afternoon) ELSE 0 END";
@@ -64,7 +107,6 @@ require_once 'db_connect.php';
         while ($row = $result->fetch_assoc()) {
             $ojt_id = intval($row['ojt_id'] ?? 0);
             $req_h = 480;
-
 
             $total_min = 0;
             $total_days = 0;
@@ -98,6 +140,7 @@ require_once 'db_connect.php';
                 "dean_id" => $row['dean_id'],
                 "dean_name" => $row['dean_name'] ?? 'Unassigned Dean',
                 "dean_email" => $row['dean_email'] ?? '',
+                "course_id" => $row['course_id'],
                 "course_code" => $row['course_code'] ?? 'BSIS',
                 "course_name" => $row['course_name'] ?? 'BS Information Systems',
                 "site_id" => $row['site_id'] ?? 1,
@@ -117,6 +160,7 @@ require_once 'db_connect.php';
 
     echo json_encode([
         "status" => "success",
+        "course_counts" => $course_counts,
         "data" => $students
     ]);
 

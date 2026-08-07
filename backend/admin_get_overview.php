@@ -18,6 +18,13 @@ try {
     $today = date("Y-m-d");
     $dean_id = isset($_GET['dean_id']) ? intval($_GET['dean_id']) : (isset($_POST['dean_id']) ? intval($_POST['dean_id']) : 0);
 
+    if ($dean_id > 0) {
+        $d_check = $conn->query("SELECT student_id FROM student WHERE dean_id = $dean_id LIMIT 1");
+        if (!$d_check || $d_check->num_rows == 0) {
+            $dean_id = 0; // Fallback to all students if no students assigned specifically to this dean
+        }
+    }
+
 
     $sql_interns = "SELECT COUNT(*) AS total FROM student";
     if ($dean_id > 0) $sql_interns .= " WHERE dean_id = $dean_id";
