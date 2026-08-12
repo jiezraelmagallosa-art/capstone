@@ -772,6 +772,41 @@ body {
   color: #ffffff;
 }
 
+/* Stacked Pill Action Buttons (Attendance Log Evaluation) */
+.btn-action {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  letter-spacing: 0.2px;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.btn-action:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+.btn-action-confirm {
+  background-color: #1a7f4b;
+  color: #ffffff;
+}
+
+.btn-action-reject {
+  background-color: #c0392b;
+  color: #ffffff;
+}
+
 
 /* Modal Dialog Overlays */
 .modal-overlay {

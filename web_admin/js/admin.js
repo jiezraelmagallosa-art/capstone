@@ -453,7 +453,7 @@ function renderLogsTable(logs) {
   if (!tbody) return;
 
   if (logs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
     return;
   }
 
@@ -479,12 +479,10 @@ function renderLogsTable(logs) {
     const isEvaluated = l.is_confirmed || l.is_rejected;
     const evalControls = isEvaluated
       ? `<span style="font-size: 0.8rem; color: var(--text-muted);">Evaluated</span>`
-      : `<button class="btn btn-success" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed')">Confirm</button>
-         <button class="btn btn-danger" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected')" style="margin-left: 0.35rem;">Reject</button>`;
-
-    const remarksDisplay = l.remarks
-      ? escapeHtml(l.remarks)
-      : `<span style="font-size: 0.8rem; color: var(--text-muted);">--</span>`;
+      : `<div style="display: flex; flex-direction: column; gap: 0.4rem; min-width: 90px;">
+           <button class="btn-action btn-action-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed')">Confirm</button>
+           <button class="btn-action btn-action-reject"  onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected')">Reject</button>
+         </div>`;
 
     return `
       <tr>
@@ -502,7 +500,6 @@ function renderLogsTable(logs) {
         <td>${l.time_out_afternoon}</td>
         <td>${statusBadge}</td>
         <td>${photoBtn}</td>
-        <td style="font-size: 0.8rem; color: var(--text-muted);">${remarksDisplay}</td>
         <td>${evalControls}</td>
       </tr>
     `;
