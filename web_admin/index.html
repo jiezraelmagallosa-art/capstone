@@ -521,29 +521,57 @@
         </div>
       </form>
     </div>
+  </div>
+
   <!-- Help & Documentation Modal -->
   <div id="helpModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 580px;">
+    <div class="modal-card" style="max-width: 600px;">
       <div class="modal-header">
-        <h3>System Help & Guide</h3>
+        <h3>❓ Dean Suite - Help & User Guide</h3>
         <button class="close-btn" onclick="closeHelpModal()">&times;</button>
       </div>
       <div style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
-        <p style="margin-bottom: 0.8rem;">Welcome to the <strong>SBC Internship Attendance System</strong> Dean Suite.</p>
-        <ul style="padding-left: 1.2rem; margin-bottom: 1rem;">
-          <li style="margin-bottom: 0.5rem;"><strong>🔍 Real-Time Search Bar:</strong> Type any student name, student ID #, course (e.g., BSCS, BSIS), or training facility to filter records instantly across all tabs.</li>
-          <li style="margin-bottom: 0.5rem;"><strong>🔔 System Notifications:</strong> Click the bell icon to open pending verification requests and absence applications queue.</li>
-          <li style="margin-bottom: 0.5rem;"><strong>✓ Confirm / Reject Attendance Logs:</strong> Review facial photos captured during student log-in/out and evaluate entries. Confirming permanently deletes snapshot files to save server storage.</li>
-          <li style="margin-bottom: 0.5rem;"><strong>📄 Absence Requests Queue:</strong> Review student medical/official absence reasons and attachments with administrative remarking.</li>
-        </ul>
+        <p style="margin-bottom: 1rem; color: var(--text-muted);">
+          Welcome to the <strong>SBC Internship Attendance & Verification System</strong> Dean's Suite. Below is a summary of available tools and shortcuts:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+          <div style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid var(--navy-primary); border-radius: var(--radius-sm);">
+            <strong>🔍 Global Search Bar:</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Type student names, ID numbers (e.g. 2026-0009), course codes (BSCS, BSIS, BLIS), or partner facilities to instantly filter table rows in real-time.
+            </p>
+          </div>
+
+          <div style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid var(--amber-gold); border-radius: var(--radius-sm);">
+            <strong>🔔 System Notifications:</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+              The bell icon pulses when students submit new attendance logs or absence requests. Click it to open a live queue popover.
+            </p>
+          </div>
+
+          <div style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid #1a7f4b; border-radius: var(--radius-sm);">
+            <strong>📸 Attendance Verification Logs:</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+              Review live facial capture snapshots. Click <strong>Confirm</strong> (green) to approve & delete verification photos from disk, or <strong>Reject</strong> (red) to require student follow-up.
+            </p>
+          </div>
+
+          <div style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid #c0392b; border-radius: var(--radius-sm);">
+            <strong>📄 Absence Request Queue:</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
+              View student medical/official absence applications, supporting attachments, and provide administrative approval or rejection remarks.
+            </p>
+          </div>
+        </div>
       </div>
-      <div style="margin-top: 1.25rem; text-align: right;">
-        <button class="btn btn-navy" onclick="closeHelpModal()">Got It</button>
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <button class="btn btn-navy" onclick="closeHelpModal()">Close User Guide</button>
       </div>
     </div>
   </div>
 
-  <script src="js/admin.js?v=2.7"></script>
+  <script src="js/admin.js?v=2.8"></script>
 </body>
 
 </html>
