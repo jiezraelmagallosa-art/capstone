@@ -84,7 +84,7 @@ try {
             } elseif ($raw_att_status === 'Rejected') {
                 $status = "Rejected";
             } else {
-                $status = count($photos) > 0 ? "Pending Verification" : "Logged";
+                $status = "Pending";
             }
 
             $logs[] = [

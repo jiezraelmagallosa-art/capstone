@@ -465,24 +465,18 @@ function renderLogsTable(logs) {
       </button>` : `<span style="color: var(--text-light); font-size: 0.8rem;">No Photo</span>`;
     const courseBadge = getCourseBadgeClass(l.course_code);
 
-    let statusBadge;
-    if (l.is_confirmed) {
-      statusBadge = `<span class="badge badge-success">✓ Confirmed</span>`;
-    } else if (l.is_rejected) {
-      statusBadge = `<span class="badge badge-danger">✕ Rejected</span>`;
-    } else if (hasPhotos) {
-      statusBadge = `<span class="badge badge-warning">Pending Verification</span>`;
-    } else {
-      statusBadge = `<span class="badge badge-navy">Logged</span>`;
-    }
+    // Match absence request badge pattern exactly
+    let badgeClass = 'badge-warning';
+    if (l.status === 'Confirmed') badgeClass = 'badge-success';
+    if (l.status === 'Rejected')  badgeClass = 'badge-danger';
 
-    const isEvaluated = l.is_confirmed || l.is_rejected;
-    const evalControls = isEvaluated
-      ? `<span style="font-size: 0.8rem; color: var(--text-muted);">Evaluated</span>`
-      : `<div style="display: flex; flex-direction: column; gap: 0.4rem; min-width: 90px;">
+    const isPending = l.status !== 'Confirmed' && l.status !== 'Rejected';
+    const evalControls = isPending
+      ? `<div style="display: flex; flex-direction: column; gap: 0.4rem; min-width: 90px;">
            <button class="btn-action btn-action-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed')">Confirm</button>
            <button class="btn-action btn-action-reject"  onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected')">Reject</button>
-         </div>`;
+         </div>`
+      : `<span style="font-size: 0.8rem; color: var(--text-muted);">Evaluated</span>`;
 
     return `
       <tr>
@@ -498,7 +492,7 @@ function renderLogsTable(logs) {
         <td>${l.time_out_morning}</td>
         <td>${l.time_in_afternoon}</td>
         <td>${l.time_out_afternoon}</td>
-        <td>${statusBadge}</td>
+        <td><span class="badge ${badgeClass}">${l.status}</span></td>
         <td>${photoBtn}</td>
         <td>${evalControls}</td>
       </tr>
