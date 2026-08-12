@@ -352,7 +352,7 @@ function renderStudentsTable(students) {
   if (!tbody) return;
 
   if (students.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No student interns enrolled in this course category.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No student interns enrolled in this course category.</td></tr>`;
     return;
   }
 
@@ -368,10 +368,6 @@ function renderStudentsTable(students) {
         <td>
           <div><span class="badge ${courseBadge}">${escapeHtml(s.course_code)}</span></div>
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">${escapeHtml(s.course_name)}</div>
-        </td>
-        <td>
-          <div style="font-weight: 600; color: var(--navy-primary);">${escapeHtml(s.dean_name || 'Unassigned')}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(s.dean_email || '')}</div>
         </td>
         <td>
           <div style="font-weight: 600;">${escapeHtml(s.site_name)}</div>
@@ -453,7 +449,7 @@ function renderLogsTable(logs) {
   if (!tbody) return;
 
   if (logs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
     return;
   }
 
@@ -484,9 +480,6 @@ function renderLogsTable(logs) {
         <td>
           <div style="font-weight: 700;">${escapeHtml(l.full_name)}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">${l.student_number} &bull; <span class="badge ${courseBadge}">${l.course_code}</span></div>
-        </td>
-        <td>
-          <div style="font-weight: 600;">${escapeHtml(l.dean_name || 'Unassigned')}</div>
         </td>
         <td>${l.time_in_morning}</td>
         <td>${l.time_out_morning}</td>
@@ -519,7 +512,7 @@ function renderAbsencesTable(absences) {
   if (!tbody) return;
 
   if (absences.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No absence requests submitted.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No absence requests submitted.</td></tr>`;
     return;
   }
 
@@ -537,9 +530,6 @@ function renderAbsencesTable(absences) {
         <td>
           <div style="font-weight: 700;">${escapeHtml(a.full_name)}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted);">${a.student_number} &bull; ${a.course_code}</div>
-        </td>
-        <td>
-          <div style="font-weight: 600;">${escapeHtml(a.dean_name || 'Unassigned')}</div>
         </td>
         <td style="max-width: 250px;">${escapeHtml(a.reason)}</td>
         <td>${docLink}</td>
