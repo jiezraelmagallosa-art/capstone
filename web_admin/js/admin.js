@@ -188,6 +188,8 @@ function showAppShell() {
   if (currentUser) {
     document.getElementById('adminNameDisplay').textContent = currentUser.full_name || 'Dean Admin';
   }
+  fetchLogs();
+  fetchAbsences();
 }
 
 function switchTab(tabId) {
@@ -400,6 +402,7 @@ async function fetchLogs() {
       cachedLogs = data.data || [];
       updateLogsCourseCounts(data.course_counts || {});
       filterLogsByCourse(currentLogsCourseFilter, false);
+      updateNotifications();
     }
   } catch (err) {
     console.error('Fetch logs error:', err);
@@ -501,6 +504,7 @@ async function fetchAbsences() {
     if (data.status === 'success') {
       cachedAbsences = data.data || [];
       renderAbsencesTable(cachedAbsences);
+      updateNotifications();
     }
   } catch (err) {
     console.error('Fetch absences error:', err);
@@ -1081,4 +1085,98 @@ function filterActiveTable(query) {
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Global Search Handler across active tab tables
+function handleGlobalSearch(query) {
+  const q = (query || '').trim().toLowerCase();
+  if (q.length > 0 && currentTab === 'overview') {
+    switchTab('students');
+  }
+  filterActiveTable(q);
+}
+
+// Notifications Bell System
+function updateNotifications() {
+  const pendingLogs = cachedLogs.filter(l => l.status === 'Pending' || l.status === 'Pending Verification');
+  const pendingAbsences = cachedAbsences.filter(a => a.status === 'Pending');
+  const totalPending = pendingLogs.length + pendingAbsences.length;
+
+  const badgeDot = document.getElementById('notifBadgeDot');
+  const countBadge = document.getElementById('notifCountBadge');
+  const notifList = document.getElementById('notifList');
+
+  if (badgeDot) {
+    badgeDot.style.display = totalPending > 0 ? 'block' : 'none';
+  }
+
+  if (countBadge) {
+    countBadge.textContent = `${totalPending} Pending`;
+    countBadge.className = totalPending > 0 ? 'badge badge-danger' : 'badge badge-warning';
+  }
+
+  if (notifList) {
+    if (totalPending === 0) {
+      notifList.innerHTML = `<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.82rem;">🎉 All caught up! No pending verifications or requests.</div>`;
+    } else {
+      let itemsHtml = '';
+
+      pendingLogs.forEach(l => {
+        itemsHtml += `
+          <div class="notif-item" onclick="switchTab('logs'); toggleNotifDropdown();">
+            <div class="notif-item-title">
+              <span>📸 Attendance Log</span>
+              <span class="badge badge-warning" style="font-size: 0.65rem;">Pending</span>
+            </div>
+            <div class="notif-item-desc">
+              <strong>${escapeHtml(l.full_name)}</strong> logged attendance on ${l.date}. Verification photo ready for review.
+            </div>
+          </div>`;
+      });
+
+      pendingAbsences.forEach(a => {
+        itemsHtml += `
+          <div class="notif-item" onclick="switchTab('absences'); toggleNotifDropdown();">
+            <div class="notif-item-title">
+              <span>📄 Absence Request</span>
+              <span class="badge badge-danger" style="font-size: 0.65rem;">Action Required</span>
+            </div>
+            <div class="notif-item-desc">
+              <strong>${escapeHtml(a.full_name)}</strong> requested absence for ${a.date_absent}: "${escapeHtml(a.reason)}".
+            </div>
+          </div>`;
+      });
+
+      notifList.innerHTML = itemsHtml;
+    }
+  }
+}
+
+function toggleNotifDropdown(e) {
+  if (e) e.stopPropagation();
+  const dropdown = document.getElementById('notifDropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const dropdown = document.getElementById('notifDropdown');
+  const notifBtn = document.getElementById('notifBtn');
+  if (dropdown && !dropdown.classList.contains('hidden')) {
+    if (!dropdown.contains(e.target) && (!notifBtn || !notifBtn.contains(e.target))) {
+      dropdown.classList.add('hidden');
+    }
+  }
+});
+
+// Help & Documentation Modal Handlers
+function openHelpModal() {
+  const modal = document.getElementById('helpModal');
+  if (modal) modal.classList.add('active');
+}
+
+function closeHelpModal() {
+  const modal = document.getElementById('helpModal');
+  if (modal) modal.classList.remove('active');
 }

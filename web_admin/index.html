@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SBC Dean's Administrative Suite | Internship Attendance System</title>
-  <link rel="stylesheet" href="css/admin.css?v=2.1">
+  <link rel="stylesheet" href="css/admin.css?v=2.2">
 </head>
 
 <body>
@@ -199,19 +199,30 @@
       <header class="topbar">
         <div class="topbar-search">
           <span style="color: var(--text-muted);">🔍</span>
-          <input type="text" id="globalSearch" placeholder="Search student name, ID #, course, or partner facility...">
+          <input type="text" id="globalSearch" placeholder="Search student name, ID #, course, or partner facility..." oninput="handleGlobalSearch(this.value)">
         </div>
 
-        <div class="topbar-actions">
-          <button class="icon-btn" title="System Notifications">
+        <div class="topbar-actions" style="position: relative;">
+          <button class="icon-btn" id="notifBtn" onclick="toggleNotifDropdown(event)" title="System Notifications">
             🔔
-            <span class="badge-dot"></span>
+            <span class="badge-dot" id="notifBadgeDot" style="display: none;"></span>
           </button>
-          <button class="icon-btn" title="Help & Documentation">❓</button>
+          <button class="icon-btn" title="Help & Documentation" onclick="openHelpModal()">❓</button>
           <button class="btn btn-outline"
             style="border-color: var(--border-light); font-size: 0.8rem; font-weight: 600;" onclick="logout()">
             🚪 Log Out
           </button>
+
+          <!-- Notifications Dropdown Popover -->
+          <div id="notifDropdown" class="notif-dropdown hidden" onclick="event.stopPropagation()">
+            <div class="notif-header">
+              <h3>System Notifications</h3>
+              <span id="notifCountBadge" class="badge badge-warning">0 Pending</span>
+            </div>
+            <div id="notifList" class="notif-list">
+              <!-- Dynamically rendered notification items -->
+            </div>
+          </div>
         </div>
       </header>
 
@@ -510,9 +521,29 @@
         </div>
       </form>
     </div>
+  <!-- Help & Documentation Modal -->
+  <div id="helpModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3>System Help & Guide</h3>
+        <button class="close-btn" onclick="closeHelpModal()">&times;</button>
+      </div>
+      <div style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
+        <p style="margin-bottom: 0.8rem;">Welcome to the <strong>SBC Internship Attendance System</strong> Dean Suite.</p>
+        <ul style="padding-left: 1.2rem; margin-bottom: 1rem;">
+          <li style="margin-bottom: 0.5rem;"><strong>🔍 Real-Time Search Bar:</strong> Type any student name, student ID #, course (e.g., BSCS, BSIS), or training facility to filter records instantly across all tabs.</li>
+          <li style="margin-bottom: 0.5rem;"><strong>🔔 System Notifications:</strong> Click the bell icon to open pending verification requests and absence applications queue.</li>
+          <li style="margin-bottom: 0.5rem;"><strong>✓ Confirm / Reject Attendance Logs:</strong> Review facial photos captured during student log-in/out and evaluate entries. Confirming permanently deletes snapshot files to save server storage.</li>
+          <li style="margin-bottom: 0.5rem;"><strong>📄 Absence Requests Queue:</strong> Review student medical/official absence reasons and attachments with administrative remarking.</li>
+        </ul>
+      </div>
+      <div style="margin-top: 1.25rem; text-align: right;">
+        <button class="btn btn-navy" onclick="closeHelpModal()">Got It</button>
+      </div>
+    </div>
   </div>
 
-  <script src="js/admin.js?v=2.6"></script>
+  <script src="js/admin.js?v=2.7"></script>
 </body>
 
 </html>
