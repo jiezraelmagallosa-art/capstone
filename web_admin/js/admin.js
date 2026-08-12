@@ -760,7 +760,7 @@ function renderComplianceSummary() {
     </div>
 
     <!-- Executive KPI Grid -->
-    <div class="kpi-grid">
+    <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr);">
       <div class="kpi-card">
         <div class="kpi-title">Selected Program Interns</div>
         <div class="kpi-value-row">
@@ -780,13 +780,6 @@ function renderComplianceSummary() {
         <div class="kpi-value-row">
           <div class="kpi-value">${inProgress}</div>
           <span class="kpi-badge gold">Tracking</span>
-        </div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Cumulative Hours Rendered</div>
-        <div class="kpi-value-row">
-          <div class="kpi-value">${totalHours} hrs</div>
-          <span class="kpi-badge green">Verified</span>
         </div>
       </div>
     </div>
@@ -872,7 +865,7 @@ function generatePDFReport() {
         .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; }
         .meta-item { font-size: 11px; }
         .meta-item strong { color: #002d56; }
-        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+        .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
         .kpi-box { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; }
         .kpi-box-title { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
         .kpi-box-value { font-size: 16px; font-weight: 800; color: #002d56; margin-top: 4px; }
@@ -925,10 +918,6 @@ function generatePDFReport() {
         <div class="kpi-box">
           <div class="kpi-box-title">In-Progress</div>
           <div class="kpi-box-value">${inProgress}</div>
-        </div>
-        <div class="kpi-box">
-          <div class="kpi-box-title">Cumulative Hours</div>
-          <div class="kpi-box-value">${totalHours} hrs</div>
         </div>
       </div>
 
