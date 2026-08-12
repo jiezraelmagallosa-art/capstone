@@ -98,7 +98,7 @@ try {
     }
 
     // Overall counts per course for logs
-    $counts_sql = "SELECT c.course_code, COUNT(a.attendance_id) as total
+    $counts_sql = "SELECT COALESCE(c.course_code, 'BSIS') as course_code, COUNT(a.attendance_id) as total
                    FROM attendance a
                    JOIN ojt o ON a.ojt_id = o.ojt_id
                    JOIN student s ON o.student_id = s.student_id
@@ -106,7 +106,7 @@ try {
     if ($dean_id > 0) {
         $counts_sql .= " WHERE s.dean_id = " . intval($dean_id);
     }
-    $counts_sql .= " GROUP BY c.course_code";
+    $counts_sql .= " GROUP BY COALESCE(c.course_code, 'BSIS')";
     $counts_res = $conn->query($counts_sql);
     $course_counts = [
         "ALL" => 0,
@@ -116,11 +116,9 @@ try {
     ];
     if ($counts_res && $counts_res->num_rows > 0) {
         while ($c_row = $counts_res->fetch_assoc()) {
-            $code = strtoupper($c_row['course_code'] ?? '');
+            $code = strtoupper($c_row['course_code'] ?? 'BSIS');
             $cnt = intval($c_row['total'] ?? 0);
-            if (!empty($code)) {
-                $course_counts[$code] = $cnt;
-            }
+            $course_counts[$code] = $cnt;
             $course_counts["ALL"] += $cnt;
         }
     }

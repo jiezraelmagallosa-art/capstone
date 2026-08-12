@@ -307,7 +307,7 @@ function updateCourseCounts(counts) {
   let blisCount = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === 'BLIS').length;
   let allCount = cachedStudents.length;
 
-  if (counts && counts.ALL !== undefined && counts.ALL > allCount) {
+  if (counts && counts.ALL !== undefined && counts.ALL > 0) {
     allCount = counts.ALL;
     if (counts.BSCS !== undefined) bscsCount = counts.BSCS;
     if (counts.BSIS !== undefined) bsisCount = counts.BSIS;
@@ -416,7 +416,7 @@ function updateLogsCourseCounts(counts) {
   let blisCount = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === 'BLIS').length;
   let allCount = cachedLogs.length;
 
-  if (counts && counts.ALL !== undefined && counts.ALL > allCount) {
+  if (counts && counts.ALL !== undefined && counts.ALL > 0) {
     allCount = counts.ALL;
     if (counts.BSCS !== undefined) bscsCount = counts.BSCS;
     if (counts.BSIS !== undefined) bsisCount = counts.BSIS;
