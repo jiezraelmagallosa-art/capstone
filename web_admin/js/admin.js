@@ -1047,7 +1047,59 @@ async function reviewAttendanceLog(attendanceId, action) {
 function openStudentDrawer(studentId) {
   const s = cachedStudents.find(st => st.student_id === studentId);
   if (!s) return;
-  alert(`Student Profile & Allocation Details:\nName: ${s.full_name}\nStudent ID: ${s.student_number}\nCourse: ${s.course_name}\nSite: ${s.site_name} (${s.site_location})\nHours Rendered: ${s.formatted_time} / 480 hrs\nCompletion Status: ${s.status}`);
+
+  const container = document.getElementById('studentDetailsContent');
+  if (!container) return;
+
+  const courseBadge = getCourseBadgeClass(s.course_code);
+  const statusBadgeClass = s.status === 'Completed' ? 'badge-success' : 'badge-warning';
+
+  container.innerHTML = `
+    <div style="padding: 1rem; background-color: var(--bg-canvas); border-radius: var(--radius-sm); border: 1px solid var(--border-light); margin-bottom: 1.25rem;">
+      <div style="font-size: 1.15rem; font-weight: 800; color: var(--navy-primary);">${escapeHtml(s.full_name)}</div>
+      <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem;">
+        Student Number: <strong>${escapeHtml(s.student_number)}</strong> &bull; National ID: <strong>${escapeHtml(s.id_no)}</strong>
+      </div>
+      <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.15rem;">Email Address: <strong>${escapeHtml(s.email)}</strong></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+      <div style="border: 1px solid var(--border-light); padding: 0.85rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem;">Academic Program</div>
+        <div><span class="badge ${courseBadge}">${escapeHtml(s.course_code)}</span></div>
+        <div style="font-size: 0.8rem; font-weight: 600; color: var(--navy-primary); margin-top: 0.3rem;">${escapeHtml(s.course_name)}</div>
+      </div>
+
+      <div style="border: 1px solid var(--border-light); padding: 0.85rem; border-radius: var(--radius-sm);">
+        <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem;">Partner Training Facility</div>
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--navy-primary);">${escapeHtml(s.site_name)}</div>
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem;">${escapeHtml(s.ojt_no)} &bull; ${escapeHtml(s.site_location)}</div>
+      </div>
+    </div>
+
+    <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm);">
+      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">480-Hour Internship Progress</div>
+      <div class="progress-container" style="margin-bottom: 0.6rem;">
+        <div class="progress-bar-bg" style="height: 10px; background-color: var(--border-light);">
+          <div class="progress-bar-fill" style="width: ${s.progress_percentage}%; height: 100%;"></div>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem;">
+        <span>Hours Rendered: <strong style="color: var(--navy-primary);">${s.formatted_time}</strong></span>
+        <span>Target Goal: <strong>480 hrs</strong> (${s.progress_percentage}%)</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 0.5rem; margin-top: 0.4rem;">
+        <span>Total Attendance Days: <strong>${s.total_days} days</strong></span>
+        <span>Completion Status: <span class="badge ${statusBadgeClass}">${s.status}</span></span>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('studentDetailsModal').classList.add('active');
+}
+
+function closeStudentDetailsModal() {
+  document.getElementById('studentDetailsModal').classList.remove('active');
 }
 
 function filterActiveTable(query) {

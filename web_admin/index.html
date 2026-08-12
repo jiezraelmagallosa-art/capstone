@@ -523,6 +523,22 @@
     </div>
   </div>
 
+  <!-- Student Details Profile Modal -->
+  <div id="studentDetailsModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 560px;">
+      <div class="modal-header">
+        <h3>👨‍🎓 Student Profile & Internship Allocation</h3>
+        <button class="close-btn" onclick="closeStudentDetailsModal()">&times;</button>
+      </div>
+      <div id="studentDetailsContent" style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
+        <!-- Dynamically rendered student details -->
+      </div>
+      <div style="margin-top: 1.5rem; text-align: right;">
+        <button class="btn btn-navy" onclick="closeStudentDetailsModal()">Close Details</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Help & Documentation Modal -->
   <div id="helpModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 600px;">
@@ -571,7 +587,7 @@
     </div>
   </div>
 
-  <script src="js/admin.js?v=2.8"></script>
+  <script src="js/admin.js?v=2.9"></script>
 </body>
 
 </html>
