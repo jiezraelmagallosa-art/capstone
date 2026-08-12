@@ -73,7 +73,7 @@ class ApiService {
 
   static Future<Map<String, dynamic>> registerStudent({
     required String fullName,
-    required String studentNumber,
+    String studentNumber = "",
     required String idNo,
     required String email,
     required String password,

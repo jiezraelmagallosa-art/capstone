@@ -16,7 +16,6 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullNameController = TextEditingController();
-  final _studentNumberController = TextEditingController();
   final _idNoController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -129,10 +128,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final result = await ApiService.registerStudent(
       fullName: _fullNameController.text.trim(),
-      studentNumber: _studentNumberController.text.trim(),
-      idNo: _idNoController.text.trim().isEmpty
-          ? 'ID-${_studentNumberController.text.trim()}'
-          : _idNoController.text.trim(),
+      idNo: _idNoController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
       courseId: _selectedCourseId,
@@ -168,7 +164,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void dispose() {
     _fullNameController.dispose();
-    _studentNumberController.dispose();
     _idNoController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -303,49 +298,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
 
                             TextFormField(
-                              controller: _studentNumberController,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-                              decoration: InputDecoration(
-                                labelText: 'Student Number (e.g. 2026-0002)',
-                                labelStyle: const TextStyle(
-                                  color: Colors.white70,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                floatingLabelStyle: const TextStyle(
-                                  color: AppColors.accentGold,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                                filled: true,
-                                fillColor: Colors.transparent,
-                                prefixIcon: const Icon(
-                                  Icons.badge_outlined,
-                                  color: AppColors.accentGold,
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: Colors.white70, width: 1.5),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(color: AppColors.accentGold, width: 2),
-                                ),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter your student number';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 14),
-
-
-                            TextFormField(
                               controller: _idNoController,
                               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
                               decoration: InputDecoration(
-                                labelText: 'ID Number (e.g. ID-102)',
+                                labelText: 'Student ID No.',
                                 labelStyle: const TextStyle(
                                   color: Colors.white70,
                                   fontWeight: FontWeight.w600,

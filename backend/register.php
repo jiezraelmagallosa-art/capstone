@@ -29,7 +29,21 @@ $pass = isset($data['password']) ? trim($data['password']) : '';
 $course_id = isset($data['course_id']) ? intval($data['course_id']) : 1;
 $dean_id = isset($data['dean_id']) ? intval($data['dean_id']) : 0;
 
-if (empty($full_name) || empty($student_number) || empty($email) || empty($pass)) {
+// Auto-generate student number (e.g. 2026-0010) if not provided
+if (empty($student_number)) {
+    $max_res = $conn->query("SELECT MAX(student_id) as max_id FROM student");
+    $next_id = 1;
+    if ($max_res && $row = $max_res->fetch_assoc()) {
+        $next_id = intval($row['max_id']) + 1;
+    }
+    $student_number = date("Y") . "-" . str_pad($next_id, 4, "0", STR_PAD_LEFT);
+}
+
+if (empty($id_no)) {
+    $id_no = $student_number;
+}
+
+if (empty($full_name) || empty($email) || empty($pass)) {
     echo json_encode(["status" => "error", "message" => "Please fill in all required registration fields."]);
     exit();
 }
