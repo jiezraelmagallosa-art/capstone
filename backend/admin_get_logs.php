@@ -32,6 +32,7 @@ try {
                 a.time_in_afternoon,
                 a.time_out_afternoon,
                 a.status AS attendance_status,
+                a.remarks AS attendance_remarks,
                 s.student_id,
                 s.student_number,
                 s.full_name,
@@ -80,6 +81,8 @@ try {
             $raw_att_status = $row['attendance_status'] ?? 'Pending';
             if ($raw_att_status === 'Confirmed') {
                 $status = "Confirmed";
+            } elseif ($raw_att_status === 'Rejected') {
+                $status = "Rejected";
             } else {
                 $status = count($photos) > 0 ? "Pending Verification" : "Logged";
             }
@@ -98,7 +101,9 @@ try {
                 "time_in_afternoon" => !empty($row['time_in_afternoon']) ? date("h:i A", strtotime($row['time_in_afternoon'])) : '--:--',
                 "time_out_afternoon" => !empty($row['time_out_afternoon']) ? date("h:i A", strtotime($row['time_out_afternoon'])) : '--:--',
                 "status" => $status,
+                "remarks" => $row['attendance_remarks'] ?? '',
                 "is_confirmed" => ($raw_att_status === 'Confirmed'),
+                "is_rejected" => ($raw_att_status === 'Rejected'),
                 "photos" => $photos
             ];
         }

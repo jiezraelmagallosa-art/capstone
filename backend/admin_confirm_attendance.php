@@ -2,7 +2,7 @@
 /**
  * SBC Internship Attendance System - Backend API
  * Endpoint: admin_confirm_attendance.php
- * Confirmation by Dean deletes associated verification photos and updates attendance status to 'Confirmed'.
+ * Dean reviews an attendance log: 'Confirmed' (deletes photos) or 'Rejected' (stores remarks).
  */
 
 ini_set('display_errors', 0);
@@ -28,57 +28,81 @@ try {
     }
 
     $attendance_id = isset($data['attendance_id']) ? intval($data['attendance_id']) : 0;
-    $dean_id = isset($data['dean_id']) ? intval($data['dean_id']) : 0;
+    $dean_id       = isset($data['dean_id'])       ? intval($data['dean_id'])       : 0;
+    $action        = isset($data['action'])        ? trim($data['action'])           : 'Confirmed';
+    $remarks       = isset($data['remarks'])       ? trim($data['remarks'])          : '';
 
     if ($attendance_id <= 0) {
         echo json_encode(["status" => "error", "message" => "Invalid or missing attendance ID."]);
         exit();
     }
 
-    // 1. Fetch all associated photo image paths for this attendance log
-    $stmt_photos = $conn->prepare("SELECT photo_id, image_path FROM photo WHERE attendance_id = ?");
-    $stmt_photos->bind_param("i", $attendance_id);
-    $stmt_photos->execute();
-    $res_photos = $stmt_photos->get_result();
+    if (!in_array($action, ['Confirmed', 'Rejected'])) {
+        echo json_encode(["status" => "error", "message" => "Invalid action. Must be 'Confirmed' or 'Rejected'."]);
+        exit();
+    }
 
     $deleted_files_count = 0;
-    $base_dir = dirname(__DIR__) . "/";
 
-    while ($p_row = $res_photos->fetch_assoc()) {
-        $img_rel_path = $p_row['image_path'];
-        if (!empty($img_rel_path)) {
-            $full_file_path = $base_dir . $img_rel_path;
-            if (file_exists($full_file_path)) {
-                @unlink($full_file_path);
-                $deleted_files_count++;
+    if ($action === 'Confirmed') {
+        // 1. Fetch all associated photo image paths for this attendance log
+        $stmt_photos = $conn->prepare("SELECT photo_id, image_path FROM photo WHERE attendance_id = ?");
+        $stmt_photos->bind_param("i", $attendance_id);
+        $stmt_photos->execute();
+        $res_photos = $stmt_photos->get_result();
+
+        $base_dir = dirname(__DIR__) . "/";
+
+        while ($p_row = $res_photos->fetch_assoc()) {
+            $img_rel_path = $p_row['image_path'];
+            if (!empty($img_rel_path)) {
+                $full_file_path = $base_dir . $img_rel_path;
+                if (file_exists($full_file_path)) {
+                    @unlink($full_file_path);
+                    $deleted_files_count++;
+                }
             }
         }
+        $stmt_photos->close();
+
+        // 2. Delete photo records from database for this attendance log
+        $stmt_del = $conn->prepare("DELETE FROM photo WHERE attendance_id = ?");
+        $stmt_del->bind_param("i", $attendance_id);
+        $stmt_del->execute();
+        $stmt_del->close();
+
+        $default_remarks = $remarks ?: 'Attendance log confirmed by Dean of Student Affairs';
+        $stmt_upd = $conn->prepare("UPDATE attendance SET status = 'Confirmed', remarks = ? WHERE attendance_id = ?");
+        $stmt_upd->bind_param("si", $default_remarks, $attendance_id);
+        $stmt_upd->execute();
+        $stmt_upd->close();
+
+        echo json_encode([
+            "status"        => "success",
+            "message"       => "Attendance record confirmed. {$deleted_files_count} verification photo(s) deleted.",
+            "attendance_id" => $attendance_id
+        ]);
+
+    } else {
+        // Rejected — just update status and remarks, keep photos
+        $default_remarks = $remarks ?: 'Attendance log requires follow-up verification';
+        $stmt_upd = $conn->prepare("UPDATE attendance SET status = 'Rejected', remarks = ? WHERE attendance_id = ?");
+        $stmt_upd->bind_param("si", $default_remarks, $attendance_id);
+        $stmt_upd->execute();
+        $stmt_upd->close();
+
+        echo json_encode([
+            "status"        => "success",
+            "message"       => "Attendance record rejected. Please follow up with the student intern.",
+            "attendance_id" => $attendance_id
+        ]);
     }
-    $stmt_photos->close();
-
-    // 2. Delete photo records from database for this attendance log
-    $stmt_del = $conn->prepare("DELETE FROM photo WHERE attendance_id = ?");
-    $stmt_del->bind_param("i", $attendance_id);
-    $stmt_del->execute();
-    $stmt_del->close();
-
-    // 3. Update attendance status to 'Confirmed'
-    $stmt_upd = $conn->prepare("UPDATE attendance SET status = 'Confirmed' WHERE attendance_id = ?");
-    $stmt_upd->bind_param("i", $attendance_id);
-    $stmt_upd->execute();
-    $stmt_upd->close();
-
-    echo json_encode([
-        "status" => "success",
-        "message" => "Attendance record confirmed successfully. $deleted_files_count verification photo(s) deleted.",
-        "attendance_id" => $attendance_id
-    ]);
 
     $conn->close();
 
 } catch (Exception $e) {
     echo json_encode([
-        "status" => "error",
+        "status"  => "error",
         "message" => "Server error: " . $e->getMessage()
     ]);
 }

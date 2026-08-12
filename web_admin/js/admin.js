@@ -453,7 +453,7 @@ function renderLogsTable(logs) {
   if (!tbody) return;
 
   if (logs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
     return;
   }
 
@@ -465,18 +465,26 @@ function renderLogsTable(logs) {
       </button>` : `<span style="color: var(--text-light); font-size: 0.8rem;">No Photo</span>`;
     const courseBadge = getCourseBadgeClass(l.course_code);
 
-    let statusBadge = `<span class="badge badge-warning">Pending Verification</span>`;
-    if (l.is_confirmed || l.status === 'Confirmed') {
+    let statusBadge;
+    if (l.is_confirmed) {
       statusBadge = `<span class="badge badge-success">✓ Confirmed</span>`;
-    } else if (!hasPhotos) {
+    } else if (l.is_rejected) {
+      statusBadge = `<span class="badge badge-danger">✕ Rejected</span>`;
+    } else if (hasPhotos) {
+      statusBadge = `<span class="badge badge-warning">Pending Verification</span>`;
+    } else {
       statusBadge = `<span class="badge badge-navy">Logged</span>`;
     }
 
-    const actionBtn = (l.is_confirmed || l.status === 'Confirmed') ? `
-      <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">✓ Confirmed & Cleaned</span>` : `
-      <button class="btn btn-navy" onclick="confirmAttendanceLog(${l.attendance_id})" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;">
-        ✓ Confirm Log
-      </button>`;
+    const isEvaluated = l.is_confirmed || l.is_rejected;
+    const evalControls = isEvaluated
+      ? `<span style="font-size: 0.8rem; color: var(--text-muted);">Evaluated</span>`
+      : `<button class="btn btn-success" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed')">Confirm</button>
+         <button class="btn btn-danger" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected')" style="margin-left: 0.35rem;">Reject</button>`;
+
+    const remarksDisplay = l.remarks
+      ? escapeHtml(l.remarks)
+      : `<span style="font-size: 0.8rem; color: var(--text-muted);">--</span>`;
 
     return `
       <tr>
@@ -494,7 +502,8 @@ function renderLogsTable(logs) {
         <td>${l.time_out_afternoon}</td>
         <td>${statusBadge}</td>
         <td>${photoBtn}</td>
-        <td>${actionBtn}</td>
+        <td style="font-size: 0.8rem; color: var(--text-muted);">${remarksDisplay}</td>
+        <td>${evalControls}</td>
       </tr>
     `;
   }).join('');
@@ -998,9 +1007,14 @@ function openPhotoModal(photos, attendanceId = null) {
   if (confirmContainer) {
     if (attendanceId && photos && photos.length > 0) {
       confirmContainer.innerHTML = `
-        <button class="btn btn-navy" onclick="confirmAttendanceLog(${attendanceId}, true)">
-          ✓ Confirm & Delete Photos
-        </button>`;
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn btn-success" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed'); closePhotoModal();">
+            \u2713 Confirm Log
+          </button>
+          <button class="btn btn-danger" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected'); closePhotoModal();">
+            \u2715 Reject Log
+          </button>
+        </div>`;
     } else {
       confirmContainer.innerHTML = '';
     }
@@ -1013,10 +1027,12 @@ function closePhotoModal() {
   document.getElementById('photoModal').classList.remove('active');
 }
 
-async function confirmAttendanceLog(attendanceId, closeModal = false) {
-  if (!confirm("Are you sure you want to confirm this attendance verification log?\n\nConfirming will record Dean verification and permanently delete associated facial photos to free storage.")) {
-    return;
-  }
+async function reviewAttendanceLog(attendanceId, action) {
+  const defaultRemark = action === 'Confirmed'
+    ? 'Attendance log confirmed by Dean of Student Affairs'
+    : 'Attendance log requires follow-up verification';
+  const remarks = prompt(`Enter administrative remarks for ${action} decision:`, defaultRemark);
+  if (remarks === null) return;
 
   try {
     const res = await fetch(API_BASE + 'admin_confirm_attendance.php', {
@@ -1024,23 +1040,22 @@ async function confirmAttendanceLog(attendanceId, closeModal = false) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         attendance_id: attendanceId,
-        dean_id: currentUser ? currentUser.user_id : 0
+        dean_id: currentUser ? currentUser.user_id : 0,
+        action: action,
+        remarks: remarks
       })
     });
     const data = await res.json();
     if (data.status === 'success') {
-      if (closeModal) {
-        closePhotoModal();
-      }
-      alert(data.message || "Attendance log confirmed and photos deleted.");
+      alert(data.message);
       fetchLogs();
       fetchOverview();
     } else {
-      alert(data.message || "Confirmation failed.");
+      alert(data.message || 'Operation failed.');
     }
   } catch (err) {
-    console.error("Confirm attendance error:", err);
-    alert("Server error confirming attendance log.");
+    console.error('Review attendance log error:', err);
+    alert('Server error processing request.');
   }
 }
 

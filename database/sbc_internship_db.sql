@@ -65,6 +65,7 @@ CREATE TABLE Attendance (
     time_in_afternoon TIME NULL,
     time_out_afternoon TIME NULL,
     status VARCHAR(50) DEFAULT 'Pending',
+    remarks TEXT NULL,
     ojt_id INT NOT NULL,
     FOREIGN KEY (ojt_id) REFERENCES OJT(ojt_id) ON DELETE CASCADE
 );
