@@ -610,31 +610,74 @@ function renderSitesTable(sites) {
       <td><span class="badge badge-success">${st.assigned_interns} Active Interns</span></td>
       <td>
         <button class="btn btn-outline" onclick='openEditSiteModal(${JSON.stringify(st).replace(/'/g, "&apos;")})'>Edit Partner</button>
+        <button class="btn btn-danger" style="margin-left: 0.35rem; padding: 0.4rem 0.75rem; font-size: 0.8rem;" onclick="deletePartnerSite(${st.site_id}, '${escapeHtml(st.site_name).replace(/'/g, "\\'")}', ${st.assigned_interns})">Delete</button>
       </td>
     </tr>
   `).join('');
 }
 
+let activeEditingSite = null;
+
 function openAddSiteModal() {
+  activeEditingSite = null;
   document.getElementById('siteModalTitle').textContent = 'Add Partner Training Facility';
   document.getElementById('siteIdInput').value = '';
   document.getElementById('siteCodeInput').value = '';
   document.getElementById('siteNameInput').value = '';
   document.getElementById('siteLocationInput').value = '';
+  const delBtn = document.getElementById('deleteSiteModalBtn');
+  if (delBtn) delBtn.style.display = 'none';
   document.getElementById('siteModal').classList.add('active');
 }
 
 function openEditSiteModal(site) {
+  activeEditingSite = site;
   document.getElementById('siteModalTitle').textContent = 'Edit Partner Training Facility';
   document.getElementById('siteIdInput').value = site.site_id;
   document.getElementById('siteCodeInput').value = site.site_code;
   document.getElementById('siteNameInput').value = site.site_name;
   document.getElementById('siteLocationInput').value = site.location;
+  const delBtn = document.getElementById('deleteSiteModalBtn');
+  if (delBtn) delBtn.style.display = 'inline-block';
   document.getElementById('siteModal').classList.add('active');
 }
 
 function closeSiteModal() {
   document.getElementById('siteModal').classList.remove('active');
+}
+
+async function handleModalDeleteSite() {
+  if (!activeEditingSite) return;
+  closeSiteModal();
+  await deletePartnerSite(activeEditingSite.site_id, activeEditingSite.site_name, activeEditingSite.assigned_interns);
+}
+
+async function deletePartnerSite(siteId, siteName, assignedInterns) {
+  if (assignedInterns > 0) {
+    alert(`Cannot delete '${siteName}' because it currently has ${assignedInterns} active assigned intern(s). Please reassign those interns to another facility first.`);
+    return;
+  }
+
+  if (!confirm(`Are you sure you want to permanently remove '${siteName}' from partner facilities?`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + 'admin_sites.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', site_id: siteId })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(data.message);
+      fetchSites();
+    } else {
+      alert(data.message || 'Failed to delete partner facility.');
+    }
+  } catch (err) {
+    console.error('Delete site error:', err);
+  }
 }
 
 async function savePartnerSite(e) {

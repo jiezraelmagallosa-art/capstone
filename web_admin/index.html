@@ -515,9 +515,12 @@
           <input type="text" id="siteLocationInput" class="form-control" placeholder="Poblacion, M'lang, Cotabato">
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
-          <button type="button" class="btn btn-outline" onclick="closeSiteModal()">Cancel</button>
-          <button type="submit" class="btn btn-navy">Save Facility</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+          <button type="button" id="deleteSiteModalBtn" class="btn btn-danger" style="display:none;" onclick="handleModalDeleteSite()">Delete Facility</button>
+          <div style="display:flex; gap:0.75rem; margin-left:auto;">
+            <button type="button" class="btn btn-outline" onclick="closeSiteModal()">Cancel</button>
+            <button type="submit" class="btn btn-navy">Save Facility</button>
+          </div>
         </div>
       </form>
     </div>
@@ -587,7 +590,7 @@
     </div>
   </div>
 
-  <script src="js/admin.js?v=2.9"></script>
+  <script src="js/admin.js?v=3.0"></script>
 </body>
 
 </html>

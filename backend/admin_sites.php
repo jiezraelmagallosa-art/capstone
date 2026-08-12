@@ -20,7 +20,41 @@ try {
         $data = json_decode($raw_input, true);
         if (!$data) $data = $_POST;
 
+        $action = isset($data['action']) ? trim($data['action']) : '';
         $site_id = isset($data['site_id']) ? intval($data['site_id']) : 0;
+
+        if ($action === 'delete') {
+            if ($site_id <= 0) {
+                echo json_encode(["status" => "error", "message" => "Invalid facility ID."]);
+                exit();
+            }
+
+            // Check if active interns assigned
+            $check_stmt = $conn->prepare("SELECT COUNT(*) AS total FROM ojt WHERE site_id = ?");
+            $check_stmt->bind_param("i", $site_id);
+            $check_stmt->execute();
+            $assigned_count = intval($check_stmt->get_result()->fetch_assoc()['total'] ?? 0);
+            $check_stmt->close();
+
+            if ($assigned_count > 0) {
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "Cannot delete facility because it currently has {$assigned_count} active assigned intern(s)."
+                ]);
+                exit();
+            }
+
+            $del_stmt = $conn->prepare("DELETE FROM training_site WHERE site_id = ?");
+            $del_stmt->bind_param("i", $site_id);
+            if ($del_stmt->execute()) {
+                echo json_encode(["status" => "success", "message" => "Partner facility deleted successfully."]);
+            } else {
+                echo json_encode(["status" => "error", "message" => "Deletion failed: " . $del_stmt->error]);
+            }
+            $del_stmt->close();
+            exit();
+        }
+
         $site_code = isset($data['site_code']) ? trim($data['site_code']) : '';
         $site_name = isset($data['site_name']) ? trim($data['site_name']) : '';
         $location = isset($data['location']) ? trim($data['location']) : '';
