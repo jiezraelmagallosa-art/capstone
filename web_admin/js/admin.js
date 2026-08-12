@@ -453,17 +453,30 @@ function renderLogsTable(logs) {
   if (!tbody) return;
 
   if (logs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = logs.map(l => {
     const hasPhotos = l.photos && l.photos.length > 0;
     const photoBtn = hasPhotos ? `
-      <button class="btn btn-navy" onclick='openPhotoModal(${JSON.stringify(l.photos).replace(/'/g, "&apos;")})'>
+      <button class="btn btn-navy" onclick='openPhotoModal(${JSON.stringify(l.photos).replace(/'/g, "&apos;")}, ${l.attendance_id})'>
         📷 View (${l.photos.length})
       </button>` : `<span style="color: var(--text-light); font-size: 0.8rem;">No Photo</span>`;
     const courseBadge = getCourseBadgeClass(l.course_code);
+
+    let statusBadge = `<span class="badge badge-warning">Pending Verification</span>`;
+    if (l.is_confirmed || l.status === 'Confirmed') {
+      statusBadge = `<span class="badge badge-success">✓ Confirmed</span>`;
+    } else if (!hasPhotos) {
+      statusBadge = `<span class="badge badge-navy">Logged</span>`;
+    }
+
+    const actionBtn = (l.is_confirmed || l.status === 'Confirmed') ? `
+      <span style="color: var(--text-muted); font-size: 0.8rem; font-weight: 600;">✓ Confirmed & Cleaned</span>` : `
+      <button class="btn btn-navy" onclick="confirmAttendanceLog(${l.attendance_id})" style="font-size: 0.78rem; padding: 0.35rem 0.75rem;">
+        ✓ Confirm Log
+      </button>`;
 
     return `
       <tr>
@@ -479,8 +492,9 @@ function renderLogsTable(logs) {
         <td>${l.time_out_morning}</td>
         <td>${l.time_in_afternoon}</td>
         <td>${l.time_out_afternoon}</td>
-        <td><span class="badge badge-success">${l.status}</span></td>
+        <td>${statusBadge}</td>
         <td>${photoBtn}</td>
+        <td>${actionBtn}</td>
       </tr>
     `;
   }).join('');
@@ -963,24 +977,71 @@ function exportCSVReport() {
 
 
 // Facial Verification Photo Modal Viewer
-function openPhotoModal(photos) {
+function openPhotoModal(photos, attendanceId = null) {
   const container = document.getElementById('photoModalContent');
+  const confirmContainer = document.getElementById('photoModalConfirmContainer');
   if (!container) return;
 
-  container.innerHTML = photos.map(p => `
-    <div style="margin-bottom: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden;">
-      <div style="padding: 0.5rem 0.85rem; background-color: var(--bg-canvas); font-weight: 700; font-size: 0.8rem; color: var(--navy-primary);">
-        Shift: ${p.shift_type} &bull; Captured at ${p.captured_at}
+  if (!photos || photos.length === 0) {
+    container.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No facial verification photos recorded for this log.</div>`;
+  } else {
+    container.innerHTML = photos.map(p => `
+      <div style="margin-bottom: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden;">
+        <div style="padding: 0.5rem 0.85rem; background-color: var(--bg-canvas); font-weight: 700; font-size: 0.8rem; color: var(--navy-primary);">
+          Shift: ${p.shift_type} &bull; Captured at ${p.captured_at}
+        </div>
+        <img src="${p.full_url}" style="width: 100%; height: 260px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';">
       </div>
-      <img src="${p.full_url}" style="width: 100%; height: 260px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';">
-    </div>
-  `).join('');
+    `).join('');
+  }
+
+  if (confirmContainer) {
+    if (attendanceId && photos && photos.length > 0) {
+      confirmContainer.innerHTML = `
+        <button class="btn btn-navy" onclick="confirmAttendanceLog(${attendanceId}, true)">
+          ✓ Confirm & Delete Photos
+        </button>`;
+    } else {
+      confirmContainer.innerHTML = '';
+    }
+  }
 
   document.getElementById('photoModal').classList.add('active');
 }
 
 function closePhotoModal() {
   document.getElementById('photoModal').classList.remove('active');
+}
+
+async function confirmAttendanceLog(attendanceId, closeModal = false) {
+  if (!confirm("Are you sure you want to confirm this attendance verification log?\n\nConfirming will record Dean verification and permanently delete associated facial photos to free storage.")) {
+    return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + 'admin_confirm_attendance.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        attendance_id: attendanceId,
+        dean_id: currentUser ? currentUser.user_id : 0
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      if (closeModal) {
+        closePhotoModal();
+      }
+      alert(data.message || "Attendance log confirmed and photos deleted.");
+      fetchLogs();
+      fetchOverview();
+    } else {
+      alert(data.message || "Confirmation failed.");
+    }
+  } catch (err) {
+    console.error("Confirm attendance error:", err);
+    alert("Server error confirming attendance log.");
+  }
 }
 
 function openStudentDrawer(studentId) {

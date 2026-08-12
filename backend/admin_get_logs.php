@@ -31,6 +31,7 @@ try {
                 a.time_out_morning,
                 a.time_in_afternoon,
                 a.time_out_afternoon,
+                a.status AS attendance_status,
                 s.student_id,
                 s.student_number,
                 s.full_name,
@@ -76,7 +77,12 @@ try {
             }
             $p_stmt->close();
 
-            $status = count($photos) > 0 ? "Verified" : "Logged";
+            $raw_att_status = $row['attendance_status'] ?? 'Pending';
+            if ($raw_att_status === 'Confirmed') {
+                $status = "Confirmed";
+            } else {
+                $status = count($photos) > 0 ? "Pending Verification" : "Logged";
+            }
 
             $logs[] = [
                 "attendance_id" => $att_id,
@@ -92,6 +98,7 @@ try {
                 "time_in_afternoon" => !empty($row['time_in_afternoon']) ? date("h:i A", strtotime($row['time_in_afternoon'])) : '--:--',
                 "time_out_afternoon" => !empty($row['time_out_afternoon']) ? date("h:i A", strtotime($row['time_out_afternoon'])) : '--:--',
                 "status" => $status,
+                "is_confirmed" => ($raw_att_status === 'Confirmed'),
                 "photos" => $photos
             ];
         }

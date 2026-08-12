@@ -85,9 +85,11 @@ try {
                    JOIN ojt o ON a.ojt_id = o.ojt_id
                    JOIN student s ON o.student_id = s.student_id
                    LEFT JOIN course c ON s.course_id = c.course_id";
+    $where_p = ["(a.status IS NULL OR a.status != 'Confirmed')"];
     if ($dean_id > 0) {
-        $sql_photos .= " WHERE s.dean_id = $dean_id";
+        $where_p[] = "s.dean_id = $dean_id";
     }
+    $sql_photos .= " WHERE " . implode(" AND ", $where_p);
     $sql_photos .= " ORDER BY p.photo_id DESC LIMIT 8";
     $res_photos = $conn->query($sql_photos);
 

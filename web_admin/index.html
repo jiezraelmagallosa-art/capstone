@@ -368,6 +368,7 @@
                     <th>Afternoon Out</th>
                     <th>Verification Status</th>
                     <th>Facial Photos</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="logsTableBody">
@@ -474,8 +475,9 @@
       <div id="photoModalContent" style="max-height: 420px; overflow-y: auto;">
         <!-- Dynamically rendered images -->
       </div>
-      <div style="margin-top: 1rem; text-align: right;">
-        <button class="btn btn-navy" onclick="closePhotoModal()">Close Verification</button>
+      <div id="photoModalActions" style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+        <div id="photoModalConfirmContainer"></div>
+        <button class="btn btn-outline" onclick="closePhotoModal()">Close Verification</button>
       </div>
     </div>
   </div>
@@ -513,7 +515,7 @@
     </div>
   </div>
 
-  <script src="js/admin.js?v=2.1"></script>
+  <script src="js/admin.js?v=2.2"></script>
 </body>
 
 </html>
