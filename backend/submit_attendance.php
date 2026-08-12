@@ -141,12 +141,12 @@ try {
         $row = $check_result->fetch_assoc();
         $attendance_id = intval($row['attendance_id']);
 
-        $update_stmt = $conn->prepare("UPDATE attendance SET $column_to_update = ? WHERE attendance_id = ?");
+        $update_stmt = $conn->prepare("UPDATE attendance SET $column_to_update = ?, status = 'Pending', remarks = NULL WHERE attendance_id = ?");
         $update_stmt->bind_param("si", $current_time, $attendance_id);
         $update_stmt->execute();
         $update_stmt->close();
     } else {
-        $insert_stmt = $conn->prepare("INSERT INTO attendance (date, ojt_id, $column_to_update) VALUES (?, ?, ?)");
+        $insert_stmt = $conn->prepare("INSERT INTO attendance (date, ojt_id, $column_to_update, status) VALUES (?, ?, ?, 'Pending')");
         $insert_stmt->bind_param("sis", $current_date, $resolved_ojt_id, $current_time);
         $insert_stmt->execute();
         $attendance_id = $conn->insert_id;

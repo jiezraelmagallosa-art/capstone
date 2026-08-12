@@ -54,10 +54,10 @@ try {
         }
 
         if ($existingRecord) {
-            $stmt = $conn->prepare("UPDATE attendance SET time_in_morning = ? WHERE attendance_id = ?");
+            $stmt = $conn->prepare("UPDATE attendance SET time_in_morning = ?, status = 'Pending', remarks = NULL WHERE attendance_id = ?");
             $stmt->bind_param("si", $current_time, $existingRecord['attendance_id']);
         } else {
-            $stmt = $conn->prepare("INSERT INTO attendance (date, time_in_morning, ojt_id) VALUES (?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO attendance (date, time_in_morning, ojt_id, status) VALUES (?, ?, ?, 'Pending')");
             $stmt->bind_param("ssi", $current_date, $current_time, $ojt_id);
         }
         $stmt->execute();
@@ -73,7 +73,7 @@ try {
             exit();
         }
 
-        $stmt = $conn->prepare("UPDATE attendance SET time_out_morning = ? WHERE attendance_id = ?");
+        $stmt = $conn->prepare("UPDATE attendance SET time_out_morning = ?, status = 'Pending', remarks = NULL WHERE attendance_id = ?");
         $stmt->bind_param("si", $current_time, $existingRecord['attendance_id']);
         $stmt->execute();
         echo json_encode(["status" => "success", "message" => "Morning Time-Out recorded at " . date('g:i A')]);
@@ -85,10 +85,10 @@ try {
         }
 
         if ($existingRecord) {
-            $stmt = $conn->prepare("UPDATE attendance SET time_in_afternoon = ? WHERE attendance_id = ?");
+            $stmt = $conn->prepare("UPDATE attendance SET time_in_afternoon = ?, status = 'Pending', remarks = NULL WHERE attendance_id = ?");
             $stmt->bind_param("si", $current_time, $existingRecord['attendance_id']);
         } else {
-            $stmt = $conn->prepare("INSERT INTO attendance (date, time_in_afternoon, ojt_id) VALUES (?, ?, ?)");
+            $stmt = $conn->prepare("INSERT INTO attendance (date, time_in_afternoon, ojt_id, status) VALUES (?, ?, ?, 'Pending')");
             $stmt->bind_param("ssi", $current_date, $current_time, $ojt_id);
         }
         $stmt->execute();
@@ -104,7 +104,7 @@ try {
             exit();
         }
 
-        $stmt = $conn->prepare("UPDATE attendance SET time_out_afternoon = ? WHERE attendance_id = ?");
+        $stmt = $conn->prepare("UPDATE attendance SET time_out_afternoon = ?, status = 'Pending', remarks = NULL WHERE attendance_id = ?");
         $stmt->bind_param("si", $current_time, $existingRecord['attendance_id']);
         $stmt->execute();
         echo json_encode(["status" => "success", "message" => "Afternoon Time-Out recorded at " . date('g:i A')]);
