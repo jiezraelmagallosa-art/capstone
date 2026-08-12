@@ -13,6 +13,7 @@ const API_BASE = '../backend/';
 let currentUser = null;
 let currentTab = 'overview';
 let currentCourseFilter = 'ALL';
+let currentLogsCourseFilter = 'ALL';
 let selectedReportCourse = 'ALL';
 let cachedStudents = [];
 let cachedLogs = [];
@@ -401,11 +402,50 @@ async function fetchLogs() {
     const data = await res.json();
     if (data.status === 'success') {
       cachedLogs = data.data || [];
-      renderLogsTable(cachedLogs);
+      updateLogsCourseCounts(data.course_counts || {});
+      filterLogsByCourse(currentLogsCourseFilter, false);
     }
   } catch (err) {
     console.error('Fetch logs error:', err);
   }
+}
+
+function updateLogsCourseCounts(counts) {
+  let bscsCount = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === 'BSCS').length;
+  let bsisCount = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === 'BSIS').length;
+  let blisCount = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === 'BLIS').length;
+  let allCount = cachedLogs.length;
+
+  if (counts && counts.ALL !== undefined && counts.ALL > allCount) {
+    allCount = counts.ALL;
+    if (counts.BSCS !== undefined) bscsCount = counts.BSCS;
+    if (counts.BSIS !== undefined) bsisCount = counts.BSIS;
+    if (counts.BLIS !== undefined) blisCount = counts.BLIS;
+  }
+
+  const selectEl = document.getElementById('logsCourseSelectFilter');
+  if (selectEl) {
+    if (selectEl.options[0]) selectEl.options[0].text = `All Programs (${allCount})`;
+    if (selectEl.options[1]) selectEl.options[1].text = `BSCS - Bachelor of Science in Computer Science (${bscsCount})`;
+    if (selectEl.options[2]) selectEl.options[2].text = `BSIS - Bachelor of Science in Information Systems (${bsisCount})`;
+    if (selectEl.options[3]) selectEl.options[3].text = `BLIS - Bachelor of Library & Info Science (${blisCount})`;
+  }
+}
+
+function filterLogsByCourse(courseCode, updateSelect = true) {
+  currentLogsCourseFilter = courseCode || 'ALL';
+
+  const selectEl = document.getElementById('logsCourseSelectFilter');
+  if (selectEl && updateSelect) {
+    selectEl.value = currentLogsCourseFilter;
+  }
+
+  let filtered = cachedLogs;
+  if (currentLogsCourseFilter !== 'ALL') {
+    filtered = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === currentLogsCourseFilter.toUpperCase());
+  }
+
+  renderLogsTable(filtered);
 }
 
 function renderLogsTable(logs) {
@@ -413,7 +453,7 @@ function renderLogsTable(logs) {
   if (!tbody) return;
 
   if (logs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted);">No attendance verification logs recorded.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
     return;
   }
 
@@ -423,13 +463,14 @@ function renderLogsTable(logs) {
       <button class="btn btn-navy" onclick='openPhotoModal(${JSON.stringify(l.photos).replace(/'/g, "&apos;")})'>
         📷 View (${l.photos.length})
       </button>` : `<span style="color: var(--text-light); font-size: 0.8rem;">No Photo</span>`;
+    const courseBadge = getCourseBadgeClass(l.course_code);
 
     return `
       <tr>
         <td style="font-weight: 700; color: var(--navy-primary);">${l.date}</td>
         <td>
           <div style="font-weight: 700;">${escapeHtml(l.full_name)}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">${l.student_number} &bull; ${l.course_code}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">${l.student_number} &bull; <span class="badge ${courseBadge}">${l.course_code}</span></div>
         </td>
         <td>
           <div style="font-weight: 600;">${escapeHtml(l.dean_name || 'Unassigned')}</div>
@@ -950,18 +991,26 @@ function openStudentDrawer(studentId) {
 
 function filterActiveTable(query) {
   if (!query) {
-    if (currentTab === 'students') renderStudentsTable(cachedStudents);
-    if (currentTab === 'logs') renderLogsTable(cachedLogs);
+    if (currentTab === 'students') filterByCourse(currentCourseFilter, false);
+    if (currentTab === 'logs') filterLogsByCourse(currentLogsCourseFilter, false);
     if (currentTab === 'absences') renderAbsencesTable(cachedAbsences);
     if (currentTab === 'sites') renderSitesTable(cachedSites);
     return;
   }
 
   if (currentTab === 'students') {
-    const filtered = cachedStudents.filter(s => s.full_name.toLowerCase().includes(query) || s.student_number.toLowerCase().includes(query) || s.course_code.toLowerCase().includes(query) || s.site_name.toLowerCase().includes(query));
+    let baseStudents = cachedStudents;
+    if (currentCourseFilter !== 'ALL') {
+      baseStudents = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === currentCourseFilter.toUpperCase());
+    }
+    const filtered = baseStudents.filter(s => s.full_name.toLowerCase().includes(query) || s.student_number.toLowerCase().includes(query) || s.course_code.toLowerCase().includes(query) || s.site_name.toLowerCase().includes(query));
     renderStudentsTable(filtered);
   } else if (currentTab === 'logs') {
-    const filtered = cachedLogs.filter(l => l.full_name.toLowerCase().includes(query) || l.student_number.toLowerCase().includes(query) || l.date.toLowerCase().includes(query));
+    let baseLogs = cachedLogs;
+    if (currentLogsCourseFilter !== 'ALL') {
+      baseLogs = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === currentLogsCourseFilter.toUpperCase());
+    }
+    const filtered = baseLogs.filter(l => l.full_name.toLowerCase().includes(query) || l.student_number.toLowerCase().includes(query) || l.date.toLowerCase().includes(query) || (l.course_code && l.course_code.toLowerCase().includes(query)));
     renderLogsTable(filtered);
   } else if (currentTab === 'absences') {
     const filtered = cachedAbsences.filter(a => a.full_name.toLowerCase().includes(query) || a.student_number.toLowerCase().includes(query) || a.reason.toLowerCase().includes(query));

@@ -1,0 +1,12 @@
+# SBC Internship Attendance System - Git Ignore Configuration
+
+# Dynamic runtime upload assets
+uploads/*
+!uploads/**/.gitkeep
+
+# Operating system & editor files
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/settings.json
