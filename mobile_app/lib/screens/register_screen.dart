@@ -47,11 +47,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   int? _selectedDeanId;
   List<Map<String, dynamic>> _deans = [];
 
+  int? _selectedSiteId = 1;
+  List<Map<String, dynamic>> _sites = [
+    {
+      "site_id": 1,
+      "display_name": "SBC IT Department (M'lang, Cotabato)",
+    }
+  ];
+
   @override
   void initState() {
     super.initState();
     _fetchCourses();
     _fetchDeans();
+    _fetchSites();
   }
 
   Future<void> _fetchCourses() async {
@@ -97,6 +106,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  Future<void> _fetchSites() async {
+    final result = await ApiService.getSites();
+    if (mounted && result['status'] == 'success' && result['data'] != null) {
+      final List<dynamic> fetched = result['data'];
+      if (fetched.isNotEmpty) {
+        setState(() {
+          _sites = fetched
+              .map(
+                (item) => {
+                  "site_id": item['site_id'],
+                  "display_name": item['display_name'] ?? item['site_name'],
+                },
+              )
+              .toList();
+          _selectedSiteId = _sites.first['site_id'];
+        });
+      }
+    }
+  }
+
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -133,6 +162,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       password: _passwordController.text.trim(),
       courseId: _selectedCourseId,
       deanId: _selectedDeanId,
+      siteId: _selectedSiteId,
     );
 
     setState(() {
@@ -326,6 +356,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   borderSide: const BorderSide(color: AppColors.accentGold, width: 2),
                                 ),
                               ),
+                            ),
+                            const SizedBox(height: 14),
+
+
+                            DropdownButtonFormField<int>(
+                              initialValue: _selectedSiteId,
+                              isExpanded: true,
+                              dropdownColor: AppColors.primaryNavy,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                              decoration: InputDecoration(
+                                labelText: 'Intern Site / Training Facility',
+                                labelStyle: const TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                floatingLabelStyle: const TextStyle(
+                                  color: AppColors.accentGold,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                prefixIcon: const Icon(
+                                  Icons.business_outlined,
+                                  color: AppColors.accentGold,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: Colors.white70, width: 1.5),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(color: AppColors.accentGold, width: 2),
+                                ),
+                              ),
+                              items: _sites.map((site) {
+                                return DropdownMenuItem<int>(
+                                  value: site['site_id'],
+                                  child: Text(
+                                    site['display_name'],
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() {
+                                    _selectedSiteId = val;
+                                  });
+                                }
+                              },
                             ),
                             const SizedBox(height: 14),
 

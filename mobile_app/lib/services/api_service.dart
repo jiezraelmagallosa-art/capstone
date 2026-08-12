@@ -79,6 +79,7 @@ class ApiService {
     required String password,
     int courseId = 1,
     int? deanId,
+    int? siteId,
   }) async {
     final url = Uri.parse("${AppConfig.baseUrl}/register.php");
 
@@ -95,6 +96,7 @@ class ApiService {
               "password": password,
               "course_id": courseId,
               "dean_id": deanId,
+              "site_id": siteId,
             }),
           )
           .timeout(const Duration(seconds: 6));
@@ -135,6 +137,26 @@ class ApiService {
 
   static Future<Map<String, dynamic>> getCourses() async {
     final url = Uri.parse("${AppConfig.baseUrl}/get_courses.php");
+
+    try {
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          "status": "error",
+          "message": serverUnavailableMsg,
+        };
+      }
+    } catch (e) {
+      return _handleException(e);
+    }
+  }
+
+
+  static Future<Map<String, dynamic>> getSites() async {
+    final url = Uri.parse("${AppConfig.baseUrl}/get_sites.php");
 
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 5));

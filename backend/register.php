@@ -100,8 +100,11 @@ if ($check_num->get_result()->num_rows > 0) {
 $check_num->close();
 
 
-if ($course_id <= 0) {
-    $course_id = 1;
+$course_id = isset($data['course_id']) ? intval($data['course_id']) : 1;
+$dean_id = isset($data['dean_id']) ? intval($data['dean_id']) : 0;
+$site_id = isset($data['site_id']) ? intval($data['site_id']) : (isset($data['site_id_selected']) ? intval($data['site_id_selected']) : 1);
+if ($site_id <= 0) {
+    $site_id = 1;
 }
 
 
@@ -116,7 +119,6 @@ if ($stmt->execute()) {
 
 
     $ojt_no = "OJT-2026-" . str_pad($student_id, 2, "0", STR_PAD_LEFT);
-    $site_id = 1;
 
     $stmt_ojt = $conn->prepare("INSERT INTO ojt (ojt_no, site_id, student_id, required_hours) VALUES (?, ?, ?, 480)");
     $stmt_ojt->bind_param("sii", $ojt_no, $site_id, $student_id);
