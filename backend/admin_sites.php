@@ -18,7 +18,8 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $raw_input = file_get_contents("php://input");
         $data = json_decode($raw_input, true);
-        if (!$data) $data = $_POST;
+        if (!$data)
+            $data = $_POST;
 
         $action = isset($data['action']) ? trim($data['action']) : '';
         $site_id = isset($data['site_id']) ? intval($data['site_id']) : 0;

@@ -7,6 +7,7 @@ import 'package:camera/camera.dart';
 import '../core/constants.dart';
 import '../main.dart';
 import '../services/api_service.dart';
+import '../core/motivational_messages.dart';
 import '../models/attendance.dart';
 
 
@@ -76,6 +77,31 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   }
 
   Future<void> _handleAttendanceSubmit(String action) async {
+    final DateTime now = DateTime.now();
+    final double currentDecimalHour = now.hour + (now.minute / 60.0);
+
+    if (action.contains('morning')) {
+      if (currentDecimalHour < 5.0 || currentDecimalHour > 12.5) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Morning shift attendance can only be recorded between 5:00 AM and 12:30 PM.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+    } else if (action.contains('afternoon')) {
+      if (currentDecimalHour < 12.5 || currentDecimalHour > 17.0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Afternoon shift attendance can only be recorded between 12:30 PM and 5:00 PM.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+    }
+
     setState(() {
       _isActionLoading = true;
     });
@@ -108,24 +134,34 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     if (!mounted) return;
 
     final bool isSuccess = result['status'] == 'success';
-    final msg = result['message'] ?? 'Attendance Processed';
+    final msg = result['motivational_message'] ?? result['message'] ?? 'Attendance Processed';
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              isSuccess ? Icons.check_circle_rounded : Icons.error_outline_rounded,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 8),
-            Expanded(child: Text(msg)),
-          ],
+    if (isSuccess) {
+      MotivationalMessages.showMotivationalDialog(
+        context,
+        actionType: action,
+        message: msg,
+        recordedTime: result['recorded_time'],
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.error_outline_rounded,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(msg)),
+            ],
+          ),
+          backgroundColor: Colors.redAccent,
+          duration: const Duration(seconds: 4),
         ),
-        backgroundColor: isSuccess ? AppColors.successGreen : Colors.redAccent,
-        duration: const Duration(seconds: 4),
-      ),
-    );
+      );
+    }
+
 
     _loadLogs();
   }

@@ -1,0 +1,125 @@
+<?php
+/**
+ * SBC Internship Attendance System - Motivational Messages
+ * Provides random inspirational messages for Time In and Time Out.
+ */
+
+function get_time_in_messages() {
+    return [
+        "Magandang araw! Let's make today productive and meaningful!",
+        "Aba, maaga at handa na! Keep up the good energy!",
+        "Don't be late! Great start to your day, keep that momentum going!",
+        "Smile! You're going to achieve great things today.",
+        "New day, new learnings. I-galing mo mamaya!",
+        "Mabuhay ang pursugidong intern! Aja!",
+        "Focus, commit, and succeed. Ready ka na dyan!",
+        "Laging dalhin ang ngiti at talino. Have a great shift ahead!",
+        "Erased ang antok, ready na mag-work! Let's go!",
+        "A brilliant day starts with an early arrival. Good job!",
+        "Rise and shine! May you conquer all your tasks today.",
+        "Erase the doubts, unleash your potential! Let's start the shift right.",
+        "Napakagandang simula! Ipagpatuloy ang kasipagan.",
+        "Araw mo na naman para magningning sa SBC! Good luck!",
+        "A step closer to your dreams. Let's make today count!",
+        "Pumasok na may ngiti, magtrabaho nang may puso.",
+        "Be unstoppable today! Kayanin ang bawat hamon.",
+        "Ready, set, grow! Marami ka na namang matututunan ngayon.",
+        "Ang maagang intern ay laging pinagpala. Padayon!",
+        "Let your passion drive your performance today!",
+        "Welcome back! Handang-handa na ang iyong workspace para sa'yo.",
+        "Keep your head up and your goals clear. Good shift!",
+        "Every minute counts. I-maximize ang araw na ito!",
+        "A positive mindset brings positive output. Good morning/afternoon!",
+        "Wow, early bird! Saludo sa dedikasyon mo.",
+        "Trust the process and enjoy your shift today!",
+        "Araw ng mga champions ngayon. I-galing mo!",
+        "Let your hard work speak for itself today.",
+        "Tuwing papasok ka, may bago kang natututunan. Go lang ng go!",
+        "Fresh start, fresh energy. Kaya mo 'yan!",
+        "Isang hakbang paakyat sa tagumpay. Simulan na natin!",
+        "Smile, breathe, and start your shift with confidence.",
+        "Hindi hadlang ang pagod sa pusong pursigido. Aja!",
+        "Araw para ipakita ang galing mo. I-enjoy ang shift!",
+        "Sipag at tiyaga ang puhunan. Let's get to work!",
+        "Welcome sa isa pang produktibong araw sa SBC!",
+        "Oras na para gumawa ng magandang marka ngayon.",
+        "Ang galing ng timing mo! Tuloy-tuloy lang ang swerte.",
+        "Ready to learn, ready to lead. Let's do this!",
+        "Ipakita ang tunay na lakas ng isang intern ng SBC.",
+        "May pag-asa sa taong masipag. Magandang shift sa'yo!",
+        "Keep your focus sharp and your heart positive.",
+        "Ngayon ang tamang araw para mag-level up!",
+        "Handa nang sumabak? Kasama mo ang iyong husay!",
+        "Huwag kalimutang ngumiti habang nagtatrabaho.",
+        "Ang sipag mo naman! Keep inspiring others.",
+        "Tagumpay ang naghihintay sa mga hindi sumusuko.",
+        "I-buo ang araw na ito ng may magagandang accomplishment!",
+        "Araw ng tagumpay ngayon. Simulan na natin!",
+        "Salamat sa dedikasyon. Let's rock this shift!"
+    ];
+}
+
+function get_time_out_messages() {
+    return [
+        "Good work today! Rest well and see you tomorrow.",
+        "Job well done! Ingat sa pag-uwi, deserve mo ang pahinga!",
+        "Awtomatikong tapos na ang shift! Great hustle today!",
+        "Amazing work! Time to recharge for another productive day.",
+        "Isa na namang matagumpay na araw sa SBC! Saludo sa sipag mo.",
+        "Mission accomplished! Uwi na at mag-relax.",
+        "Proud of your dedication today. Rest up!",
+        "Great job finishing your tasks! Ingat sa biyahe pauwi.",
+        "Na-survive mo ang araw na ito nang may galing. See you next time!",
+        "Isa kang mabuting halimbawa ng masipag na intern. Rest well!",
+        "Oras na para magpahinga. You earned this break!",
+        "Napakahusay ng ipinakita mo ngayong araw. Good job!",
+        "Tapos na ang laban para sa araw na ito. Time to chill!",
+        "Ingat sa pag-uwi! Bukas ulit para sa panibagong tagumpay.",
+        "Isang produktibong araw na naman ang natapos mo. I'm proud of you!",
+        "Bilib ako sa sipag mo ngayon. Magpahinga nang mahimbing!",
+        "Done for the day! Pwede nang i-relax ang isip at katawan.",
+        "Isa nanamang check sa iyong checklist. Mahusay!",
+        "Saludo sa tiyaga mo buong araw. Hanggang sa susunod!",
+        "Time to log out and unwind. Deserve mo ang masarap na tulog.",
+        "Ang galing ng performance mo kanina! Magpahinga na.",
+        "Nagbunga ang pagod mo ngayon. Uwi na at maghapunan!",
+        "Isa kang rockstar ngayong araw! Paalam at ingat.",
+        "Hanggang dito na muna. Ingat sa pag-uwi, intern!",
+        "Magandang pahinga sa'yo! You did an amazing job.",
+        "Balik-enerhiya bukas! Ginalingan mo sobra ngayon.",
+        "Na-i-pasa mo ang araw na ito nang may flying colors!",
+        "Oras na para i-off ang pc at i-on ang relaxation mode.",
+        "Proud moments lang ang peg natin ngayon. Uwi na!",
+        "Napagod ka man, pero marami ka namang natutunan. Good job!",
+        "Mag-ingat sa daan pauwi. Bukas uli!",
+        "Isang malaking 'Thumbs Up' para sasipag mo ngayon!",
+        "Tapos na ang shift, oras na para sa paborito mong libangan.",
+        "Iba ka talaga magtrabaho! Pahinga na, idol.",
+        "Salamat sa tulong at sipag mo ngayong araw na ito.",
+        "Huwag kalimutang kumain at magpahinga pagkauwi.",
+        "Kahanga-hanga ang dedikasyon mo. See you tomorrow!",
+        "Done and dusted! Ang galing mo today.",
+        "Makakatulog ka nang mahimbing dahil nagawa mo nang maayos ang trabaho mo.",
+        "Ang husay mo! Hanggang sa susunod nating shift.",
+        "Uwi na, i-treat ang sarili dahil masipag ka ngayon!",
+        "Napawi ang pagod sa ganda ng performance mo.",
+        "Siguraduhing mag-hydrate at magpahinga pagkauwi, ha?",
+        "Isa kang patunay na ang sipag ay nagbubunga ng tagumpay.",
+        "Tapos na ang hirap, oras na para sa sarili. Ingat!",
+        "Walang tapon sa ginawa mo ngayon. Excellent work!",
+        "I-lock na ang system at i-lock na rin ang stress. Uwi na!",
+        "Hanggang bukas muli! Ipagpatuloy ang magandang ugali na ito.",
+        "Superb energy today! Paalam at mag-ingat sa biyahe.",
+        "Pagod na katawan, pero masayang isipan. Good job today!"
+    ];
+}
+
+function getRandomMotivationalMessage($action_or_column) {
+    $action_lower = strtolower($action_or_column);
+    if (strpos($action_lower, 'in') !== false) {
+        $msgs = get_time_in_messages();
+    } else {
+        $msgs = get_time_out_messages();
+    }
+    return $msgs[array_rand($msgs)];
+}

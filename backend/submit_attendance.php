@@ -87,6 +87,29 @@ try {
 
     $column_to_update = $field_map[$raw_shift];
 
+    // Shift time window validation
+    // Morning shift: 5:00 AM (05:00:00) to 12:30 PM (12:30:00)
+    // Afternoon shift: 12:30 PM (12:30:00) to 5:00 PM (17:00:00)
+    $time_formatted = date('H:i:s', strtotime($current_time));
+
+    if (in_array($column_to_update, ['time_in_morning', 'time_out_morning'])) {
+        if ($time_formatted < '05:00:00' || $time_formatted > '12:30:00') {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Morning shift attendance can only be recorded between 5:00 AM and 12:30 PM."
+            ]);
+            exit();
+        }
+    } elseif (in_array($column_to_update, ['time_in_afternoon', 'time_out_afternoon'])) {
+        if ($time_formatted < '12:30:00' || $time_formatted > '17:00:00') {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Afternoon shift attendance can only be recorded between 12:30 PM and 5:00 PM."
+            ]);
+            exit();
+        }
+    }
+
 
     $db_image_path = "";
     if (!empty($image_base64) && strlen($image_base64) > 50) {
@@ -164,9 +187,13 @@ try {
         }
     }
 
+    require_once 'motivational_messages.php';
+    $motivational_msg = getRandomMotivationalMessage($column_to_update);
+
     echo json_encode([
         "status" => "success",
-        "message" => "Attendance & verification photo logged successfully!",
+        "message" => $motivational_msg,
+        "motivational_message" => $motivational_msg,
         "recorded_time" => date("g:i A", strtotime($current_time)),
         "shift_used" => $column_to_update
     ]);

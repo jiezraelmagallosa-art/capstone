@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:camera/camera.dart';
 import '../main.dart';
 import '../services/api_service.dart';
+import '../core/motivational_messages.dart';
 import 'dtr_log_screen.dart';
 import 'absence_screen.dart';
 import 'profile_screen.dart';
@@ -288,12 +289,24 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             color: primaryNavy,
           ),
         ),
-        content: const Text('Which shift session are you recording for today?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text('Which shift session are you recording for today?'),
+            SizedBox(height: 12),
+            Text('• Morning Shift: 5:00 AM – 12:30 PM',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: primaryNavy)),
+            SizedBox(height: 4),
+            Text('• Afternoon Shift: 12:30 PM – 5:00 PM',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: primaryNavy)),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, 'morning'),
             child: const Text(
-              'Morning Shift',
+              'Morning Shift (5:00 AM - 12:30 PM)',
               style: TextStyle(color: primaryNavy),
             ),
           ),
@@ -301,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             style: ElevatedButton.styleFrom(backgroundColor: primaryNavy),
             onPressed: () => Navigator.pop(context, 'afternoon'),
             child: const Text(
-              'Afternoon Shift',
+              'Afternoon Shift (12:30 PM - 5:00 PM)',
               style: TextStyle(color: Colors.white),
             ),
           ),
@@ -310,6 +323,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
 
     if (shift == null) return;
+
+    final DateTime now = DateTime.now();
+    final double currentDecimalHour = now.hour + (now.minute / 60.0);
+
+    if (shift == 'morning') {
+      if (currentDecimalHour < 5.0 || currentDecimalHour > 12.5) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Morning shift attendance can only be recorded between 5:00 AM and 12:30 PM.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+    } else if (shift == 'afternoon') {
+      if (currentDecimalHour < 12.5 || currentDecimalHour > 17.0) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Afternoon shift attendance can only be recorded between 12:30 PM and 5:00 PM.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+    }
 
     setState(() {
       _isActionLoading = true;
@@ -371,13 +411,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     if (!mounted) return;
 
     if (result['status'] == 'success') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result['message'] ?? 'Attendance recorded successfully!',
-          ),
-          backgroundColor: Colors.green,
-        ),
+      MotivationalMessages.showMotivationalDialog(
+        context,
+        actionType: actionType,
+        message: result['motivational_message'] ?? result['message'] ?? '',
+        recordedTime: result['recorded_time'] ?? DateFormat('hh:mm a').format(DateTime.now()),
       );
       _fetchDashboardData();
       _dtrLogKey.currentState?.fetchDtrHistory();
