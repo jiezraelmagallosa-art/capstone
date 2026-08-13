@@ -154,17 +154,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 12),
                           const Text(
-                            'Southern Baptist College',
+                            'InternLog',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 22,
+                              fontSize: 26,
                               fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
                             ),
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            'Internship Attendance Tracker',
-                            style: TextStyle(color: Colors.white70, fontSize: 14),
+                            'SBC Internship Attendance Tracker',
+                            style: TextStyle(color: Colors.white70, fontSize: 13),
                           ),
                           const SizedBox(height: 32),
 

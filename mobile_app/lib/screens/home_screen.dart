@@ -471,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'SBC Internship Portal',
+              'InternLog',
               style: TextStyle(
                 fontSize: _showWelcome ? 14 : 18,
                 fontWeight: _showWelcome ? FontWeight.normal : FontWeight.bold,
