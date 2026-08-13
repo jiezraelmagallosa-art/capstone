@@ -163,8 +163,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            'InternLog - Internship Attendance Tracker',
-                            style: TextStyle(color: Colors.white70, fontSize: 13),
+                            'Internship Attendance',
+                            style: TextStyle(color: Colors.white70, fontSize: 14),
                           ),
                           const SizedBox(height: 32),
 
