@@ -92,6 +92,75 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showServerConfigDialog() {
+    final ipController = TextEditingController(text: AppConfig.serverHost);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.dns_rounded, color: AppColors.primaryNavy),
+            SizedBox(width: 8),
+            Text('Server IP Settings', style: TextStyle(fontSize: 18)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter your XAMPP host IP address (e.g. 192.168.1.7):',
+              style: TextStyle(fontSize: 13, color: AppColors.textMuted),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: ipController,
+              decoration: const InputDecoration(
+                labelText: 'Server IP / Host',
+                hintText: '192.168.1.7',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.wifi_rounded),
+              ),
+              keyboardType: TextInputType.text,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryNavy,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              if (ipController.text.trim().isNotEmpty) {
+                final host = ipController.text.trim();
+                AppConfig.serverHost = host;
+                final messenger = ScaffoldMessenger.of(context);
+                Navigator.pop(context);
+                final reachable = await ApiService.isServerReachable();
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      reachable
+                          ? 'Connected to server ($host)'
+                          : 'Host saved ($host). Verification pending.',
+                    ),
+                    backgroundColor: reachable ? AppColors.successGreen : Colors.orange,
+                  ),
+                );
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -131,23 +200,26 @@ class _LoginScreenState extends State<LoginScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
 
-                          Container(
-                            width: 90,
-                            height: 90,
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: ClipOval(
-                              child: Image.asset(
-                                'assets/images/sbc_logo.png',
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(
-                                  Icons.school_rounded,
-                                  size: 70,
-                                  color: AppColors.accentGold,
+                          GestureDetector(
+                            onLongPress: _showServerConfigDialog,
+                            child: Container(
+                              width: 90,
+                              height: 90,
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/images/sbc_logo.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                    Icons.school_rounded,
+                                    size: 70,
+                                    color: AppColors.accentGold,
+                                  ),
                                 ),
                               ),
                             ),

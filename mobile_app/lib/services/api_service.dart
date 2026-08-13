@@ -3,7 +3,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../core/constants.dart';
 
@@ -24,11 +23,26 @@ class ApiService {
     try {
       final response = await http
           .get(Uri.parse("${AppConfig.baseUrl}/get_courses.php"))
-          .timeout(const Duration(seconds: 4));
-      return response.statusCode == 200;
-    } catch (_) {
-      return false;
+          .timeout(const Duration(seconds: 3));
+      if (response.statusCode == 200) return true;
+    } catch (_) {}
+
+    return await _tryAutoDiscover();
+  }
+
+  static Future<bool> _tryAutoDiscover() async {
+    for (final host in AppConfig.candidateHosts) {
+      if (host == AppConfig.serverHost) continue;
+      try {
+        final candidateUrl = "http://$host/SBC_Internship_Attendance_System/backend/get_courses.php";
+        final response = await http.get(Uri.parse(candidateUrl)).timeout(const Duration(seconds: 2));
+        if (response.statusCode == 200) {
+          AppConfig.serverHost = host;
+          return true;
+        }
+      } catch (_) {}
     }
+    return false;
   }
 
 
@@ -36,12 +50,10 @@ class ApiService {
     String email,
     String password,
   ) async {
-    final url = Uri.parse("${AppConfig.baseUrl}/login.php");
-
     try {
       final response = await http
           .post(
-            url,
+            Uri.parse("${AppConfig.baseUrl}/login.php"),
             headers: {"Content-Type": "application/json"},
             body: jsonEncode({
               "email": email,
@@ -53,21 +65,35 @@ class ApiService {
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
-      } else {
-        return {
-          "status": "error",
-          "message": serverUnavailableMsg,
-        };
       }
-    } on SocketException catch (e) {
-      return _handleException(e);
-    } on http.ClientException catch (e) {
-      return _handleException(e);
-    } on TimeoutException catch (e) {
-      return _handleException(e);
-    } catch (e) {
-      return _handleException(e);
+    } catch (_) {
+      bool found = await _tryAutoDiscover();
+      if (found) {
+        try {
+          final retryResponse = await http
+              .post(
+                Uri.parse("${AppConfig.baseUrl}/login.php"),
+                headers: {"Content-Type": "application/json"},
+                body: jsonEncode({
+                  "email": email,
+                  "password": password,
+                  "user_type": "student",
+                }),
+              )
+              .timeout(const Duration(seconds: 5));
+
+          if (retryResponse.statusCode == 200) {
+            return jsonDecode(retryResponse.body);
+          }
+        } catch (e) {
+          return _handleException(e);
+        }
+      }
     }
+    return {
+      "status": "error",
+      "message": serverUnavailableMsg,
+    };
   }
 
 
