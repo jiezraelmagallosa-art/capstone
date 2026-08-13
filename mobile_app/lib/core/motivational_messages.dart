@@ -109,9 +109,14 @@ class MotivationalMessages {
     "Pagod na katawan, pero masayang isipan. Good job today!"
   ];
 
+  static bool checkIsTimeIn(String action) {
+    final lower = action.toLowerCase();
+    return !lower.contains('out');
+  }
+
   static String getRandomMessage(String action) {
     final rand = Random();
-    if (action.toLowerCase().contains('in')) {
+    if (checkIsTimeIn(action)) {
       return timeInMessages[rand.nextInt(timeInMessages.length)];
     } else {
       return timeOutMessages[rand.nextInt(timeOutMessages.length)];
@@ -124,8 +129,9 @@ class MotivationalMessages {
     required String message,
     String? recordedTime,
   }) {
-    final isTimeIn = actionType.toLowerCase().contains('in');
+    final isTimeIn = checkIsTimeIn(actionType);
     final displayMsg = message.isNotEmpty ? message : getRandomMessage(actionType);
+
 
     showDialog(
       context: context,

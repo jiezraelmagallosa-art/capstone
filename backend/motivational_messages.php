@@ -116,10 +116,12 @@ function get_time_out_messages() {
 
 function getRandomMotivationalMessage($action_or_column) {
     $action_lower = strtolower($action_or_column);
-    if (strpos($action_lower, 'in') !== false) {
-        $msgs = get_time_in_messages();
-    } else {
+    $is_time_out = (strpos($action_lower, 'out') !== false);
+    if ($is_time_out) {
         $msgs = get_time_out_messages();
+    } else {
+        $msgs = get_time_in_messages();
     }
     return $msgs[array_rand($msgs)];
 }
+
