@@ -23,6 +23,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
 
+  @override
+  void initState() {
+    super.initState();
+    AppConfig.loadServerHost().then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -86,7 +94,12 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
           ),
           backgroundColor: Colors.redAccent,
-          duration: const Duration(seconds: 4),
+          duration: const Duration(seconds: 6),
+          action: SnackBarAction(
+            label: 'SERVER IP',
+            textColor: Colors.amber,
+            onPressed: _showServerConfigDialog,
+          ),
         ),
       );
     }
@@ -188,6 +201,21 @@ class _LoginScreenState extends State<LoginScreen> {
           Positioned.fill(
             child: Container(
               color: AppColors.primaryNavy.withValues(alpha: 0.50),
+            ),
+          ),
+
+          Positioned(
+            top: 40,
+            right: 16,
+            child: SafeArea(
+              child: Material(
+                color: Colors.transparent,
+                child: IconButton(
+                  icon: const Icon(Icons.dns_rounded, color: Colors.white70, size: 28),
+                  tooltip: 'Server IP Settings',
+                  onPressed: _showServerConfigDialog,
+                ),
+              ),
             ),
           ),
 

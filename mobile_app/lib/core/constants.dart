@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io' show Platform;
 
 class AppColors {
@@ -13,7 +14,8 @@ class AppColors {
 }
 
 class AppConfig {
-  static String _activeHost = "192.168.1.7";
+  static String _activeHost = "10.0.0.56";
+  static final List<String> _customHosts = [];
 
   static String get serverHost => _activeHost;
 
@@ -23,7 +25,31 @@ class AppConfig {
     cleanHost = cleanHost.split('/')[0];
     if (cleanHost.isNotEmpty) {
       _activeHost = cleanHost;
+      if (!_customHosts.contains(cleanHost)) {
+        _customHosts.insert(0, cleanHost);
+      }
+      _saveServerHost(cleanHost);
     }
+  }
+
+  static Future<void> loadServerHost() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedHost = prefs.getString('server_host');
+      if (savedHost != null && savedHost.isNotEmpty) {
+        _activeHost = savedHost;
+        if (!_customHosts.contains(savedHost)) {
+          _customHosts.insert(0, savedHost);
+        }
+      }
+    } catch (_) {}
+  }
+
+  static Future<void> _saveServerHost(String host) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('server_host', host);
+    } catch (_) {}
   }
 
   static String get baseUrl {
@@ -38,12 +64,24 @@ class AppConfig {
     return "http://$_activeHost/SBC_Internship_Attendance_System/backend";
   }
 
-  static List<String> get candidateHosts => [
-        "192.168.1.7",
-        "10.0.2.2",
-        "127.0.0.1",
-        "localhost",
-        "10.246.176.89",
-      ];
+  static List<String> get candidateHosts {
+    final list = <String>[];
+    for (final h in _customHosts) {
+      if (!list.contains(h)) list.add(h);
+    }
+    final defaults = [
+      "10.0.0.56",
+      "192.168.1.7",
+      "10.0.2.2",
+      "127.0.0.1",
+      "localhost",
+      "10.246.176.89",
+    ];
+    for (final d in defaults) {
+      if (!list.contains(d)) list.add(d);
+    }
+    return list;
+  }
 }
+
 

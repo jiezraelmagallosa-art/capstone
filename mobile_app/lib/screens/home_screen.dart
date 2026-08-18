@@ -280,45 +280,63 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final String? shift = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           actionType == 'time_in'
               ? 'Select Time In Shift'
               : 'Select Time Out Shift',
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: primaryNavy,
+            fontSize: 20,
           ),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('Which shift session are you recording for today?'),
-            SizedBox(height: 12),
-            Text('• Morning Shift: 5:00 AM – 12:30 PM',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: primaryNavy)),
-            SizedBox(height: 4),
-            Text('• Afternoon Shift: 12:30 PM – 5:00 PM',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: primaryNavy)),
+          children: [
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryNavy,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: const Icon(Icons.wb_sunny_rounded, color: accentGold),
+                label: const Text(
+                  'Morning Shift',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () => Navigator.pop(context, 'morning'),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryNavy,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: const Icon(Icons.wb_twilight_rounded, color: accentGold),
+                label: const Text(
+                  'Afternoon Shift',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () => Navigator.pop(context, 'afternoon'),
+              ),
+            ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'morning'),
-            child: const Text(
-              'Morning Shift (5:00 AM - 12:30 PM)',
-              style: TextStyle(color: primaryNavy),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: primaryNavy),
-            onPressed: () => Navigator.pop(context, 'afternoon'),
-            child: const Text(
-              'Afternoon Shift (12:30 PM - 5:00 PM)',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
       ),
     );
 
