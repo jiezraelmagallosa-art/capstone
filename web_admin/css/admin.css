@@ -293,10 +293,10 @@ body {
 
 .sidebar-nav {
   flex: 1;
-  padding: 0.75rem 0.75rem 2.5rem 0.75rem;
+  padding: 0.5rem 0.65rem 1rem 0.65rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.15rem;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -311,23 +311,23 @@ body {
 }
 
 .nav-section-title {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   color: var(--amber-gold);
-  padding: 0.4rem 0.75rem;
-  margin-top: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  margin-top: 0.25rem;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.85rem;
-  padding: 0.65rem 0.85rem;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
   color: #cbd5e1;
   text-decoration: none;
-  font-size: 0.875rem;
+  font-size: 0.825rem;
   font-weight: 500;
   border-radius: var(--radius-sm);
   transition: all 0.2s;
@@ -336,18 +336,6 @@ body {
 
 .nav-item:hover {
   background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
-}
-
-.nav-item.nav-logout {
-  color: #ffffff;
-  background-color: rgba(239, 68, 68, 0.85);
-  margin-top: 0.5rem;
-  font-weight: 600;
-}
-
-.nav-item.nav-logout:hover {
-  background-color: #dc2626;
   color: #ffffff;
 }
 
@@ -362,27 +350,33 @@ body {
 }
 
 .nav-icon {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   display: flex;
   align-items: center;
 }
 
 .sidebar-footer {
-  padding: 0.75rem 1.25rem;
+  padding: 0.6rem 0.85rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: rgba(0, 0, 0, 0.15);
+  background-color: rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
   flex-shrink: 0;
 }
 
 .user-badge {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  overflow: hidden;
 }
 
 .user-avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
   background-color: #ffffff;
   color: var(--navy-primary);
   font-weight: 700;
@@ -393,32 +387,47 @@ body {
   font-size: 0.85rem;
 }
 
+.user-info {
+  overflow: hidden;
+}
+
 .user-info h4 {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: #ffffff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .user-info p {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--amber-gold);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
-.sidebar-footer .btn-logout {
-  width: 100%;
-  margin-top: 0.5rem;
-  justify-content: center;
-  border-color: #ef4444;
+.btn-logout-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.65rem;
+  background-color: #ef4444;
   color: #ffffff;
-  background-color: rgba(239, 68, 68, 0.25);
-  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-.sidebar-footer .btn-logout:hover {
+.btn-logout-compact:hover {
   background-color: #dc2626;
-  border-color: #dc2626;
-  color: #ffffff;
+  transform: translateY(-1px);
 }
 
 
