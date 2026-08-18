@@ -250,18 +250,18 @@ body {
 }
 
 .sidebar-header {
-  height: var(--topbar-height);
-  padding: 0 1.5rem;
+  height: 52px;
+  padding: 0 0.85rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   background-color: var(--navy-dark);
 }
 
 .sidebar-logo {
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   background-color: #ffffff;
   border-radius: 50%;
   padding: 2px;
@@ -278,14 +278,14 @@ body {
 }
 
 .sidebar-brand h2 {
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.1;
 }
 
 .sidebar-brand p {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--amber-gold);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -293,10 +293,10 @@ body {
 
 .sidebar-nav {
   flex: 1;
-  padding: 0.5rem 0.65rem 1rem 0.65rem;
+  padding: 0.35rem 0.5rem 0.5rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -311,23 +311,23 @@ body {
 }
 
 .nav-section-title {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: var(--amber-gold);
-  padding: 0.3rem 0.65rem;
-  margin-top: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  margin-top: 0.15rem;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.6rem;
+  padding: 0.35rem 0.6rem;
   color: #cbd5e1;
   text-decoration: none;
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 500;
   border-radius: var(--radius-sm);
   transition: all 0.2s;
@@ -350,33 +350,33 @@ body {
 }
 
 .nav-icon {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   display: flex;
   align-items: center;
 }
 
 .sidebar-footer {
-  padding: 0.6rem 0.85rem;
+  padding: 0.4rem 0.65rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   background-color: rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.4rem;
   flex-shrink: 0;
 }
 
 .user-badge {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   overflow: hidden;
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
   background-color: #ffffff;
   color: var(--navy-primary);
   font-weight: 700;
@@ -384,7 +384,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .user-info {
@@ -392,7 +392,7 @@ body {
 }
 
 .user-info h4 {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #ffffff;
   white-space: nowrap;
@@ -401,7 +401,7 @@ body {
 }
 
 .user-info p {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   color: var(--amber-gold);
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -411,13 +411,13 @@ body {
 .btn-logout-compact {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.65rem;
+  gap: 0.3rem;
+  padding: 0.35rem 0.55rem;
   background-color: #ef4444;
   color: #ffffff;
   border: none;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
