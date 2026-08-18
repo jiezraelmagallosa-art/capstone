@@ -185,9 +185,8 @@
             <p>Dean of Student Affairs</p>
           </div>
         </div>
-        <button class="btn btn-outline" style="width:100%; margin-top:0.75rem; justify-content:center;"
-          onclick="logout()">
-          Sign Out
+        <button class="btn btn-outline btn-logout" onclick="logout()">
+          🚪 Log Out
         </button>
       </div>
     </aside>
@@ -208,10 +207,6 @@
             <span class="badge-dot" id="notifBadgeDot" style="display: none;"></span>
           </button>
           <button class="icon-btn" title="Help & Documentation" onclick="openHelpModal()">❓</button>
-          <button class="btn btn-outline"
-            style="border-color: var(--border-light); font-size: 0.8rem; font-weight: 600;" onclick="logout()">
-            🚪 Log Out
-          </button>
 
           <!-- Notifications Dropdown Popover -->
           <div id="notifDropdown" class="notif-dropdown hidden" onclick="event.stopPropagation()">
