@@ -177,9 +177,29 @@ function get_time_out_messages()
     return get_afternoon_time_out_messages();
 }
 
+function get_completion_messages()
+{
+    return [
+        "🎉 Congratulations! You have successfully completed your 480 internship goal hours! SBC is proud of your dedication and hard work!",
+        "🏆 Goal Achieved! You've finished your required internship hours. May this accomplishment open great opportunities for your career!",
+        "🌟 Saludo sa iyong dedikasyon! Natapos mo na ang iyong goal hours. Keep shining and reaching for your dreams!",
+        "🎓 Mission Accomplished! Congratulations on completing your OJT hours with excellence and perseverance!"
+    ];
+}
+
+function getCompletionMessage()
+{
+    $msgs = get_completion_messages();
+    return $msgs[array_rand($msgs)];
+}
+
 function getRandomMotivationalMessage($action_or_column)
 {
     $action_lower = strtolower($action_or_column);
+    if (strpos($action_lower, 'complete') !== false || strpos($action_lower, 'goal') !== false || strpos($action_lower, 'finish') !== false) {
+        return getCompletionMessage();
+    }
+
     $is_time_out = (strpos($action_lower, 'out') !== false);
     $is_morning_out = $is_time_out && (strpos($action_lower, 'morning') !== false || strpos($action_lower, 'midday') !== false || strpos($action_lower, 'lunch') !== false || strpos($action_lower, 'am') !== false);
     $is_afternoon_out = $is_time_out && (strpos($action_lower, 'afternoon') !== false || strpos($action_lower, 'pm') !== false);
@@ -195,4 +215,5 @@ function getRandomMotivationalMessage($action_or_column)
     }
     return $msgs[array_rand($msgs)];
 }
+
 

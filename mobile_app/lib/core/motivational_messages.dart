@@ -160,9 +160,21 @@ class MotivationalMessages {
     "Relax, eat well, and prepare to conquer the afternoon shift.",
     "Umagang puno ng aral at gawa. Pahinga muna para mas lalong gumaling mamaya!",
     "Done with the morning block! Mag-recharge na para sa hapon.",
-    "Laging tandaan: Ang masarap na kain ay susi sa masaganang hapon!",
     "Magandang tanghali! Magpahinga nang sapat para handa na ulit sumabak mamaya."
   ];
+
+  static const List<String> completionMessages = [
+    "🎉 Congratulations! You have successfully completed your 480 internship goal hours! SBC is proud of your dedication and hard work!",
+    "🏆 Goal Achieved! You've finished your required internship hours. May this accomplishment open great opportunities for your career!",
+    "🌟 Saludo sa iyong dedikasyon! Natapos mo na ang iyong goal hours. Keep shining and reaching for your dreams!",
+    "🎓 Mission Accomplished! Congratulations on completing your OJT hours with excellence and perseverance!"
+  ];
+
+  static String getRandomCompletionMessage() {
+    final rand = Random();
+    return completionMessages[rand.nextInt(completionMessages.length)];
+  }
+
 
   static bool checkIsTimeIn(String action) {
     final lower = action.toLowerCase();
@@ -310,4 +322,117 @@ class MotivationalMessages {
       ),
     );
   }
+
+  static void showGoalCompletionDialog(
+    BuildContext context, {
+    String? message,
+  }) {
+    final displayMsg = (message != null && message.isNotEmpty)
+        ? message
+        : getRandomCompletionMessage();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF8E1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.emoji_events_rounded,
+                  size: 54,
+                  color: Color(0xFFFFB800),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '🎉 Congratulations! 🏆',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF002D56),
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'Internship Goal Hours Completed!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFFFFB800),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF4F6F9),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: const Color(0xFFFFB800).withValues(alpha: 0.4),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.stars_rounded,
+                      color: Color(0xFFFFB800),
+                      size: 26,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        displayMsg,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF002D56),
+                          height: 1.38,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF002D56),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                    'Celebrate & Continue! 🎓✨',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
+

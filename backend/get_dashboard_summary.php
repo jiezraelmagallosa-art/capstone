@@ -78,6 +78,8 @@ $remaining_hours = floor($remaining_total_minutes / 60);
 $remaining_mins = $remaining_total_minutes % 60;
 
 $progress_percentage = min(100.0, round(($total_minutes / $target_total_minutes) * 100, 1));
+$is_completed = ($progress_percentage >= 100.0);
+$completion_message = $is_completed ? "🎉 Congratulations! You have successfully completed your {$target_hours} internship goal hours! SBC is proud of your hard work and dedication." : "";
 
 echo json_encode([
     "status" => "success",
@@ -92,9 +94,12 @@ echo json_encode([
         "remaining_mins" => $remaining_mins,
         "formatted_remaining" => "{$remaining_hours} hrs {$remaining_mins} mins left",
         "progress_percentage" => $progress_percentage,
-        "total_days" => intval($result['total_days'] ?? 0)
+        "total_days" => intval($result['total_days'] ?? 0),
+        "is_completed" => $is_completed,
+        "completion_message" => $completion_message
     ]
 ]);
+
 
 $stmt->close();
 $conn->close();

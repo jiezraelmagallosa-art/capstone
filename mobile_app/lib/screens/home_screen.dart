@@ -900,58 +900,175 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
           const SizedBox(height: 12),
 
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cardWhite,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Goal Progress (480 Hrs Required)',
-                        style: TextStyle(color: Colors.black54, fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
+          GestureDetector(
+            onTap: progressValue >= 1.0
+                ? () {
+                    MotivationalMessages.showGoalCompletionDialog(context);
+                  }
+                : null,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: progressValue >= 1.0 ? const Color(0xFFFFFDF0) : cardWhite,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: progressValue >= 1.0
+                      ? const Color(0xFFFFB800)
+                      : Colors.grey.shade300,
+                  width: progressValue >= 1.0 ? 1.5 : 1.0,
+                ),
+                boxShadow: progressValue >= 1.0
+                    ? [
+                        BoxShadow(
+                          color: const Color(0xFFFFB800).withValues(alpha: 0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Row(
+                          children: [
+                            if (progressValue >= 1.0) ...[
+                              const Icon(
+                                Icons.emoji_events_rounded,
+                                color: accentGold,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            Expanded(
+                              child: Text(
+                                progressValue >= 1.0
+                                    ? '🎉 Goal Hours Completed!'
+                                    : 'Goal Progress (480 Hrs Required)',
+                                style: TextStyle(
+                                  color: progressValue >= 1.0
+                                      ? primaryNavy
+                                      : Colors.black54,
+                                  fontSize: 13,
+                                  fontWeight: progressValue >= 1.0
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formattedConsumedText,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: primaryNavy,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+                  LinearProgressIndicator(
+                    value: progressValue,
+                    backgroundColor: Colors.grey.shade200,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      progressValue >= 1.0
+                          ? const Color(0xFF2E7D32)
+                          : accentGold,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _formattedConsumedText,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: primaryNavy,
-                        fontSize: 13,
+                    minHeight: 10,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${(progressValue * 100).toStringAsFixed(1)}% of 480 required hours completed',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: progressValue >= 1.0
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                          color: progressValue >= 1.0
+                              ? const Color(0xFF2E7D32)
+                              : Colors.grey,
+                        ),
+                      ),
+                      if (progressValue >= 1.0)
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle_rounded,
+                              color: Color(0xFF2E7D32),
+                              size: 14,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'COMPLETED',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2E7D32),
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                  if (progressValue >= 1.0) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF002D56).withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFFFFB800).withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.stars_rounded,
+                            color: accentGold,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '🎉 Congratulations! You have successfully finished your required 480 internship goal hours! SBC is proud of your hard work, dedication, and commitment. Tap to celebrate! 🎓✨',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: primaryNavy,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
-                ),
-
-                const SizedBox(height: 10),
-                LinearProgressIndicator(
-                  value: progressValue,
-                  backgroundColor: Colors.grey.shade200,
-                  valueColor: const AlwaysStoppedAnimation<Color>(accentGold),
-                  minHeight: 8,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  '${(progressValue * 100).toStringAsFixed(1)}% of 480 required hours completed',
-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildSummaryCard({
     required String title,

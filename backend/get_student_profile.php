@@ -94,11 +94,16 @@ $total_days = intval($att_res['total_days'] ?? 0);
 $req_h = intval($profile['required_hours'] ?? 480);
 $final_required_hours = ($req_h > 0 && $req_h != 600) ? $req_h : 480;
 
+$is_completed = ($total_rendered_hours >= $final_required_hours);
+
 $profile['rendered_hours'] = $total_rendered_hours;
 $profile['rendered_minutes'] = $remaining_minutes;
 $profile['formatted_rendered_time'] = "{$total_rendered_hours} hrs {$remaining_minutes} mins";
 $profile['total_days'] = $total_days;
 $profile['required_hours'] = $final_required_hours;
+$profile['is_completed'] = $is_completed;
+$profile['completion_message'] = $is_completed ? "🎉 Congratulations! You have successfully completed your {$final_required_hours} internship goal hours!" : "";
+
 
 echo json_encode([
     "status" => "success",

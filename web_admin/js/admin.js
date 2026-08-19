@@ -383,7 +383,8 @@ function renderStudentsTable(students) {
             <div class="progress-text">${s.formatted_time} / ${s.required_hours}h (${s.progress_percentage}%)</div>
           </div>
         </td>
-        <td><span class="badge ${statusBadgeClass}">${s.status}</span></td>
+        <td><span class="badge ${statusBadgeClass}">${s.progress_percentage >= 100 || s.status === 'Completed' ? '🏆 Completed 🎉' : s.status}</span></td>
+
         <td>
           <button class="btn btn-outline" onclick="openStudentDrawer(${s.student_id})">Details</button>
         </td>
@@ -1113,7 +1114,7 @@ function openStudentDrawer(studentId) {
       <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">480-Hour Internship Progress</div>
       <div class="progress-container" style="margin-bottom: 0.6rem;">
         <div class="progress-bar-bg" style="height: 10px; background-color: var(--border-light);">
-          <div class="progress-bar-fill" style="width: ${s.progress_percentage}%; height: 100%;"></div>
+          <div class="progress-bar-fill" style="width: ${s.progress_percentage}%; height: 100%; background-color: ${s.progress_percentage >= 100 ? '#2e7d32' : 'var(--gold-accent)'};"></div>
         </div>
       </div>
       <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem;">
@@ -1122,10 +1123,22 @@ function openStudentDrawer(studentId) {
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 0.5rem; margin-top: 0.4rem;">
         <span>Total Attendance Days: <strong>${s.total_days} days</strong></span>
-        <span>Completion Status: <span class="badge ${statusBadgeClass}">${s.status}</span></span>
+        <span>Completion Status: <span class="badge ${statusBadgeClass}">${s.progress_percentage >= 100 ? '🏆 Completed 🎉' : s.status}</span></span>
       </div>
+      ${s.progress_percentage >= 100 || s.status === 'Completed' ? `
+        <div style="background: #fffdf0; border: 1.5px solid #ffb800; padding: 0.85rem; border-radius: var(--radius-sm); margin-top: 0.75rem; display: flex; align-items: flex-start; gap: 0.75rem;">
+          <div style="font-size: 1.4rem; line-height: 1;">🎉</div>
+          <div>
+            <div style="font-weight: 700; color: var(--navy-primary); font-size: 0.88rem;">Goal Hours Completed! 🏆</div>
+            <div style="font-size: 0.78rem; color: #4a5568; margin-top: 0.2rem; line-height: 1.35;">
+              Congratulations! This intern has successfully completed their required 480-hour internship goal requirement with dedication and excellence.
+            </div>
+          </div>
+        </div>
+      ` : ''}
     </div>
   `;
+
 
   document.getElementById('studentDetailsModal').classList.add('active');
 }
