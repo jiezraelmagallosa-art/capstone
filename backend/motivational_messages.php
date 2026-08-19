@@ -59,7 +59,62 @@ function get_time_in_messages() {
     ];
 }
 
-function get_time_out_messages() {
+function get_morning_time_out_messages() {
+    return [
+        "Magandang tanghali! Kain nang maayos at mag-recharge para sa hapon. Let's keep the energy high!",
+        "Good job ngayong umaga! I-enjoy ang lunch break at maghanda para sa mas productive pang hapon.",
+        "Halfway there! Magpahinga sandali, mag-lunch, at balik tayong may bagong lakas mamayang hapon.",
+        "Kain na! Tapos na ang umaga, kaya mo pang galingan lalo mamayang hapon. Aja!",
+        "Magandang pahinga sa umaga! Mag-refuel para mas ganahan sa afternoon shift.",
+        "Isang malaking 'Good Job' sa umagang ito! Sulitin ang pahinga para handa sa hapon.",
+        "Reset, recharge, and get ready for a great afternoon ahead. Ingat sa lunch!",
+        "Magandang tanghali! Ang ganda ng simula mo kanina, ituloy lang natin mamayang hapon.",
+        "Time for a well-deserved lunch break. See you back here mamaya para sa afternoon grind!",
+        "Umalis nang may ngiti dahil maganda ang umaga mo. Kain na at balik sa hapon!",
+        "Napakagaling ng performance mo kanina! Mag-lunch na para may energy ulit mamaya.",
+        "Dagdag na lakas para sa hapon! Kumain nang sapat at magpahinga saglit.",
+        "Isang umagang punong-puno ng tagumpay. Relax muna, sabay hataw ulit mamayang hapon!",
+        "Great morning shift! Let's conquer the afternoon just as brilliantly.",
+        "I-enjoy ang break time! Kitakits ulit mamaya para sa tuloy-tuloy na tagumpay.",
+        "Mahusay ang ginawa mo kanina. Mag-recharge para mas ganahan sa hapon!",
+        "Pamper yourself with a good meal. Ready na ba ang hapon session mo?",
+        "Pa-log out muna sa umaga, pero ready na magbabalik mamaya! Kain po.",
+        "Ang bilis dumaan ng umaga dahil sa sipag mo. Enjoy your lunch break!",
+        "Keep that momentum going! Kumain at magpahinga para handa sa hapon.",
+        "Isang hakbang na lang, matatapos na ang buong araw. Lunch muna!",
+        "Ang sipag mo kanina! Deserve mo ang masarap na tanghalian. See you later!",
+        "Refresh your mind, fill your tummy, and get ready for the afternoon sprint.",
+        "Magandang tanghali! Mag-relax habang kumakain para fresh pagbalik mamaya.",
+        "50% done for the day! Rest well para sa huling yugto ng shift.",
+        "Saludo sa sipag mo ngayong umaga! Kain na para may panggatong sa hapon.",
+        "Tapos na ang umagang may ngiti. Magpahinga para sa masayang hapon!",
+        "Magandang break time! Balik agad mamaya ha, miss ka na ng tasks mo.",
+        "You crushed the morning shift! Time to recharge for round two.",
+        "I-alis ang antok sa pamamagitan ng masarap na lunch. Aja sa hapon!",
+        "Ginalingan mo kanina! Ituloy ang ganyang energy mamayang hapon.",
+        "Mabilis na lumipas ang oras dahil focused ka. Kain na at pahinga saglit!",
+        "Isang produktibong umaga! Mag-refuel na para sa afternoon productivity.",
+        "Tanghalian na! Magpahinga nang maigi para lalo pang tumaas ang galing mo mamaya.",
+        "Great job this morning! See you on the flip side (afternoon shift)!",
+        "Pahinga muna ang utak at mata. Kain na para ready sa afternoon tasks.",
+        "Ang ganda ng output mo kanina. Keep it up hanggang mamayang hapon!",
+        "Sipag at tiyaga ang puhunan. Enjoy your lunch break and see you later!",
+        "Tapos na ang umaga, kaya let's welcome the afternoon with high hopes!",
+        "Mag-ingat sa pag-lunch! Magbalik nang may ngiti at sigla mamaya.",
+        "Halfway to the finish line! Rest up and get ready for the afternoon rush.",
+        "Napagod ka man kanina, worth it naman! Kain na para sa hapon.",
+        "Excellent morning work! I-enjoy ang break at maghanda sa hapon.",
+        "Keep shining! Mag-lunch na para hindi mapagod ang bida ngayong hapon.",
+        "Isa kang magandang halimbawa ng masipag na intern/estudyante. See you later!",
+        "Relax, eat well, and prepare to conquer the afternoon shift.",
+        "Umagang puno ng aral at gawa. Pahinga muna para mas lalong gumaling mamaya!",
+        "Done with the morning block! Mag-recharge na para sa hapon.",
+        "Laging tandaan: Ang masarap na kain ay susi sa masaganang hapon!",
+        "Magandang tanghali! Magpahinga nang sapat para handa na ulit sumabak mamaya."
+    ];
+}
+
+function get_afternoon_time_out_messages() {
     return [
         "Good work today! Rest well and see you tomorrow.",
         "Job well done! Ingat sa pag-uwi, deserve mo ang pahinga!",
@@ -88,7 +143,7 @@ function get_time_out_messages() {
         "Magandang pahinga sa'yo! You did an amazing job.",
         "Balik-enerhiya bukas! Ginalingan mo sobra ngayon.",
         "Na-i-pasa mo ang araw na ito nang may flying colors!",
-        "Oras na para i-off ang pc at i-on ang relaxation mode.",
+        "Oras na para i-off ang pc at i-on the relaxation mode.",
         "Proud moments lang ang peg natin ngayon. Uwi na!",
         "Napagod ka man, pero marami ka namang natutunan. Good job!",
         "Mag-ingat sa daan pauwi. Bukas uli!",
@@ -114,11 +169,22 @@ function get_time_out_messages() {
     ];
 }
 
+function get_time_out_messages() {
+    return get_afternoon_time_out_messages();
+}
+
 function getRandomMotivationalMessage($action_or_column) {
     $action_lower = strtolower($action_or_column);
     $is_time_out = (strpos($action_lower, 'out') !== false);
-    if ($is_time_out) {
-        $msgs = get_time_out_messages();
+    $is_morning_out = $is_time_out && (strpos($action_lower, 'morning') !== false || strpos($action_lower, 'midday') !== false || strpos($action_lower, 'lunch') !== false || strpos($action_lower, 'am') !== false);
+    $is_afternoon_out = $is_time_out && (strpos($action_lower, 'afternoon') !== false || strpos($action_lower, 'pm') !== false);
+
+    if ($is_morning_out) {
+        $msgs = get_morning_time_out_messages();
+    } elseif ($is_afternoon_out) {
+        $msgs = get_afternoon_time_out_messages();
+    } elseif ($is_time_out) {
+        $msgs = get_afternoon_time_out_messages();
     } else {
         $msgs = get_time_in_messages();
     }

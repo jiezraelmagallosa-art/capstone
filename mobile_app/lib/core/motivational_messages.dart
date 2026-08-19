@@ -56,7 +56,7 @@ class MotivationalMessages {
     "Salamat sa dedikasyon. Let's rock this shift!"
   ];
 
-  static const List<String> timeOutMessages = [
+  static const List<String> afternoonTimeOutMessages = [
     "Good work today! Rest well and see you tomorrow.",
     "Job well done! Ingat sa pag-uwi, deserve mo ang pahinga!",
     "Awtomatikong tapos na ang shift! Great hustle today!",
@@ -109,17 +109,88 @@ class MotivationalMessages {
     "Pagod na katawan, pero masayang isipan. Good job today!"
   ];
 
+  static const List<String> timeOutMessages = afternoonTimeOutMessages;
+
+  static const List<String> morningTimeOutMessages = [
+    "Magandang tanghali! Kain nang maayos at mag-recharge para sa hapon. Let's keep the energy high!",
+    "Good job ngayong umaga! I-enjoy ang lunch break at maghanda para sa mas productive pang hapon.",
+    "Halfway there! Magpahinga sandali, mag-lunch, at balik tayong may bagong lakas mamayang hapon.",
+    "Kain na! Tapos na ang umaga, kaya mo pang galingan lalo mamayang hapon. Aja!",
+    "Magandang pahinga sa umaga! Mag-refuel para mas ganahan sa afternoon shift.",
+    "Isang malaking 'Good Job' sa umagang ito! Sulitin ang pahinga para handa sa hapon.",
+    "Reset, recharge, and get ready for a great afternoon ahead. Ingat sa lunch!",
+    "Magandang tanghali! Ang ganda ng simula mo kanina, ituloy lang natin mamayang hapon.",
+    "Time for a well-deserved lunch break. See you back here mamaya para sa afternoon grind!",
+    "Umalis nang may ngiti dahil maganda ang umaga mo. Kain na at balik sa hapon!",
+    "Napakagaling ng performance mo kanina! Mag-lunch na para may energy ulit mamaya.",
+    "Dagdag na lakas para sa hapon! Kumain nang sapat at magpahinga saglit.",
+    "Isang umagang punong-puno ng tagumpay. Relax muna, sabay hataw ulit mamayang hapon!",
+    "Great morning shift! Let's conquer the afternoon just as brilliantly.",
+    "I-enjoy ang break time! Kitakits ulit mamaya para sa tuloy-tuloy na tagumpay.",
+    "Mahusay ang ginawa mo kanina. Mag-recharge para mas ganahan sa hapon!",
+    "Pamper yourself with a good meal. Ready na ba ang hapon session mo?",
+    "Pa-log out muna sa umaga, pero ready na magbabalik mamaya! Kain po.",
+    "Ang bilis dumaan ng umaga dahil sa sipag mo. Enjoy your lunch break!",
+    "Keep that momentum going! Kumain at magpahinga para handa sa hapon.",
+    "Isang hakbang na lang, matatapos na ang buong araw. Lunch muna!",
+    "Ang sipag mo kanina! Deserve mo ang masarap na tanghalian. See you later!",
+    "Refresh your mind, fill your tummy, and get ready for the afternoon sprint.",
+    "Magandang tanghali! Mag-relax habang kumakain para fresh pagbalik mamaya.",
+    "50% done for the day! Rest well para sa huling yugto ng shift.",
+    "Saludo sa sipag mo ngayong umaga! Kain na para may panggatong sa hapon.",
+    "Tapos na ang umagang may ngiti. Magpahinga para sa masayang hapon!",
+    "Magandang break time! Balik agad mamaya ha, miss ka na ng tasks mo.",
+    "You crushed the morning shift! Time to recharge for round two.",
+    "I-alis ang antok sa pamamagitan ng masarap na lunch. Aja sa hapon!",
+    "Ginalingan mo kanina! Ituloy ang ganyang energy mamayang hapon.",
+    "Mabilis na lumipas ang oras dahil focused ka. Kain na at pahinga saglit!",
+    "Isang produktibong umaga! Mag-refuel na para sa afternoon productivity.",
+    "Tanghalian na! Magpahinga nang maigi para lalo pang tumaas ang galing mo mamaya.",
+    "Great job this morning! See you on the flip side (afternoon shift)!",
+    "Pahinga muna ang utak at mata. Kain na para ready sa afternoon tasks.",
+    "Ang ganda ng output mo kanina. Keep it up hanggang mamayang hapon!",
+    "Sipag at tiyaga ang puhunan. Enjoy your lunch break and see you later!",
+    "Tapos na ang umaga, kaya let's welcome the afternoon with high hopes!",
+    "Mag-ingat sa pag-lunch! Magbalik nang may ngiti at sigla mamaya.",
+    "Halfway to the finish line! Rest up and get ready for the afternoon rush.",
+    "Napagod ka man kanina, worth it naman! Kain na para sa hapon.",
+    "Excellent morning work! I-enjoy ang break at maghanda sa hapon.",
+    "Keep shining! Mag-lunch na para hindi mapagod ang bida ngayong hapon.",
+    "Isa kang magandang halimbawa ng masipag na intern/estudyante. See you later!",
+    "Relax, eat well, and prepare to conquer the afternoon shift.",
+    "Umagang puno ng aral at gawa. Pahinga muna para mas lalong gumaling mamaya!",
+    "Done with the morning block! Mag-recharge na para sa hapon.",
+    "Laging tandaan: Ang masarap na kain ay susi sa masaganang hapon!",
+    "Magandang tanghali! Magpahinga nang sapat para handa na ulit sumabak mamaya."
+  ];
+
   static bool checkIsTimeIn(String action) {
     final lower = action.toLowerCase();
     return !lower.contains('out');
+  }
+
+  static bool checkIsMorningOut(String action) {
+    final lower = action.toLowerCase();
+    final isOut = lower.contains('out');
+    final isMorning = lower.contains('morning') || lower.contains('midday') || lower.contains('lunch') || lower.contains('am');
+    return isOut && isMorning;
+  }
+
+  static bool checkIsAfternoonOut(String action) {
+    final lower = action.toLowerCase();
+    final isOut = lower.contains('out');
+    final isAfternoon = lower.contains('afternoon') || lower.contains('pm');
+    return isOut && isAfternoon;
   }
 
   static String getRandomMessage(String action) {
     final rand = Random();
     if (checkIsTimeIn(action)) {
       return timeInMessages[rand.nextInt(timeInMessages.length)];
+    } else if (checkIsMorningOut(action)) {
+      return morningTimeOutMessages[rand.nextInt(morningTimeOutMessages.length)];
     } else {
-      return timeOutMessages[rand.nextInt(timeOutMessages.length)];
+      return afternoonTimeOutMessages[rand.nextInt(afternoonTimeOutMessages.length)];
     }
   }
 
