@@ -468,7 +468,7 @@ function renderLogsTable(logs) {
     // Match absence request badge pattern exactly
     let badgeClass = 'badge-warning';
     if (l.status === 'Confirmed') badgeClass = 'badge-success';
-    if (l.status === 'Rejected')  badgeClass = 'badge-danger';
+    if (l.status === 'Rejected') badgeClass = 'badge-danger';
 
     const isPending = l.status !== 'Confirmed' && l.status !== 'Rejected';
     const evalControls = isPending
@@ -809,8 +809,8 @@ function renderComplianceSummary() {
             ${targetStudents.length === 0 ? `
               <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">No student interns enrolled in this course category.</td></tr>
             ` : targetStudents.map(s => {
-              const courseBadge = getCourseBadgeClass(s.course_code);
-              return `
+    const courseBadge = getCourseBadgeClass(s.course_code);
+    return `
                 <tr>
                   <td style="font-weight:700;">${escapeHtml(s.full_name)}</td>
                   <td>${s.student_number}</td>
@@ -822,7 +822,7 @@ function renderComplianceSummary() {
                   <td><span class="badge ${s.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td>
                 </tr>
               `;
-            }).join('')}
+  }).join('')}
           </tbody>
         </table>
       </div>
@@ -998,7 +998,7 @@ function exportCSVReport() {
   const url = window.URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `SBC_Compliance_Report_${selectedReportCourse}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `SBC_Compliance_Report_${selectedReportCourse}_${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
 }
 
