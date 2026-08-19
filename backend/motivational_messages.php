@@ -4,7 +4,8 @@
  * Provides random inspirational messages for Time In and Time Out.
  */
 
-function get_time_in_messages() {
+function get_time_in_messages()
+{
     return [
         "Magandang araw! Let's make today productive and meaningful!",
         "Aba, maaga at handa na! Keep up the good energy!",
@@ -59,7 +60,8 @@ function get_time_in_messages() {
     ];
 }
 
-function get_morning_time_out_messages() {
+function get_morning_time_out_messages()
+{
     return [
         "Magandang tanghali! Kain nang maayos at mag-recharge para sa hapon. Let's keep the energy high!",
         "Good job ngayong umaga! I-enjoy ang lunch break at maghanda para sa mas productive pang hapon.",
@@ -114,7 +116,8 @@ function get_morning_time_out_messages() {
     ];
 }
 
-function get_afternoon_time_out_messages() {
+function get_afternoon_time_out_messages()
+{
     return [
         "Good work today! Rest well and see you tomorrow.",
         "Job well done! Ingat sa pag-uwi, deserve mo ang pahinga!",
@@ -169,11 +172,13 @@ function get_afternoon_time_out_messages() {
     ];
 }
 
-function get_time_out_messages() {
+function get_time_out_messages()
+{
     return get_afternoon_time_out_messages();
 }
 
-function getRandomMotivationalMessage($action_or_column) {
+function getRandomMotivationalMessage($action_or_column)
+{
     $action_lower = strtolower($action_or_column);
     $is_time_out = (strpos($action_lower, 'out') !== false);
     $is_morning_out = $is_time_out && (strpos($action_lower, 'morning') !== false || strpos($action_lower, 'midday') !== false || strpos($action_lower, 'lunch') !== false || strpos($action_lower, 'am') !== false);
