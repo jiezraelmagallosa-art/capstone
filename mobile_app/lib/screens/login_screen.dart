@@ -204,20 +204,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-          Positioned(
-            top: 40,
-            right: 16,
-            child: SafeArea(
-              child: Material(
-                color: Colors.transparent,
-                child: IconButton(
-                  icon: const Icon(Icons.dns_rounded, color: Colors.white70, size: 28),
-                  tooltip: 'Server IP Settings',
-                  onPressed: _showServerConfigDialog,
-                ),
-              ),
-            ),
-          ),
 
 
           SafeArea(
