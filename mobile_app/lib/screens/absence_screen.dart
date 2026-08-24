@@ -136,7 +136,10 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
               ),
               const SizedBox(height: 16),
               ListTile(
-                leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primaryNavy),
+                leading: const Icon(
+                  Icons.camera_alt_rounded,
+                  color: AppColors.primaryNavy,
+                ),
                 title: const Text('Take a Photo'),
                 subtitle: const Text('Use camera to capture document'),
                 onTap: () {
@@ -145,7 +148,10 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_rounded, color: AppColors.primaryNavy),
+                leading: const Icon(
+                  Icons.photo_library_rounded,
+                  color: AppColors.primaryNavy,
+                ),
                 title: const Text('Choose from Gallery'),
                 subtitle: const Text('Select an existing photo'),
                 onTap: () {
@@ -245,7 +251,6 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               Card(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
@@ -273,7 +278,6 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-
 
                         InkWell(
                           onTap: () => _selectDate(context),
@@ -312,7 +316,6 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                           ),
                         ),
                         const SizedBox(height: 14),
-
 
                         TextFormField(
                           controller: _reasonController,
@@ -422,12 +425,19 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                                   width: double.infinity,
                                   child: OutlinedButton.icon(
                                     onPressed: _showImageSourcePicker,
-                                    icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                                    icon: const Icon(
+                                      Icons.swap_horiz_rounded,
+                                      size: 18,
+                                    ),
                                     label: const Text('Change Attachment'),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: primaryNavy,
-                                      side: const BorderSide(color: primaryNavy),
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      side: const BorderSide(
+                                        color: primaryNavy,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(6),
                                       ),
@@ -447,15 +457,25 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                                   children: [
                                     Expanded(
                                       child: OutlinedButton.icon(
-                                        onPressed: () => _pickImage(ImageSource.camera),
-                                        icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                                        onPressed: () =>
+                                            _pickImage(ImageSource.camera),
+                                        icon: const Icon(
+                                          Icons.camera_alt_rounded,
+                                          size: 18,
+                                        ),
                                         label: const Text('Camera'),
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: primaryNavy,
-                                          side: BorderSide(color: Colors.grey.shade400),
-                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          side: BorderSide(
+                                            color: Colors.grey.shade400,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 10,
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(6),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -463,15 +483,25 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: OutlinedButton.icon(
-                                        onPressed: () => _pickImage(ImageSource.gallery),
-                                        icon: const Icon(Icons.photo_library_rounded, size: 18),
+                                        onPressed: () =>
+                                            _pickImage(ImageSource.gallery),
+                                        icon: const Icon(
+                                          Icons.photo_library_rounded,
+                                          size: 18,
+                                        ),
                                         label: const Text('Gallery'),
                                         style: OutlinedButton.styleFrom(
                                           foregroundColor: primaryNavy,
-                                          side: BorderSide(color: Colors.grey.shade400),
-                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          side: BorderSide(
+                                            color: Colors.grey.shade400,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 10,
+                                          ),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(6),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -483,7 +513,6 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                           ),
                         ),
                         const SizedBox(height: 18),
-
 
                         ElevatedButton.icon(
                           onPressed: _isSubmitting
@@ -525,7 +554,6 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
               ),
               const SizedBox(height: 24),
 
-
               const Row(
                 children: [
                   Icon(Icons.history_edu, color: primaryNavy),
@@ -541,7 +569,6 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-
 
               _buildHistoryList(),
             ],
