@@ -51,7 +51,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result['status'] == 'success') {
       final user = result['user'];
-      final String name = user != null ? (user['full_name'] ?? 'Student') : 'Student';
+      final String name = user != null
+          ? (user['full_name'] ?? 'Student')
+          : 'Student';
       final int studentId = user != null
           ? (int.tryParse(user['student_id']?.toString() ?? '1') ?? 1)
           : 1;
@@ -78,11 +80,13 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => HomeScreen(studentName: name, studentId: studentId),
+          builder: (context) =>
+              HomeScreen(studentName: name, studentId: studentId),
         ),
       );
     } else {
-      final String errorMsg = result['message'] ?? 'Login failed. Please check your credentials.';
+      final String errorMsg =
+          result['message'] ?? 'Login failed. Please check your credentials.';
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -162,7 +166,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ? 'Connected to server ($host)'
                           : 'Host saved ($host). Verification pending.',
                     ),
-                    backgroundColor: reachable ? AppColors.successGreen : Colors.orange,
+                    backgroundColor: reachable
+                        ? AppColors.successGreen
+                        : Colors.orange,
                   ),
                 );
               }
@@ -187,7 +193,6 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.primaryNavy,
       body: Stack(
         children: [
-
           Positioned.fill(
             child: Image.asset(
               'assets/images/sbc_building.jpg',
@@ -197,268 +202,259 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
 
-
           Positioned.fill(
             child: Container(
               color: AppColors.primaryNavy.withValues(alpha: 0.50),
             ),
           ),
 
-
-
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-
-                          GestureDetector(
-                            onLongPress: _showServerConfigDialog,
-                            child: Container(
-                              width: 90,
-                              height: 90,
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: ClipOval(
-                                child: Image.asset(
-                                  'assets/images/sbc_logo.png',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
-                                    Icons.school_rounded,
-                                    size: 70,
-                                    color: AppColors.accentGold,
-                                  ),
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    GestureDetector(
+                      onLongPress: _showServerConfigDialog,
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: ClipOval(
+                          child: Image.asset(
+                            'assets/images/sbc_logo.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(
+                                  Icons.school_rounded,
+                                  size: 70,
+                                  color: AppColors.accentGold,
                                 ),
-                              ),
-                            ),
                           ),
-                          const SizedBox(height: 12),
-                          const Text(
-                            'Southern Baptist College',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Internship Attendance',
-                            style: TextStyle(color: Colors.white70, fontSize: 14),
-                          ),
-                          const SizedBox(height: 32),
-
-
-                          Container(
-                            padding: const EdgeInsets.all(20.0),
-                            decoration: const BoxDecoration(
-                              color: Colors.transparent,
-                            ),
-                            child: Form(
-                              key: _formKey,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  const Text(
-                                    'Student Portal Login',
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 20),
-
-
-                                  TextFormField(
-                                    controller: _emailController,
-                                    keyboardType: TextInputType.emailAddress,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    decoration: InputDecoration(
-                                      labelText: 'Institutional Email',
-                                      labelStyle: const TextStyle(
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      floatingLabelStyle: const TextStyle(
-                                        color: AppColors.accentGold,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.transparent,
-                                      prefixIcon: const Icon(
-                                        Icons.email_outlined,
-                                        color: AppColors.accentGold,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: Colors.white70,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: AppColors.accentGold,
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your email';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 16),
-
-
-                                  TextFormField(
-                                    controller: _passwordController,
-                                    obscureText: _obscurePassword,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                    decoration: InputDecoration(
-                                      labelText: 'Password',
-                                      labelStyle: const TextStyle(
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      floatingLabelStyle: const TextStyle(
-                                        color: AppColors.accentGold,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.transparent,
-                                      prefixIcon: const Icon(
-                                        Icons.lock_outline,
-                                        color: AppColors.accentGold,
-                                      ),
-                                      suffixIcon: IconButton(
-                                        icon: Icon(
-                                          _obscurePassword
-                                              ? Icons.visibility_off
-                                              : Icons.visibility,
-                                          color: Colors.white70,
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            _obscurePassword = !_obscurePassword;
-                                          });
-                                        },
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: Colors.white70,
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: AppColors.accentGold,
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return 'Please enter your password';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                  const SizedBox(height: 24),
-
-
-                                  ElevatedButton(
-                                    onPressed: _isLoading ? null : _handleLogin,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primaryNavy,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2,
-                                            ),
-                                          )
-                                        : const Text(
-                                            'LOGIN',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-
-
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const RegisterScreen(),
-                                ),
-                              );
-                            },
-                            child: const Text(
-                              "Don't have an account? Register Now",
-                              style: TextStyle(
-                                color: AppColors.accentGold,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            "Developed By: Jiezrael P. Magallosa",
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Southern Baptist College',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Internship Attendance',
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    const SizedBox(height: 32),
+
+                    Container(
+                      padding: const EdgeInsets.all(20.0),
+                      decoration: const BoxDecoration(
+                        color: Colors.transparent,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Text(
+                              'Student Portal Login',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 20),
+
+                            TextFormField(
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              decoration: InputDecoration(
+                                labelText: 'Institutional Email',
+                                labelStyle: const TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                floatingLabelStyle: const TextStyle(
+                                  color: AppColors.accentGold,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                prefixIcon: const Icon(
+                                  Icons.email_outlined,
+                                  color: AppColors.accentGold,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Colors.white70,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.accentGold,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your email';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+
+                            TextFormField(
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              decoration: InputDecoration(
+                                labelText: 'Password',
+                                labelStyle: const TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                floatingLabelStyle: const TextStyle(
+                                  color: AppColors.accentGold,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                                filled: true,
+                                fillColor: Colors.transparent,
+                                prefixIcon: const Icon(
+                                  Icons.lock_outline,
+                                  color: AppColors.accentGold,
+                                ),
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.white70,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Colors.white70,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: AppColors.accentGold,
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter your password';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 24),
+
+                            ElevatedButton(
+                              onPressed: _isLoading ? null : _handleLogin,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primaryNavy,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'LOGIN',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        "Don't have an account? Register Now",
+                        style: TextStyle(
+                          color: AppColors.accentGold,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Developed By: Jiezrael P. Magallosa",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-          );
-        }
-      }
+          ),
+        ],
+      ),
+    );
+  }
+}
