@@ -444,7 +444,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            "Develop By: Jiezrael P. Magallosa",
+                            "Developed By: Jiezrael P. Magallosa",
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 12,
