@@ -1,7 +1,10 @@
 // SBC Internship Attendance System - Mobile App
 // File: absence_screen.dart
 
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../core/api_service.dart';
 import '../core/constants.dart';
@@ -20,6 +23,8 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
   final _formKey = GlobalKey<FormState>();
   final _reasonController = TextEditingController();
   DateTime? _selectedDate;
+  File? _attachedImage;
+  final ImagePicker _imagePicker = ImagePicker();
   bool _isSubmitting = false;
   bool _isLoadingHistory = true;
   List<dynamic> _absenceLogs = [];
@@ -85,6 +90,82 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
     }
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 80,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          _attachedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not pick image: $e'),
+          backgroundColor: Colors.orangeAccent,
+        ),
+      );
+    }
+  }
+
+  void _showImageSourcePicker() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Attach Supporting Document',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primaryNavy,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.camera_alt_rounded, color: AppColors.primaryNavy),
+                title: const Text('Take a Photo'),
+                subtitle: const Text('Use camera to capture document'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_rounded, color: AppColors.primaryNavy),
+                title: const Text('Choose from Gallery'),
+                subtitle: const Text('Select an existing photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _removeAttachment() {
+    setState(() {
+      _attachedImage = null;
+    });
+  }
+
   Future<void> _handleSubmitAbsence() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDate == null) {
@@ -101,6 +182,17 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
       _isSubmitting = true;
     });
 
+    // Encode attached image to base64 if present
+    String imageBase64 = '';
+    if (_attachedImage != null) {
+      try {
+        final bytes = await _attachedImage!.readAsBytes();
+        imageBase64 = base64Encode(bytes);
+      } catch (e) {
+        debugPrint('Error encoding image: $e');
+      }
+    }
+
     final String formattedDate = DateFormat(
       'yyyy-MM-dd',
     ).format(_selectedDate!);
@@ -108,6 +200,7 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
       widget.studentId,
       formattedDate,
       _reasonController.text.trim(),
+      imageBase64: imageBase64,
     );
 
     setState(() {
@@ -126,6 +219,7 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
       _reasonController.clear();
       setState(() {
         _selectedDate = null;
+        _attachedImage = null;
       });
       _fetchAbsenceHistory();
     } else {
@@ -243,6 +337,150 @@ class _AbsenceScreenState extends State<AbsenceScreen> {
                             }
                             return null;
                           },
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Supporting Attachment Section
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: _attachedImage != null
+                                  ? Colors.green.shade300
+                                  : Colors.grey.shade300,
+                              width: _attachedImage != null ? 1.5 : 1.0,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    _attachedImage != null
+                                        ? Icons.check_circle_rounded
+                                        : Icons.attach_file_rounded,
+                                    size: 18,
+                                    color: _attachedImage != null
+                                        ? Colors.green
+                                        : Colors.grey.shade600,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    _attachedImage != null
+                                        ? 'Document Attached'
+                                        : 'Supporting Attachment (Optional)',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: _attachedImage != null
+                                          ? Colors.green.shade700
+                                          : Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              if (_attachedImage != null) ...[
+                                Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Image.file(
+                                        _attachedImage!,
+                                        width: double.infinity,
+                                        height: 160,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 6,
+                                      right: 6,
+                                      child: GestureDetector(
+                                        onTap: _removeAttachment,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.red,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.close_rounded,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    onPressed: _showImageSourcePicker,
+                                    icon: const Icon(Icons.swap_horiz_rounded, size: 18),
+                                    label: const Text('Change Attachment'),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: primaryNavy,
+                                      side: const BorderSide(color: primaryNavy),
+                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ] else ...[
+                                Text(
+                                  'Attach medical certificate, excuse letter, or other supporting documents.',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () => _pickImage(ImageSource.camera),
+                                        icon: const Icon(Icons.camera_alt_rounded, size: 18),
+                                        label: const Text('Camera'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: primaryNavy,
+                                          side: BorderSide(color: Colors.grey.shade400),
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: OutlinedButton.icon(
+                                        onPressed: () => _pickImage(ImageSource.gallery),
+                                        icon: const Icon(Icons.photo_library_rounded, size: 18),
+                                        label: const Text('Gallery'),
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: primaryNavy,
+                                          side: BorderSide(color: Colors.grey.shade400),
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 18),
 
