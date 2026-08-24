@@ -14,7 +14,7 @@ class AppColors {
 }
 
 class AppConfig {
-  static String _activeHost = "10.0.0.56";
+  static String _activeHost = "192.168.1.3";
   static final List<String> _customHosts = [];
 
   static String get serverHost => _activeHost;
@@ -70,6 +70,7 @@ class AppConfig {
       if (!list.contains(h)) list.add(h);
     }
     final defaults = [
+      "192.168.1.3",
       "10.0.0.56",
       "192.168.1.7",
       "10.0.2.2",
