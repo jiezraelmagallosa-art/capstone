@@ -293,7 +293,7 @@ The study adopted an **Applied System Development Research Design** structured w
 | **Use Case Name** | Record Shift Attendance with Live Capture Verification |
 | **Primary Actor** | Student Intern |
 | **Pre-Conditions** | Student is authenticated and deployed to an active OJT site. |
-| **Main Flow** | 1. Student taps **Time In** or **Time Out** on the home screen.<br>2. Selects shift (**Morning** or **Afternoon**).<br>3. System validates current time against allowed shift windows.<br>4. Live front camera initializes and displays a 5-second countdown.<br>5. Photo is captured, compressed, encoded to Base64, and sent to server.<br>6. Server stores timestamp, saves image to storage, calculates elapsed time.<br>7. Mobile app displays a motivational dialog and updates the DTR progress bar. |
+| **Main Flow** | 1. Student taps **Time In** or **Time Out** on the home screen.<br>2. Selects shift (**Morning** or **Afternoon**).<br>3. System validates current time against allowed shift windows.<br>4. Live front camera initializes and displays a 3-second countdown.<br>5. Photo is captured, compressed, encoded to Base64, and sent to server.<br>6. Server stores timestamp, saves image to storage, calculates elapsed time.<br>7. Mobile app displays a motivational dialog and updates the DTR progress bar. |
 | **Post-Conditions** | Attendance log is saved in database and visible on Dean's portal. |
 
 *Table 4.4: Use Case Specification for Absence Request Filing*
@@ -455,7 +455,7 @@ The study adopted an **Applied System Development Research Design** structured w
  [ Show Time Window Error ]        [ Initialize Front Camera ]
                                             |
                                             v
-                                   [ 5-Second Countdown ]
+                                   [ 3-Second Countdown ]
                                             |
                                             v
                                    [ Auto-Capture Live Selfie ]
@@ -478,7 +478,7 @@ The study adopted an **Applied System Development Research Design** structured w
 ### **6.1 Development Process and Milestones**
 The system was implemented across four distinct Agile sprints:
 1. **Sprint 1 (Backend Core & DB):** Configured MySQL relational database, established PDO/MySQLi connection handlers, and authored authentication services.
-2. **Sprint 2 (Mobile Attendance & Camera):** Integrated Flutter camera controllers, programmed 5-second countdown timers, and built real-time DTR computation logic.
+2. **Sprint 2 (Mobile Attendance & Camera):** Integrated Flutter camera controllers, programmed 3-second countdown timers, and built real-time DTR computation logic.
 3. **Sprint 3 (Absence Management & File Upload):** Implemented `image_picker` integration in Flutter, encoded images to Base64, and created server-side file handling in `submit_absence.php`.
 4. **Sprint 4 (Dean Portal & Reporting):** Built the responsive HTML5/JavaScript dashboard, integrated live selfie preview modals, and engineered CSV report generation.
 
@@ -507,7 +507,7 @@ $is_completed = ($progress_percentage >= 100.0);
 
 #### **6.2.2 Live Camera Verification & Countdown (`home_screen.dart`)**
 ```dart
-Future<bool> _startCameraCountdown({int durationInSeconds = 5}) async {
+Future<bool> _startCameraCountdown({int durationInSeconds = 3}) async {
   final Completer<bool> completer = Completer<bool>();
   setState(() {
     _isCountingDown = true;
@@ -613,7 +613,7 @@ The developed **SBC Internship Attendance Tracking System** achieved all functio
 | Initial Specific Objective | Status | Implementation Outcome |
 | :--- | :---: | :--- |
 | **1. Mobile Attendance Automation** | **Achieved** | Developed cross-platform Flutter mobile client with 1-tap shift recording. |
-| **2. Live Capture Verification** | **Achieved** | Implemented automated 5-second countdown and front-camera selfie logging. |
+| **2. Live Capture Verification** | **Achieved** | Implemented automated 3-second countdown and front-camera selfie logging. |
 | **3. Split-Shift AM/PM Tracking** | **Achieved** | Embedded distinct morning/afternoon database fields and shift validations. |
 | **4. Automated 480-Hour DTR Tally** | **Achieved** | Engineered minute-level SQL aggregations with milestone celebration triggers. |
 | **5. Digital Absence Management** | **Achieved** | Added camera/gallery document uploads with Dean review workflows. |
@@ -733,7 +733,7 @@ CREATE TABLE absence_requests (
 | # | Functional Indicator | 5 (SA) | 4 (A) | 3 (N) | 2 (D) | 1 (SD) |
 | :-: | :--- | :-: | :-: | :-: | :-: | :-: |
 | 6 | Recording Morning and Afternoon Time-In and Time-Out requires minimal taps (less than 3 steps). | | | | | |
-| 7 | The live front-camera preview and 5-second countdown allow sufficient time to take a proper verification selfie. | | | | | |
+| 7 | The live front-camera preview and 3-second countdown allow sufficient time to take a proper verification selfie. | | | | | |
 | 8 | Dynamic motivational messages shown after shift check-in/out enhance the user experience. | | | | | |
 | 9 | Shift time window alerts clearly explain why a check-in is not permitted if attempted outside operational hours. | | | | | |
 | 10 | The daily time record history screen provides accurate and transparent logs of all past shifts rendered. | | | | | |

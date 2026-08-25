@@ -20,9 +20,7 @@ class AppConfig {
   static String get serverHost => _activeHost;
 
   static set serverHost(String host) {
-    String cleanHost = host.trim();
-    cleanHost = cleanHost.replaceAll(RegExp(r'^https?://'), '');
-    cleanHost = cleanHost.split('/')[0];
+    String cleanHost = host.trim().replaceAll(RegExp(r'/+$'), '');
     if (cleanHost.isNotEmpty) {
       _activeHost = cleanHost;
       if (!_customHosts.contains(cleanHost)) {
@@ -36,10 +34,10 @@ class AppConfig {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedHost = prefs.getString('server_host');
-      if (savedHost != null && savedHost.isNotEmpty) {
-        _activeHost = savedHost;
-        if (!_customHosts.contains(savedHost)) {
-          _customHosts.insert(0, savedHost);
+      if (savedHost != null && savedHost.trim().isNotEmpty) {
+        _activeHost = savedHost.trim().replaceAll(RegExp(r'/+$'), '');
+        if (!_customHosts.contains(_activeHost)) {
+          _customHosts.insert(0, _activeHost);
         }
       }
     } catch (_) {}
@@ -53,15 +51,26 @@ class AppConfig {
   }
 
   static String get baseUrl {
+    final host = _activeHost.trim();
+
+    // If active host is already a full HTTP / HTTPS endpoint
+    if (host.startsWith('http://') || host.startsWith('https://')) {
+      if (host.endsWith('/backend')) {
+        return host;
+      }
+      return "$host/backend";
+    }
+
     if (kIsWeb) {
       return "http://localhost/SBC_Internship_Attendance_System/backend";
     }
     try {
-      if (Platform.isWindows) {
+      if (Platform.isWindows && (host == 'localhost' || host == '127.0.0.1')) {
         return "http://localhost/SBC_Internship_Attendance_System/backend";
       }
     } catch (_) {}
-    return "http://$_activeHost/SBC_Internship_Attendance_System/backend";
+
+    return "http://$host/SBC_Internship_Attendance_System/backend";
   }
 
   static List<String> get candidateHosts {

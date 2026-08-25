@@ -6,12 +6,14 @@
 
 date_default_timezone_set('Asia/Manila');
 
-$host = "localhost";
-$username = "root";
-$password = "";
-$database = "sbc_internship_db";
+// Database configuration (supports environment variables or local XAMPP defaults)
+$host     = getenv('DB_HOST') ?: "localhost";
+$username = getenv('DB_USER') ?: "root";
+$password = getenv('DB_PASS') !== false ? getenv('DB_PASS') : "";
+$database = getenv('DB_NAME') ?: "sbc_internship_db";
+$port     = getenv('DB_PORT') ? intval(getenv('DB_PORT')) : 3306;
 
-$conn = new mysqli($host, $username, $password, $database);
+$conn = @new mysqli($host, $username, $password, $database, $port);
 
 if ($conn->connect_error) {
     http_response_code(500);

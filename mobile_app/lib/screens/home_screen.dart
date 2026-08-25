@@ -181,7 +181,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 
-  Future<bool> _startCameraCountdown({int durationInSeconds = 5}) async {
+  Future<bool> _startCameraCountdown({int durationInSeconds = 3}) async {
     final Completer<bool> completer = Completer<bool>();
 
     setState(() {
@@ -385,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
 
     final bool countdownSuccess = await _startCameraCountdown(
-      durationInSeconds: 5,
+      durationInSeconds: 3,
     );
     if (!countdownSuccess || !mounted) {
       setState(() {
@@ -686,12 +686,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
 
                 if (_isCountingDown) ...[
-                  Container(color: Colors.black.withValues(alpha: 0.35)),
+                  Container(color: Colors.black.withValues(alpha: 0.25)),
                   Positioned(
                     top: 12,
+                    left: 12,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                        horizontal: 14,
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
@@ -705,7 +706,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           const Icon(
                             Icons.camera_alt_rounded,
                             color: accentGold,
-                            size: 18,
+                            size: 16,
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -715,37 +716,33 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  Center(
-                    child: Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: primaryNavy.withValues(alpha: 0.85),
-                        border: Border.all(color: accentGold, width: 3.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accentGold.withValues(alpha: 0.5),
-                            blurRadius: 18,
-                            spreadRadius: 2,
+                  Positioned(
+                    top: 8,
+                    right: 16,
+                    child: Text(
+                      _countdownSeconds > 0 ? '$_countdownSeconds' : '📸',
+                      style: TextStyle(
+                        color: accentGold,
+                        fontSize: _countdownSeconds > 0 ? 48 : 36,
+                        fontWeight: FontWeight.w900,
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black87,
+                            blurRadius: 10,
+                            offset: Offset(1, 2),
+                          ),
+                          Shadow(
+                            color: Colors.black54,
+                            blurRadius: 6,
                           ),
                         ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        _countdownSeconds > 0 ? '$_countdownSeconds' : '📸',
-                        style: TextStyle(
-                          color: accentGold,
-                          fontSize: _countdownSeconds > 0 ? 46 : 38,
-                          fontWeight: FontWeight.bold,
-                        ),
                       ),
                     ),
                   ),

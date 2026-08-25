@@ -126,17 +126,17 @@ class _LoginScreenState extends State<LoginScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Enter your XAMPP host IP address (e.g. 192.168.1.7):',
+              'Enter your Cloud Domain or Local Server IP (e.g., https://your-site.com or 192.168.1.7):',
               style: TextStyle(fontSize: 13, color: AppColors.textMuted),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: ipController,
               decoration: const InputDecoration(
-                labelText: 'Server IP / Host',
-                hintText: '192.168.1.7',
+                labelText: 'Server Host / Cloud URL',
+                hintText: 'https://mysite.com or 192.168.1.7',
                 border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.wifi_rounded),
+                prefixIcon: Icon(Icons.cloud_sync_rounded),
               ),
               keyboardType: TextInputType.text,
             ),
