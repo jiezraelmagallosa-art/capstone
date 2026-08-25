@@ -4,9 +4,24 @@
 uploads/*
 !uploads/**/.gitkeep
 
+# Flutter & Mobile App Build Artifacts
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/.gradle/
+*.apk
+*.aab
+*.so
+
 # Operating system & editor files
 .DS_Store
 Thumbs.db
 *.log
 .vscode/*
 !.vscode/settings.json
+.idea/
+*.iml
+
