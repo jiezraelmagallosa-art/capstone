@@ -166,6 +166,11 @@
 
         <div class="nav-section-title">Institutional</div>
 
+        <a class="nav-item" data-tab="courses">
+          <span class="nav-icon">🎓</span>
+          <span>Academic Programs</span>
+        </a>
+
         <a class="nav-item" data-tab="sites">
           <span class="nav-icon">🏥</span>
           <span>Partner Management</span>
@@ -461,6 +466,37 @@
           </div>
         </section>
 
+
+        <!-- PANE 7: ACADEMIC PROGRAM & COURSE MANAGEMENT -->
+        <section id="view-courses" class="view-pane hidden">
+          <div class="page-header">
+            <div class="page-header-title">
+              <h1>Academic Programs & Required Hours</h1>
+              <p>Configure institutional degree programs, curriculum courses, and type total required internship hours.</p>
+            </div>
+            <button class="btn btn-navy" onclick="openAddCourseModal()">+ Add Academic Program</button>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Program Code</th>
+                    <th>Academic Program / Course Name</th>
+                    <th>Required Total Internship Hours</th>
+                    <th>Active Enrolled Interns</th>
+                    <th>Dean Controls</th>
+                  </tr>
+                </thead>
+                <tbody id="coursesTableBody">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
   </div>
@@ -521,6 +557,55 @@
     </div>
   </div>
 
+  <!-- Add / Edit Academic Program / Course Modal -->
+  <div id="courseModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="courseModalTitle">Add Academic Program / Course</h3>
+        <button class="close-btn" onclick="closeCourseModal()">&times;</button>
+      </div>
+      <form onsubmit="saveCourse(event)">
+        <input type="hidden" id="courseIdInput">
+
+        <div class="form-group">
+          <label for="courseCodeInput">Program / Course Code</label>
+          <input type="text" id="courseCodeInput" class="form-control" required placeholder="e.g. BSCS, BSIS, BSIT, BLIS">
+        </div>
+
+        <div class="form-group">
+          <label for="courseNameInput">Full Academic Program Name</label>
+          <input type="text" id="courseNameInput" class="form-control" required placeholder="e.g. Bachelor of Science in Computer Science">
+        </div>
+
+        <div class="form-group">
+          <label for="courseRequiredHoursInput">Type Required Total Internship Hours</label>
+          <div style="position: relative;">
+            <input type="number" id="courseRequiredHoursInput" class="form-control" required min="1" max="5000" step="1" placeholder="e.g. 480" style="padding-right: 55px; font-weight: 700; font-size: 1rem; color: var(--navy-primary);">
+            <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted); font-size: 0.82rem;">HRS</span>
+          </div>
+          <div class="hours-preset-container" style="margin-top: 0.5rem; display: flex; gap: 0.35rem; flex-wrap: wrap;">
+            <button type="button" class="btn-preset-chip" onclick="setPresetHours(240)">240h</button>
+            <button type="button" class="btn-preset-chip" onclick="setPresetHours(300)">300h</button>
+            <button type="button" class="btn-preset-chip" onclick="setPresetHours(480)">480h</button>
+            <button type="button" class="btn-preset-chip" onclick="setPresetHours(500)">500h</button>
+            <button type="button" class="btn-preset-chip" onclick="setPresetHours(600)">600h</button>
+          </div>
+          <small style="display:block; margin-top: 0.4rem; color: var(--text-muted); font-size: 0.76rem; line-height: 1.35;">
+            💡 Typing required hours here will automatically adjust the goal hours for all student interns enrolled in this course.
+          </small>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
+          <button type="button" id="deleteCourseModalBtn" class="btn btn-danger" style="display:none;" onclick="handleModalDeleteCourse()">Delete Program</button>
+          <div style="display:flex; gap:0.75rem; margin-left:auto;">
+            <button type="button" class="btn btn-outline" onclick="closeCourseModal()">Cancel</button>
+            <button type="submit" class="btn btn-navy">Save Program</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Student Details Profile Modal -->
   <div id="studentDetailsModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 560px;">
@@ -528,7 +613,7 @@
         <h3>👨‍🎓 Student Profile & Internship Allocation</h3>
         <button class="close-btn" onclick="closeStudentDetailsModal()">&times;</button>
       </div>
-      <div id="studentDetailsContent" style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
+      <div id="studentDetailsContent" style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6; max-height: 70vh; overflow-y: auto; padding-right: 4px;">
         <!-- Dynamically rendered student details -->
       </div>
       <div style="margin-top: 1.5rem; text-align: right;">
@@ -585,7 +670,7 @@
     </div>
   </div>
 
-  <script src="js/admin.js?v=3.1"></script>
+  <script src="js/admin.js?v=4.0"></script>
 </body>
 
 </html>

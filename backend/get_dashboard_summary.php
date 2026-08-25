@@ -22,9 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'db_connect.php';
 
 
-$conn->query("UPDATE ojt SET required_hours = 480 WHERE required_hours = 600 OR required_hours IS NULL");
-
-
 $student_id = isset($_GET['student_id']) ? intval($_GET['student_id']) : (isset($_GET['ojt_id']) ? intval($_GET['ojt_id']) : 0);
 
 if ($student_id <= 0) {
@@ -40,7 +37,7 @@ if ($student_id <= 0) {
 $ojt_id = $student_id;
 $target_hours = 480;
 
-$stmt_ojt = $conn->prepare("SELECT ojt_id, required_hours FROM ojt WHERE student_id = ? OR ojt_id = ? LIMIT 1");
+$stmt_ojt = $conn->prepare("SELECT o.ojt_id, COALESCE(o.required_hours, c.required_hours, 480) AS required_hours FROM ojt o LEFT JOIN student s ON o.student_id = s.student_id LEFT JOIN course c ON s.course_id = c.course_id WHERE o.student_id = ? OR o.ojt_id = ? LIMIT 1");
 if ($stmt_ojt) {
     $stmt_ojt->bind_param("ii", $student_id, $student_id);
     $stmt_ojt->execute();
@@ -48,7 +45,7 @@ if ($stmt_ojt) {
     if ($row_ojt = $res_ojt->fetch_assoc()) {
         $ojt_id = $row_ojt['ojt_id'];
         $req_h = intval($row_ojt['required_hours']);
-        $target_hours = ($req_h > 0 && $req_h != 600) ? $req_h : 480;
+        $target_hours = ($req_h > 0) ? $req_h : 480;
     }
     $stmt_ojt->close();
 }

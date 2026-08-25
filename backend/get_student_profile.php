@@ -22,8 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'db_connect.php';
 
 
-$conn->query("UPDATE ojt SET required_hours = 480 WHERE required_hours = 600 OR required_hours IS NULL");
-
 $student_id = isset($_GET['student_id']) ? intval($_GET['student_id']) : 0;
 
 if ($student_id <= 0) {
@@ -40,10 +38,12 @@ $sql = "SELECT
             s.id_no,
             s.email,
             s.dean_id,
+            s.course_id,
             u.full_name AS dean_name,
             u.email AS dean_email,
             c.course_code,
             c.course_name,
+            c.required_hours AS course_required_hours,
             o.ojt_id,
             o.ojt_no,
             o.required_hours,
@@ -91,8 +91,8 @@ $total_rendered_hours = floor($total_minutes / 60);
 $remaining_minutes = $total_minutes % 60;
 $total_days = intval($att_res['total_days'] ?? 0);
 
-$req_h = intval($profile['required_hours'] ?? 480);
-$final_required_hours = ($req_h > 0 && $req_h != 600) ? $req_h : 480;
+$req_h = intval($profile['required_hours'] ?? ($profile['course_required_hours'] ?? 480));
+$final_required_hours = ($req_h > 0) ? $req_h : 480;
 
 $is_completed = ($total_rendered_hours >= $final_required_hours);
 

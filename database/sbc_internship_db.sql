@@ -10,7 +10,8 @@ USE sbc_internship_db;
 CREATE TABLE Course (
     course_id INT PRIMARY KEY AUTO_INCREMENT,
     course_code VARCHAR(20) NOT NULL UNIQUE,
-    course_name VARCHAR(100) NOT NULL
+    course_name VARCHAR(100) NOT NULL,
+    required_hours INT DEFAULT 480
 );
 
 
@@ -98,11 +99,11 @@ CREATE TABLE Absence_Requests (
 );
 
 
-INSERT INTO Course (course_code, course_name) VALUES
-('BSCS', 'Bachelor of Science in Computer Science'),
-('BSIS', 'Bachelor of Science in Information Systems'),
-('BLIS', 'Bachelor of Library and Information Science')
-ON DUPLICATE KEY UPDATE course_name=VALUES(course_name);
+INSERT INTO Course (course_code, course_name, required_hours) VALUES
+('BSCS', 'Bachelor of Science in Computer Science', 480),
+('BSIS', 'Bachelor of Science in Information Systems', 480),
+('BLIS', 'Bachelor of Library and Information Science', 480)
+ON DUPLICATE KEY UPDATE course_name=VALUES(course_name), required_hours=VALUES(required_hours);
 
 INSERT INTO Training_Site (site_code, site_name, location)
 VALUES ('SBC-IT', 'SBC IT Department', 'M\'lang, Cotabato');

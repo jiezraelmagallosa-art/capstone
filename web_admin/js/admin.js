@@ -19,6 +19,7 @@ let cachedStudents = [];
 let cachedLogs = [];
 let cachedAbsences = [];
 let cachedSites = [];
+let cachedCourses = [];
 
 // UI Initialization & Main Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -224,6 +225,9 @@ function loadTabContent(tabId) {
     case 'absences':
       fetchAbsences();
       break;
+    case 'courses':
+      fetchCourses();
+      break;
     case 'sites':
       fetchSites();
       break;
@@ -291,6 +295,7 @@ function renderLiveCaptures(captures) {
 // Student Tracking Data Loader
 async function fetchStudents() {
   try {
+    await fetchCourses(false);
     const res = await fetch(API_BASE + 'admin_get_students.php' + getDeanQueryParam());
     const data = await res.json();
     if (data.status === 'success') {
@@ -304,25 +309,7 @@ async function fetchStudents() {
 }
 
 function updateCourseCounts(counts) {
-  let bscsCount = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === 'BSCS').length;
-  let bsisCount = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === 'BSIS').length;
-  let blisCount = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === 'BLIS').length;
-  let allCount = cachedStudents.length;
-
-  if (counts && counts.ALL !== undefined && counts.ALL > 0) {
-    allCount = counts.ALL;
-    if (counts.BSCS !== undefined) bscsCount = counts.BSCS;
-    if (counts.BSIS !== undefined) bsisCount = counts.BSIS;
-    if (counts.BLIS !== undefined) blisCount = counts.BLIS;
-  }
-
-  const selectEl = document.getElementById('courseSelectFilter');
-  if (selectEl) {
-    if (selectEl.options[0]) selectEl.options[0].text = `All Programs (${allCount})`;
-    if (selectEl.options[1]) selectEl.options[1].text = `BSCS - Bachelor of Science in Computer Science (${bscsCount})`;
-    if (selectEl.options[2]) selectEl.options[2].text = `BSIS - Bachelor of Science in Information Systems (${bsisCount})`;
-    if (selectEl.options[3]) selectEl.options[3].text = `BLIS - Bachelor of Library & Info Science (${blisCount})`;
-  }
+  populateDynamicCourseDropdowns();
 }
 
 function filterByCourse(courseCode, updateSelect = true) {
@@ -411,25 +398,7 @@ async function fetchLogs() {
 }
 
 function updateLogsCourseCounts(counts) {
-  let bscsCount = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === 'BSCS').length;
-  let bsisCount = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === 'BSIS').length;
-  let blisCount = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === 'BLIS').length;
-  let allCount = cachedLogs.length;
-
-  if (counts && counts.ALL !== undefined && counts.ALL > 0) {
-    allCount = counts.ALL;
-    if (counts.BSCS !== undefined) bscsCount = counts.BSCS;
-    if (counts.BSIS !== undefined) bsisCount = counts.BSIS;
-    if (counts.BLIS !== undefined) blisCount = counts.BLIS;
-  }
-
-  const selectEl = document.getElementById('logsCourseSelectFilter');
-  if (selectEl) {
-    if (selectEl.options[0]) selectEl.options[0].text = `All Programs (${allCount})`;
-    if (selectEl.options[1]) selectEl.options[1].text = `BSCS - Bachelor of Science in Computer Science (${bscsCount})`;
-    if (selectEl.options[2]) selectEl.options[2].text = `BSIS - Bachelor of Science in Information Systems (${bsisCount})`;
-    if (selectEl.options[3]) selectEl.options[3].text = `BLIS - Bachelor of Library & Info Science (${blisCount})`;
-  }
+  populateDynamicCourseDropdowns();
 }
 
 function filterLogsByCourse(courseCode, updateSelect = true) {
@@ -770,7 +739,7 @@ function renderComplianceSummary() {
         </div>
       </div>
       <div class="kpi-card">
-        <div class="kpi-title">Completed (480 Hours)</div>
+        <div class="kpi-title">Completed (Goal Hours)</div>
         <div class="kpi-value-row">
           <div class="kpi-value">${completed}</div>
           <span class="kpi-badge green">Fulfilled</span>
@@ -817,7 +786,7 @@ function renderComplianceSummary() {
                   <td><span class="badge ${courseBadge}">${s.course_code}</span></td>
                   <td>${escapeHtml(s.site_name)}</td>
                   <td style="font-weight:700;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
-                  <td>480h</td>
+                  <td>${s.required_hours}h</td>
                   <td>${s.progress_percentage}%</td>
                   <td><span class="badge ${s.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td>
                 </tr>
@@ -903,7 +872,7 @@ function generatePDFReport() {
       <div class="meta-grid">
         <div class="meta-item"><strong>Target Program Scope:</strong> ${escapeHtml(programTitle)}</div>
         <div class="meta-item"><strong>Issued By:</strong> ${escapeHtml(deanName)} (${escapeHtml(deanEmail)})</div>
-        <div class="meta-item"><strong>Required Target Goal:</strong> 480 Hours per Student</div>
+        <div class="meta-item"><strong>Required Target Goal:</strong> Per-course defined hours</div>
         <div class="meta-item"><strong>Report Type:</strong> Official Institutional Verification Summary</div>
       </div>
 
@@ -913,7 +882,7 @@ function generatePDFReport() {
           <div class="kpi-box-value">${total}</div>
         </div>
         <div class="kpi-box">
-          <div class="kpi-box-title">Completed (480h)</div>
+          <div class="kpi-box-title">Completed (Goal Hrs)</div>
           <div class="kpi-box-value">${completed}</div>
         </div>
         <div class="kpi-box">
@@ -943,7 +912,7 @@ function generatePDFReport() {
               <td style="font-weight: 700; color: #002d56;">${s.course_code}</td>
               <td>${escapeHtml(s.site_name)}</td>
               <td style="font-weight: 700;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
-              <td>480h</td>
+              <td>${s.required_hours}h</td>
               <td>${s.progress_percentage}%</td>
               <td><span class="badge ${s.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td>
             </tr>
@@ -991,7 +960,7 @@ function exportCSVReport() {
   if (targetStudents.length === 0) return alert('No data to export.');
   let csv = 'Student Name,Student Number,Course,Partner Facility,Hours Rendered,Target Goal,Progress %,Status\n';
   targetStudents.forEach(s => {
-    csv += `"${s.full_name}","${s.student_number}","${s.course_code}","${s.site_name}","${s.rendered_hours}h ${s.rendered_minutes}m","480h","${s.progress_percentage}%","${s.status}"\n`;
+    csv += `"${s.full_name}","${s.student_number}","${s.course_code}","${s.site_name}","${s.rendered_hours}h ${s.rendered_minutes}m","${s.required_hours}h","${s.progress_percentage}%","${s.status}"\n`;
   });
 
   const blob = new Blob([csv], { type: 'text/csv' });
@@ -1110,8 +1079,8 @@ function openStudentDrawer(studentId) {
       </div>
     </div>
 
-    <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm);">
-      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">480-Hour Internship Progress</div>
+    <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem;">${s.required_hours}-Hour Internship Progress</div>
       <div class="progress-container" style="margin-bottom: 0.6rem;">
         <div class="progress-bar-bg" style="height: 10px; background-color: var(--border-light);">
           <div class="progress-bar-fill" style="width: ${s.progress_percentage}%; height: 100%; background-color: ${s.progress_percentage >= 100 ? '#2e7d32' : 'var(--gold-accent)'};"></div>
@@ -1119,7 +1088,7 @@ function openStudentDrawer(studentId) {
       </div>
       <div style="display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem;">
         <span>Hours Rendered: <strong style="color: var(--navy-primary);">${s.formatted_time}</strong></span>
-        <span>Target Goal: <strong>480 hrs</strong> (${s.progress_percentage}%)</span>
+        <span>Target Goal: <strong>${s.required_hours} hrs</strong> (${s.progress_percentage}%)</span>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 0.5rem; margin-top: 0.4rem;">
         <span>Total Attendance Days: <strong>${s.total_days} days</strong></span>
@@ -1131,11 +1100,35 @@ function openStudentDrawer(studentId) {
           <div>
             <div style="font-weight: 700; color: var(--navy-primary); font-size: 0.88rem;">Goal Hours Completed! 🏆</div>
             <div style="font-size: 0.78rem; color: #4a5568; margin-top: 0.2rem; line-height: 1.35;">
-              Congratulations! This intern has successfully completed their required 480-hour internship goal requirement with dedication and excellence.
+              Congratulations! This intern has successfully completed their required ${s.required_hours}-hour internship goal requirement with dedication and excellence.
             </div>
           </div>
         </div>
       ` : ''}
+    </div>
+
+    <!-- Dean Controls: Reassign Course -->
+    <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; background: var(--bg-canvas);">
+      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem;">🎓 Reassign Academic Program</div>
+      <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <select id="drawerCourseSelect" style="flex: 1; min-width: 180px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.85rem; background: #fff; color: var(--navy-primary); font-weight: 600;">
+          ${cachedCourses.map(c => `<option value="${c.course_id}" ${c.course_id == s.course_id ? 'selected' : ''}>${c.course_code} — ${c.course_name} (${c.required_hours}h)</option>`).join('')}
+        </select>
+        <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.82rem; white-space: nowrap;" onclick="saveStudentAssignedCourse(${s.student_id})">Save Program</button>
+      </div>
+    </div>
+
+    <!-- Dean Controls: Custom Hours -->
+    <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm); background: var(--bg-canvas);">
+      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem;">⏱️ Override Required Internship Hours</div>
+      <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem;">
+        ${[240,300,480,500,600].map(h => `<button class="btn-preset-chip ${s.required_hours == h ? 'active' : ''}" onclick="setDrawerPresetHours(${h})">${h}h</button>`).join('')}
+      </div>
+      <div style="display: flex; gap: 0.5rem; align-items: center;">
+        <input type="number" id="drawerHoursInput" value="${s.required_hours}" min="1" max="9999" style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 700; color: var(--navy-primary); background: #fff; max-width: 130px;">
+        <span style="font-size: 0.82rem; color: var(--text-muted);">hours total</span>
+        <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.82rem; white-space: nowrap;" onclick="saveStudentCustomHours(${s.student_id})">Save Hours</button>
+      </div>
     </div>
   `;
 
@@ -1176,6 +1169,234 @@ function filterActiveTable(query) {
   } else if (currentTab === 'sites') {
     const filtered = cachedSites.filter(st => st.site_name.toLowerCase().includes(query) || st.site_code.toLowerCase().includes(query) || st.location.toLowerCase().includes(query));
     renderSitesTable(filtered);
+  }
+}
+
+// ─── Course Management Functions ─────────────────────────────────────────────
+
+async function fetchCourses(render = true) {
+  try {
+    const res = await fetch(API_BASE + 'admin_courses.php');
+    const data = await res.json();
+    if (data.status === 'success') {
+      cachedCourses = data.data || [];
+      if (render) renderCoursesTable(cachedCourses);
+      populateDynamicCourseDropdowns();
+    }
+  } catch (err) {
+    console.error('Fetch courses error:', err);
+  }
+}
+
+function renderCoursesTable(courses) {
+  const tbody = document.getElementById('coursesTableBody');
+  if (!tbody) return;
+
+  if (courses.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem;">No academic programs registered yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = courses.map(c => {
+    const badgeClass = getCourseBadgeClass(c.course_code);
+    return `
+      <tr>
+        <td><span class="badge ${badgeClass}">${escapeHtml(c.course_code)}</span></td>
+        <td style="font-weight:600;color:var(--navy-primary);">${escapeHtml(c.course_name)}</td>
+        <td>
+          <span class="badge-hours" style="background:var(--bg-canvas);border:1px solid var(--border-light);padding:0.3rem 0.7rem;border-radius:var(--radius-sm);font-weight:700;color:var(--navy-primary);font-size:0.88rem;">
+            ⏱ ${c.required_hours} hrs
+          </span>
+        </td>
+        <td><span class="badge badge-success">${c.enrolled_students} Intern(s)</span></td>
+        <td>
+          <button class="btn btn-outline" style="margin-right:0.4rem;" onclick='openEditCourseModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button>
+          <button class="btn btn-danger" style="padding:0.4rem 0.75rem;font-size:0.8rem;" onclick="deleteCourse(${c.course_id}, '${escapeHtml(c.course_code)}', ${c.enrolled_students})">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+let activeEditingCourse = null;
+
+function openAddCourseModal() {
+  activeEditingCourse = null;
+  document.getElementById('courseModalTitle').textContent = 'Add Academic Program';
+  document.getElementById('courseIdInput').value = '';
+  document.getElementById('courseCodeInput').value = '';
+  document.getElementById('courseNameInput').value = '';
+  document.getElementById('courseRequiredHoursInput').value = '480';
+  const delBtn = document.getElementById('deleteCourseModalBtn');
+  if (delBtn) delBtn.style.display = 'none';
+  document.getElementById('courseModal').classList.add('active');
+}
+
+function openEditCourseModal(course) {
+  activeEditingCourse = course;
+  document.getElementById('courseModalTitle').textContent = 'Edit Academic Program';
+  document.getElementById('courseIdInput').value = course.course_id;
+  document.getElementById('courseCodeInput').value = course.course_code;
+  document.getElementById('courseNameInput').value = course.course_name;
+  document.getElementById('courseRequiredHoursInput').value = course.required_hours;
+  const delBtn = document.getElementById('deleteCourseModalBtn');
+  if (delBtn) delBtn.style.display = 'inline-block';
+  document.getElementById('courseModal').classList.add('active');
+}
+
+function closeCourseModal() {
+  document.getElementById('courseModal').classList.remove('active');
+}
+
+function setPresetHours(hours) {
+  const input = document.getElementById('courseRequiredHoursInput');
+  if (input) input.value = hours;
+}
+
+function setDrawerPresetHours(hours) {
+  const input = document.getElementById('drawerHoursInput');
+  if (input) input.value = hours;
+}
+
+async function handleModalDeleteCourse() {
+  if (!activeEditingCourse) return;
+  closeCourseModal();
+  await deleteCourse(activeEditingCourse.course_id, activeEditingCourse.course_code, activeEditingCourse.enrolled_students);
+}
+
+async function deleteCourse(courseId, courseCode, enrolledCount) {
+  if (enrolledCount > 0) {
+    alert(`Cannot delete '${courseCode}' — it currently has ${enrolledCount} active intern(s) enrolled. Please reassign all students first.`);
+    return;
+  }
+  if (!confirm(`Permanently delete the '${courseCode}' academic program?`)) return;
+
+  try {
+    const res = await fetch(API_BASE + 'admin_courses.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', course_id: courseId })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(data.message);
+      fetchCourses();
+    } else {
+      alert(data.message || 'Failed to delete program.');
+    }
+  } catch (err) {
+    console.error('Delete course error:', err);
+  }
+}
+
+async function saveCourse(e) {
+  e.preventDefault();
+  const course_id   = document.getElementById('courseIdInput').value;
+  const course_code = document.getElementById('courseCodeInput').value.trim().toUpperCase();
+  const course_name = document.getElementById('courseNameInput').value.trim();
+  const required_hours = parseInt(document.getElementById('courseRequiredHoursInput').value, 10);
+
+  if (!course_code || !course_name || isNaN(required_hours) || required_hours < 1) {
+    alert('Please fill in all fields. Required hours must be a positive number.');
+    return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + 'admin_courses.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'save', course_id, course_code, course_name, required_hours })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(data.message);
+      closeCourseModal();
+      fetchCourses();
+    } else {
+      alert(data.message || 'Failed to save program.');
+    }
+  } catch (err) {
+    console.error('Save course error:', err);
+  }
+}
+
+function populateDynamicCourseDropdowns() {
+  const allCount  = cachedStudents.length;
+  const allLogs   = cachedLogs.length;
+
+  // Build options HTML for student and logs filters
+  const studentOptions = `<option value="ALL">All Programs (${allCount})</option>` +
+    cachedCourses.map(c => {
+      const cnt = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === c.course_code.toUpperCase()).length;
+      return `<option value="${c.course_code}">${c.course_code} — ${c.course_name} (${cnt})</option>`;
+    }).join('');
+
+  const logsOptions = `<option value="ALL">All Programs (${allLogs})</option>` +
+    cachedCourses.map(c => {
+      const cnt = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === c.course_code.toUpperCase()).length;
+      return `<option value="${c.course_code}">${c.course_code} — ${c.course_name} (${cnt})</option>`;
+    }).join('');
+
+  const reportOptions = `<option value="ALL">All Programs</option>` +
+    cachedCourses.map(c => `<option value="${c.course_code}">${c.course_code} — ${c.course_name}</option>`).join('');
+
+  const sf = document.getElementById('courseSelectFilter');
+  if (sf) { const cur = sf.value; sf.innerHTML = studentOptions; sf.value = cachedCourses.some(c=>c.course_code===cur) || cur==='ALL' ? cur : 'ALL'; }
+
+  const lf = document.getElementById('logsCourseSelectFilter');
+  if (lf) { const cur = lf.value; lf.innerHTML = logsOptions; lf.value = cachedCourses.some(c=>c.course_code===cur) || cur==='ALL' ? cur : 'ALL'; }
+
+  const rf = document.getElementById('reportCourseFilterSelect');
+  if (rf) { const cur = rf.value; rf.innerHTML = reportOptions; rf.value = cachedCourses.some(c=>c.course_code===cur) || cur==='ALL' ? cur : 'ALL'; }
+}
+
+async function saveStudentAssignedCourse(studentId) {
+  const sel = document.getElementById('drawerCourseSelect');
+  if (!sel) return;
+  const course_id = sel.value;
+  try {
+    const res = await fetch(API_BASE + 'admin_student_manage.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update_course', student_id: studentId, course_id })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert('Academic program updated successfully.');
+      closeStudentDetailsModal();
+      fetchStudents();
+    } else {
+      alert(data.message || 'Failed to update program.');
+    }
+  } catch (err) {
+    console.error('Save student course error:', err);
+  }
+}
+
+async function saveStudentCustomHours(studentId) {
+  const input = document.getElementById('drawerHoursInput');
+  if (!input) return;
+  const required_hours = parseInt(input.value, 10);
+  if (isNaN(required_hours) || required_hours < 1) {
+    alert('Please enter a valid number of hours (minimum 1).');
+    return;
+  }
+  try {
+    const res = await fetch(API_BASE + 'admin_student_manage.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update_required_hours', student_id: studentId, required_hours })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(`Required hours updated to ${required_hours}h successfully.`);
+      closeStudentDetailsModal();
+      fetchStudents();
+    } else {
+      alert(data.message || 'Failed to update hours.');
+    }
+  } catch (err) {
+    console.error('Save student hours error:', err);
   }
 }
 

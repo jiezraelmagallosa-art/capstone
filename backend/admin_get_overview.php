@@ -63,7 +63,10 @@ try {
     $total_rendered_hours = floor($total_minutes / 60);
 
 
-    $target_total = max(1, $total_interns * 480);
+    $sql_target = "SELECT SUM(COALESCE(o.required_hours, c.required_hours, 480)) AS total_target FROM student s LEFT JOIN ojt o ON s.student_id = o.student_id LEFT JOIN course c ON s.course_id = c.course_id";
+    if ($dean_id > 0) $sql_target .= " WHERE s.dean_id = $dean_id";
+    $res_target = $conn->query($sql_target);
+    $target_total = max(1, intval($res_target->fetch_assoc()['total_target'] ?? ($total_interns * 480)));
     $completion_rate = min(100.0, round(($total_rendered_hours / $target_total) * 100, 1));
 
 

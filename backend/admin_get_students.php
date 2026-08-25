@@ -38,6 +38,7 @@ require_once 'db_connect.php';
                 u.email AS dean_email,
                 c.course_code,
                 c.course_name,
+                c.required_hours AS course_required_hours,
                 o.ojt_id,
                 o.ojt_no,
                 o.required_hours,
@@ -77,18 +78,23 @@ require_once 'db_connect.php';
     $students = [];
 
     // Overall counts per course for summary badges
+    $course_counts = ["ALL" => 0];
+    $all_courses_res = $conn->query("SELECT course_code FROM course ORDER BY course_code ASC");
+    if ($all_courses_res && $all_courses_res->num_rows > 0) {
+        while ($ac_row = $all_courses_res->fetch_assoc()) {
+            $code = strtoupper($ac_row['course_code'] ?? '');
+            if (!empty($code)) {
+                $course_counts[$code] = 0;
+            }
+        }
+    }
+
     $counts_sql = "SELECT c.course_code, COUNT(s.student_id) as total FROM course c LEFT JOIN student s ON c.course_id = s.course_id";
     if ($has_specific_students && $dean_id > 0) {
         $counts_sql .= " WHERE s.dean_id = " . intval($dean_id);
     }
     $counts_sql .= " GROUP BY c.course_code";
     $counts_res = $conn->query($counts_sql);
-    $course_counts = [
-        "ALL" => 0,
-        "BSCS" => 0,
-        "BSIS" => 0,
-        "BLIS" => 0
-    ];
     if ($counts_res && $counts_res->num_rows > 0) {
         while ($c_row = $counts_res->fetch_assoc()) {
             $code = strtoupper($c_row['course_code'] ?? '');
@@ -106,7 +112,11 @@ require_once 'db_connect.php';
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {
             $ojt_id = intval($row['ojt_id'] ?? 0);
-            $req_h = 480;
+            $req_h = intval($row['required_hours'] ?? ($row['course_required_hours'] ?? 480));
+            if ($req_h <= 0) {
+                $req_h = intval($row['course_required_hours'] ?? 480);
+                if ($req_h <= 0) $req_h = 480;
+            }
 
             $total_min = 0;
             $total_days = 0;
@@ -143,6 +153,7 @@ require_once 'db_connect.php';
                 "course_id" => $row['course_id'],
                 "course_code" => $row['course_code'] ?? 'BSIS',
                 "course_name" => $row['course_name'] ?? 'BS Information Systems',
+                "course_required_hours" => intval($row['course_required_hours'] ?? 480),
                 "site_id" => $row['site_id'] ?? 1,
                 "site_name" => $row['site_name'] ?? 'SBC IT Department',
                 "site_location" => $row['site_location'] ?? 'M\'lang, Cotabato',

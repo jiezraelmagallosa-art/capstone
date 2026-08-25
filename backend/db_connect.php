@@ -38,15 +38,22 @@ if ($col_check && $col_check->num_rows == 0) {
 }
 }
 
+// Auto-migrate column 'required_hours' on Course table if not present
+$col_course_hours = $conn->query("SHOW COLUMNS FROM course LIKE 'required_hours'");
+if ($col_course_hours && $col_course_hours->num_rows == 0) {
+    @$conn->query("ALTER TABLE course ADD COLUMN required_hours INT DEFAULT 480 AFTER course_name");
+    @$conn->query("UPDATE course SET required_hours = 480 WHERE required_hours IS NULL OR required_hours = 0");
+}
+
 // Auto-seed required courses (BSCS, BSIS, BLIS) if not present
 $course_check = $conn->query("SELECT COUNT(*) as cnt FROM course");
 if ($course_check) {
     $c_cnt = intval($course_check->fetch_assoc()['cnt'] ?? 0);
     if ($c_cnt < 3) {
-        $conn->query("INSERT IGNORE INTO course (course_code, course_name) VALUES
-            ('BSCS', 'Bachelor of Science in Computer Science'),
-            ('BSIS', 'Bachelor of Science in Information Systems'),
-            ('BLIS', 'Bachelor of Library and Information Science')");
+        $conn->query("INSERT IGNORE INTO course (course_code, course_name, required_hours) VALUES
+            ('BSCS', 'Bachelor of Science in Computer Science', 480),
+            ('BSIS', 'Bachelor of Science in Information Systems', 480),
+            ('BLIS', 'Bachelor of Library and Information Science', 480)");
     }
 }
 
