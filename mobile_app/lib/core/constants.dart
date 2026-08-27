@@ -14,12 +14,8 @@ class AppColors {
 }
 
 class AppConfig {
-  // ⚠️  DEPLOYMENT: Change this to your production server IP or domain.
-  // Examples:
-  //   static String _activeHost = "192.168.1.100";          // Local network IP
-  //   static String _activeHost = "https://myschool.com";   // Public domain
-  //   static String _activeHost = "10.0.0.50";              // School network IP
-  static String _activeHost = "YOUR_SERVER_IP_OR_DOMAIN"; // [CHANGE ME BEFORE BUILDING APK]
+  // Default host for local network / XAMPP server (configurable dynamically in app)
+  static String _activeHost = "192.168.1.3";
   static final List<String> _customHosts = [];
 
   static String get serverHost => _activeHost;
