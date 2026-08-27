@@ -39,7 +39,7 @@ try {
         $row = $result->fetch_assoc();
         $db_pass = $row['password'];
 
-        if (password_verify($pass, $db_pass) || $pass === $db_pass || ($email === 'dean@sbc.edu.ph' && $pass === 'admin123')) {
+        if (password_verify($pass, $db_pass) || $pass === $db_pass) {
             unset($row['password']);
             echo json_encode([
                 "status" => "success",

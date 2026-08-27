@@ -14,7 +14,12 @@ class AppColors {
 }
 
 class AppConfig {
-  static String _activeHost = "192.168.1.3";
+  // ⚠️  DEPLOYMENT: Change this to your production server IP or domain.
+  // Examples:
+  //   static String _activeHost = "192.168.1.100";          // Local network IP
+  //   static String _activeHost = "https://myschool.com";   // Public domain
+  //   static String _activeHost = "10.0.0.50";              // School network IP
+  static String _activeHost = "YOUR_SERVER_IP_OR_DOMAIN"; // [CHANGE ME BEFORE BUILDING APK]
   static final List<String> _customHosts = [];
 
   static String get serverHost => _activeHost;
@@ -78,14 +83,17 @@ class AppConfig {
     for (final h in _customHosts) {
       if (!list.contains(h)) list.add(h);
     }
+    // Add known candidate hosts for auto-discovery
+    // [CHANGE ME] Add your actual school network IPs here
     final defaults = [
+      "YOUR_SERVER_IP_OR_DOMAIN", // [CHANGE ME] Primary production server
       "192.168.1.3",
-      "10.0.0.56",
+      "192.168.1.100",
       "192.168.1.7",
+      "10.0.0.56",
       "10.0.2.2",
       "127.0.0.1",
       "localhost",
-      "10.246.176.89",
     ];
     for (final d in defaults) {
       if (!list.contains(d)) list.add(d);

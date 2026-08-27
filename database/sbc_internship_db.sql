@@ -7,7 +7,7 @@ CREATE DATABASE IF NOT EXISTS sbc_internship_db;
 USE sbc_internship_db;
 
 
-CREATE TABLE Course (
+CREATE TABLE IF NOT EXISTS Course (
     course_id INT PRIMARY KEY AUTO_INCREMENT,
     course_code VARCHAR(20) NOT NULL UNIQUE,
     course_name VARCHAR(100) NOT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE Course (
 );
 
 
-CREATE TABLE Training_Site (
+CREATE TABLE IF NOT EXISTS Training_Site (
     site_id INT PRIMARY KEY AUTO_INCREMENT,
     site_code VARCHAR(20) NOT NULL UNIQUE,
     site_name VARCHAR(100) NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE Training_Site (
 );
 
 
-CREATE TABLE Users (
+CREATE TABLE IF NOT EXISTS Users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
     full_name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE Users (
 );
 
 
-CREATE TABLE Student (
+CREATE TABLE IF NOT EXISTS Student (
     student_id INT PRIMARY KEY AUTO_INCREMENT,
     student_number VARCHAR(50) UNIQUE NOT NULL,
     full_name VARCHAR(100) NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE Student (
 );
 
 
-CREATE TABLE OJT (
+CREATE TABLE IF NOT EXISTS OJT (
     ojt_id INT PRIMARY KEY AUTO_INCREMENT,
     ojt_no VARCHAR(50) UNIQUE NOT NULL,
     site_id INT NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE OJT (
 );
 
 
-CREATE TABLE Attendance (
+CREATE TABLE IF NOT EXISTS Attendance (
     attendance_id INT PRIMARY KEY AUTO_INCREMENT,
     date DATE NOT NULL,
     time_in_morning TIME NULL,
@@ -72,7 +72,7 @@ CREATE TABLE Attendance (
 );
 
 
-CREATE TABLE Photo (
+CREATE TABLE IF NOT EXISTS Photo (
     photo_id INT PRIMARY KEY AUTO_INCREMENT,
     attendance_id INT NOT NULL,
     shift_type ENUM('Morning_In', 'Morning_Out', 'Afternoon_In', 'Afternoon_Out') NOT NULL,
@@ -82,7 +82,7 @@ CREATE TABLE Photo (
 );
 
 
-CREATE TABLE Absence_Requests (
+CREATE TABLE IF NOT EXISTS Absence_Requests (
     absence_id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT NOT NULL,
     ojt_id INT NOT NULL,
@@ -105,16 +105,14 @@ INSERT INTO Course (course_code, course_name, required_hours) VALUES
 ('BLIS', 'Bachelor of Library and Information Science', 480)
 ON DUPLICATE KEY UPDATE course_name=VALUES(course_name), required_hours=VALUES(required_hours);
 
-INSERT INTO Training_Site (site_code, site_name, location)
+INSERT IGNORE INTO Training_Site (site_code, site_name, location)
 VALUES ('SBC-IT', 'SBC IT Department', 'M\'lang, Cotabato');
 
+INSERT IGNORE INTO Users (user_id, full_name, email, password, role)
+VALUES (1, 'Dean Admin', 'dean@sbc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.X2g14m.6C', 'Dean');
 
-INSERT INTO Users (full_name, email, password, role)
-VALUES ('Dean Admin', 'dean@sbc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.X2g14m.6C', 'Dean');
+INSERT IGNORE INTO Student (student_id, student_number, full_name, id_no, email, password, course_id, dean_id)
+VALUES (1, '2026-0001', 'Juan Dela Cruz', 'ID-101', 'student@sbc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.X2g14m.6C', 1, 1);
 
-
-INSERT INTO Student (student_number, full_name, id_no, email, password, course_id, dean_id)
-VALUES ('2026-0001', 'Juan Dela Cruz', 'ID-101', 'student@sbc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.X2g14m.6C', 1, 1);
-
-INSERT INTO OJT (ojt_no, site_id, student_id, required_hours)
-VALUES ('OJT-2026-01', 1, 1, 480);
+INSERT IGNORE INTO OJT (ojt_id, ojt_no, site_id, student_id, required_hours)
+VALUES (1, 'OJT-2026-01', 1, 1, 480);

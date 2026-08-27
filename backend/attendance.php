@@ -13,14 +13,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-try {
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "sbc_internship_db";
+require_once __DIR__ . '/db_connect.php';
 
-    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-    $conn = new mysqli($servername, $username, $password, $dbname);
+try {
 
     $raw_input = file_get_contents("php://input");
     $data = json_decode($raw_input, true);

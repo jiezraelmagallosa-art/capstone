@@ -55,10 +55,11 @@ try {
     $absences = [];
 
     if ($result && $result->num_rows > 0) {
+        $base_sys_url = function_exists('get_system_base_url') ? get_system_base_url() : '../';
         while ($row = $result->fetch_assoc()) {
             $doc_url = null;
             if (!empty($row['supporting_document'])) {
-                $doc_url = "http://localhost/SBC_Internship_Attendance_System/" . $row['supporting_document'];
+                $doc_url = $base_sys_url . $row['supporting_document'];
             }
 
             $absences[] = [

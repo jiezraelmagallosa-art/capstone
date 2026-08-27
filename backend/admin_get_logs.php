@@ -67,12 +67,13 @@ try {
             $p_res = $p_stmt->get_result();
 
             $photos = [];
+            $base_sys_url = function_exists('get_system_base_url') ? get_system_base_url() : '../';
             while ($p = $p_res->fetch_assoc()) {
                 $photos[] = [
                     "photo_id" => $p['photo_id'],
                     "shift_type" => str_replace('_', ' ', $p['shift_type']),
                     "image_path" => $p['image_path'],
-                    "full_url" => "http://localhost/SBC_Internship_Attendance_System/" . $p['image_path'],
+                    "full_url" => $base_sys_url . $p['image_path'],
                     "captured_at" => date("h:i A", strtotime($p['captured_at']))
                 ];
             }

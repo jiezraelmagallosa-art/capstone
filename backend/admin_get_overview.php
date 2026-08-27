@@ -98,19 +98,18 @@ try {
 
     $live_captures = [];
     if ($res_photos && $res_photos->num_rows > 0) {
-        while ($p = $res_photos->fetch_assoc()) {
-            $live_captures[] = [
-                "photo_id" => $p['photo_id'],
-                "full_name" => $p['full_name'],
-                "student_number" => $p['student_number'],
-                "course_code" => $p['course_code'] ?? 'BSIS',
-                "shift_type" => str_replace('_', ' ', $p['shift_type']),
-                "image_path" => $p['image_path'],
-                "full_url" => "http://localhost/SBC_Internship_Attendance_System/" . $p['image_path'],
-                "captured_time" => date("h:i A", strtotime($p['captured_at'])),
-                "date" => date("M d, Y", strtotime($p['date']))
-            ];
-        }
+                $base_sys_url = function_exists('get_system_base_url') ? get_system_base_url() : '../';
+                $live_captures[] = [
+                    "photo_id" => $p['photo_id'],
+                    "full_name" => $p['full_name'],
+                    "student_number" => $p['student_number'],
+                    "course_code" => $p['course_code'] ?? 'BSIS',
+                    "shift_type" => str_replace('_', ' ', $p['shift_type']),
+                    "image_path" => $p['image_path'],
+                    "full_url" => $base_sys_url . $p['image_path'],
+                    "captured_time" => date("h:i A", strtotime($p['captured_at'])),
+                    "date" => date("M d, Y", strtotime($p['date']))
+                ];
     }
 
     echo json_encode([
