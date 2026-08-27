@@ -443,7 +443,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Developed By: Jiezrael P. Magallosa",
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 8,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.3,
                       ),
