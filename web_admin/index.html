@@ -196,7 +196,8 @@
       <header class="topbar">
         <div class="topbar-search">
           <span style="color: var(--text-muted);">🔍</span>
-          <input type="text" id="globalSearch" placeholder="Search student name, ID #, course, or partner facility..." oninput="handleGlobalSearch(this.value)">
+          <input type="text" id="globalSearch" placeholder="Search student name, ID #, course, or partner facility..."
+            oninput="handleGlobalSearch(this.value)">
         </div>
 
         <div class="topbar-actions" style="position: relative;">
@@ -465,7 +466,8 @@
           <div class="page-header">
             <div class="page-header-title">
               <h1>Academic Programs & Required Hours</h1>
-              <p>Configure institutional degree programs, curriculum courses, and type total required internship hours.</p>
+              <p>Configure institutional degree programs, curriculum courses, and type total required internship hours.
+              </p>
             </div>
             <button class="btn btn-navy" onclick="openAddCourseModal()">+ Add Academic Program</button>
           </div>
@@ -507,7 +509,8 @@
       <div id="photoModalContent" style="max-height: 420px; overflow-y: auto;">
         <!-- Dynamically rendered images -->
       </div>
-      <div id="photoModalActions" style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+      <div id="photoModalActions"
+        style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
         <div id="photoModalConfirmContainer"></div>
         <button class="btn btn-outline" onclick="closePhotoModal()">Close Verification</button>
       </div>
@@ -540,7 +543,8 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
-          <button type="button" id="deleteSiteModalBtn" class="btn btn-danger" style="display:none;" onclick="handleModalDeleteSite()">Delete Facility</button>
+          <button type="button" id="deleteSiteModalBtn" class="btn btn-danger" style="display:none;"
+            onclick="handleModalDeleteSite()">Delete Facility</button>
           <div style="display:flex; gap:0.75rem; margin-left:auto;">
             <button type="button" class="btn btn-outline" onclick="closeSiteModal()">Cancel</button>
             <button type="submit" class="btn btn-navy">Save Facility</button>
@@ -562,19 +566,24 @@
 
         <div class="form-group">
           <label for="courseCodeInput">Program / Course Code</label>
-          <input type="text" id="courseCodeInput" class="form-control" required placeholder="e.g. BSCS, BSIS, BSIT, BLIS">
+          <input type="text" id="courseCodeInput" class="form-control" required
+            placeholder="e.g. BSCS, BSIS, BSIT, BLIS">
         </div>
 
         <div class="form-group">
           <label for="courseNameInput">Full Academic Program Name</label>
-          <input type="text" id="courseNameInput" class="form-control" required placeholder="e.g. Bachelor of Science in Computer Science">
+          <input type="text" id="courseNameInput" class="form-control" required
+            placeholder="e.g. Bachelor of Science in Computer Science">
         </div>
 
         <div class="form-group">
           <label for="courseRequiredHoursInput">Type Required Total Internship Hours</label>
           <div style="position: relative;">
-            <input type="number" id="courseRequiredHoursInput" class="form-control" required min="1" max="5000" step="1" placeholder="e.g. 480" style="padding-right: 55px; font-weight: 700; font-size: 1rem; color: var(--navy-primary);">
-            <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted); font-size: 0.82rem;">HRS</span>
+            <input type="number" id="courseRequiredHoursInput" class="form-control" required min="1" max="5000" step="1"
+              placeholder="e.g. 480"
+              style="padding-right: 55px; font-weight: 700; font-size: 1rem; color: var(--navy-primary);">
+            <span
+              style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted); font-size: 0.82rem;">HRS</span>
           </div>
           <div class="hours-preset-container" style="margin-top: 0.5rem; display: flex; gap: 0.35rem; flex-wrap: wrap;">
             <button type="button" class="btn-preset-chip" onclick="setPresetHours(240)">240h</button>
@@ -583,13 +592,16 @@
             <button type="button" class="btn-preset-chip" onclick="setPresetHours(500)">500h</button>
             <button type="button" class="btn-preset-chip" onclick="setPresetHours(600)">600h</button>
           </div>
-          <small style="display:block; margin-top: 0.4rem; color: var(--text-muted); font-size: 0.76rem; line-height: 1.35;">
-            💡 Typing required hours here will automatically adjust the goal hours for all student interns enrolled in this course.
+          <small
+            style="display:block; margin-top: 0.4rem; color: var(--text-muted); font-size: 0.76rem; line-height: 1.35;">
+            💡 Typing required hours here will automatically adjust the goal hours for all student interns enrolled in
+            this course.
           </small>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.5rem;">
-          <button type="button" id="deleteCourseModalBtn" class="btn btn-danger" style="display:none;" onclick="handleModalDeleteCourse()">Delete Program</button>
+          <button type="button" id="deleteCourseModalBtn" class="btn btn-danger" style="display:none;"
+            onclick="handleModalDeleteCourse()">Delete Program</button>
           <div style="display:flex; gap:0.75rem; margin-left:auto;">
             <button type="button" class="btn btn-outline" onclick="closeCourseModal()">Cancel</button>
             <button type="submit" class="btn btn-navy">Save Program</button>
@@ -606,7 +618,8 @@
         <h3>👨‍🎓 Student Profile & Internship Allocation</h3>
         <button class="close-btn" onclick="closeStudentDetailsModal()">&times;</button>
       </div>
-      <div id="studentDetailsContent" style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6; max-height: 70vh; overflow-y: auto; padding-right: 4px;">
+      <div id="studentDetailsContent"
+        style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6; max-height: 70vh; overflow-y: auto; padding-right: 4px;">
         <!-- Dynamically rendered student details -->
       </div>
       <div style="margin-top: 1.5rem; text-align: right;">
@@ -624,35 +637,44 @@
       </div>
       <div style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
         <p style="margin-bottom: 1rem; color: var(--text-muted);">
-          Welcome to the <strong>InternLog Attendance & Verification System</strong> Dean's Suite. Below is a summary of available tools and shortcuts:
+          Welcome to the <strong>InternLog Attendance & Verification System</strong> Dean's Suite. Below is a summary of
+          available tools and shortcuts:
         </p>
 
         <div style="display: flex; flex-direction: column; gap: 0.8rem;">
-          <div style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid var(--navy-primary); border-radius: var(--radius-sm);">
+          <div
+            style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid var(--navy-primary); border-radius: var(--radius-sm);">
             <strong>🔍 Global Search Bar:</strong>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-              Type student names, ID numbers (e.g. 2026-0009), course codes (BSCS, BSIS, BLIS), or partner facilities to instantly filter table rows in real-time.
+              Type student names, ID numbers (e.g. 2026-0009), course codes (BSCS, BSIS, BLIS), or partner facilities to
+              instantly filter table rows in real-time.
             </p>
           </div>
 
-          <div style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid var(--amber-gold); border-radius: var(--radius-sm);">
+          <div
+            style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid var(--amber-gold); border-radius: var(--radius-sm);">
             <strong>🔔 System Notifications:</strong>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-              The bell icon pulses when students submit new attendance logs or absence requests. Click it to open a live queue popover.
+              The bell icon pulses when students submit new attendance logs or absence requests. Click it to open a live
+              queue popover.
             </p>
           </div>
 
-          <div style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid #1a7f4b; border-radius: var(--radius-sm);">
+          <div
+            style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid #1a7f4b; border-radius: var(--radius-sm);">
             <strong>📸 Attendance Verification Logs:</strong>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-              Review live facial capture snapshots. Click <strong>Confirm</strong> (green) to approve & delete verification photos from disk, or <strong>Reject</strong> (red) to require student follow-up.
+              Review live facial capture snapshots. Click <strong>Confirm</strong> (green) to approve & delete
+              verification photos from disk, or <strong>Reject</strong> (red) to require student follow-up.
             </p>
           </div>
 
-          <div style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid #c0392b; border-radius: var(--radius-sm);">
+          <div
+            style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid #c0392b; border-radius: var(--radius-sm);">
             <strong>📄 Absence Request Queue:</strong>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-              View student medical/official absence applications, supporting attachments, and provide administrative approval or rejection remarks.
+              View student medical/official absence applications, supporting attachments, and provide administrative
+              approval or rejection remarks.
             </p>
           </div>
         </div>
