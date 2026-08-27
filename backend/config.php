@@ -63,6 +63,6 @@ define('DEFAULT_REQUIRED_HOURS', 480);
 // Hash below = bcrypt of 'password'
 // ------------------------------------------------------------
 define('SEED_DEAN_EMAIL',    'dean@sbc.edu.ph');
-define('SEED_DEAN_PASSWORD', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.X2g14m.6C');
+define('SEED_DEAN_PASSWORD', '$2y$10$BSN6xQYncAnuuwhOkMpCZO.1ysPcCRNcy2EOZhSYh7ePh62na.5U2'); // bcrypt of 'password'
 define('SEED_STUDENT_EMAIL', 'student@sbc.edu.ph');
-define('SEED_STUDENT_PASS',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.X2g14m.6C');
+define('SEED_STUDENT_PASS',  '$2y$10$BSN6xQYncAnuuwhOkMpCZO.1ysPcCRNcy2EOZhSYh7ePh62na.5U2'); // bcrypt of 'password'

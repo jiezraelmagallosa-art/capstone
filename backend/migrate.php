@@ -20,12 +20,13 @@ $wantsJson = (!$isCli && (isset($_GET['format']) && $_GET['format'] === 'json'))
 $logs = [];
 $status = "success";
 
-function logStep($message, $type = "info") {
+function logStep($message, $type = "info")
+{
     global $logs, $isCli;
     $logs[] = [
         "timestamp" => date('H:i:s'),
-        "type"      => $type,
-        "message"   => $message
+        "type" => $type,
+        "message" => $message
     ];
     if ($isCli) {
         $prefix = ($type === 'error') ? '[ERROR]' : (($type === 'success') ? '[SUCCESS]' : '[INFO]');
@@ -34,11 +35,11 @@ function logStep($message, $type = "info") {
 }
 
 // 1. Connection Config — from backend/config.php
-$host     = DB_HOST;
+$host = DB_HOST;
 $username = DB_USER;
 $password = DB_PASS;
 $database = DB_NAME;
-$port     = DB_PORT;
+$port = DB_PORT;
 
 logStep("Connecting to MySQL server at $host:$port (User: $username)...");
 
@@ -220,7 +221,7 @@ if ($conn->query($siteSeed)) {
 
 // C. Dean Admin Seed — reads email/password from config.php
 $seed_dean_email = $conn->real_escape_string(SEED_DEAN_EMAIL);
-$seed_dean_pass  = $conn->real_escape_string(SEED_DEAN_PASSWORD);
+$seed_dean_pass = $conn->real_escape_string(SEED_DEAN_PASSWORD);
 $userSeed = "INSERT IGNORE INTO Users (user_id, full_name, email, password, role)
     VALUES (1, 'Dean Admin', '$seed_dean_email', '$seed_dean_pass', 'Dean');";
 if ($conn->query($userSeed)) {
@@ -229,7 +230,7 @@ if ($conn->query($userSeed)) {
 
 // D. Sample Student Seed — reads email/password from config.php
 $seed_stu_email = $conn->real_escape_string(SEED_STUDENT_EMAIL);
-$seed_stu_pass  = $conn->real_escape_string(SEED_STUDENT_PASS);
+$seed_stu_pass = $conn->real_escape_string(SEED_STUDENT_PASS);
 $studentSeed = "INSERT IGNORE INTO Student (student_id, student_number, full_name, id_no, email, password, course_id, dean_id)
     VALUES (1, '2026-0001', 'Juan Dela Cruz', 'ID-101', '$seed_stu_email', '$seed_stu_pass', 1, 1);";
 if ($conn->query($studentSeed)) {
@@ -259,7 +260,8 @@ logStep("Database migration completed successfully!", "success");
 // Render Output
 renderOutput($status, $logs, $database, $tableCounts);
 
-function renderOutput($status, $logs, $database, $tableCounts) {
+function renderOutput($status, $logs, $database, $tableCounts)
+{
     global $wantsJson, $isCli;
 
     if ($wantsJson) {
@@ -267,10 +269,10 @@ function renderOutput($status, $logs, $database, $tableCounts) {
             header('Content-Type: application/json');
         }
         echo json_encode([
-            "status"       => $status,
-            "database"     => $database,
+            "status" => $status,
+            "database" => $database,
             "table_counts" => $tableCounts,
-            "logs"         => $logs
+            "logs" => $logs
         ], JSON_PRETTY_PRINT);
         return;
     }
@@ -279,11 +281,14 @@ function renderOutput($status, $logs, $database, $tableCounts) {
     ?>
     <!DOCTYPE html>
     <html lang="en">
+
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Database Migration - SBC Internship System</title>
-        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+        <link
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+            rel="stylesheet">
         <style>
             :root {
                 --primary: #4361ee;
@@ -298,7 +303,13 @@ function renderOutput($status, $logs, $database, $tableCounts) {
                 --text-main: #f8fafc;
                 --text-muted: #94a3b8;
             }
-            * { box-sizing: border-box; margin: 0; padding: 0; }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
             body {
                 font-family: 'Plus Jakarta Sans', sans-serif;
                 background-color: var(--bg);
@@ -309,10 +320,12 @@ function renderOutput($status, $logs, $database, $tableCounts) {
                 justify-content: center;
                 align-items: flex-start;
             }
+
             .container {
                 max-width: 860px;
                 width: 100%;
             }
+
             .card {
                 background-color: var(--card-bg);
                 border: 1px solid var(--card-border);
@@ -321,6 +334,7 @@ function renderOutput($status, $logs, $database, $tableCounts) {
                 overflow: hidden;
                 margin-bottom: 24px;
             }
+
             .card-header {
                 padding: 24px 28px;
                 border-bottom: 1px solid var(--card-border);
@@ -329,20 +343,24 @@ function renderOutput($status, $logs, $database, $tableCounts) {
                 align-items: center;
                 background: linear-gradient(to right, rgba(67, 97, 238, 0.05), transparent);
             }
+
             .header-title {
                 display: flex;
                 align-items: center;
                 gap: 12px;
             }
+
             .header-title svg {
                 width: 32px;
                 height: 32px;
                 fill: var(--primary);
             }
+
             .header-title h1 {
                 font-size: 20px;
                 font-weight: 700;
             }
+
             .status-badge {
                 font-size: 13px;
                 font-weight: 600;
@@ -351,25 +369,30 @@ function renderOutput($status, $logs, $database, $tableCounts) {
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
+
             .status-badge.success {
                 background-color: var(--success-bg);
                 color: var(--success);
                 border: 1px solid rgba(16, 185, 129, 0.3);
             }
+
             .status-badge.error {
                 background-color: var(--error-bg);
                 color: var(--error);
                 border: 1px solid rgba(239, 68, 68, 0.3);
             }
+
             .card-body {
                 padding: 28px;
             }
+
             .stats-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
                 gap: 16px;
                 margin-bottom: 28px;
             }
+
             .stat-box {
                 background-color: #0f172a;
                 border: 1px solid var(--card-border);
@@ -379,17 +402,20 @@ function renderOutput($status, $logs, $database, $tableCounts) {
                 flex-direction: column;
                 gap: 4px;
             }
+
             .stat-name {
                 font-size: 13px;
                 color: var(--text-muted);
                 font-weight: 500;
             }
+
             .stat-count {
                 font-size: 24px;
                 font-weight: 700;
                 color: #38bdf8;
                 font-family: 'JetBrains Mono', monospace;
             }
+
             .log-terminal {
                 background-color: #0b0f19;
                 border: 1px solid #1e293b;
@@ -401,24 +427,38 @@ function renderOutput($status, $logs, $database, $tableCounts) {
                 max-height: 380px;
                 overflow-y: auto;
             }
+
             .log-row {
                 display: flex;
                 gap: 12px;
                 margin-bottom: 6px;
             }
+
             .log-time {
                 color: #64748b;
                 user-select: none;
             }
-            .log-msg.info { color: #cbd5e1; }
-            .log-msg.success { color: #34d399; }
-            .log-msg.error { color: #f87171; font-weight: 600; }
+
+            .log-msg.info {
+                color: #cbd5e1;
+            }
+
+            .log-msg.success {
+                color: #34d399;
+            }
+
+            .log-msg.error {
+                color: #f87171;
+                font-weight: 600;
+            }
+
             .actions {
                 display: flex;
                 gap: 12px;
                 margin-top: 24px;
                 justify-content: flex-end;
             }
+
             .btn {
                 display: inline-flex;
                 align-items: center;
@@ -431,35 +471,43 @@ function renderOutput($status, $logs, $database, $tableCounts) {
                 cursor: pointer;
                 transition: all 0.2s;
             }
+
             .btn-primary {
                 background-color: var(--primary);
                 color: white;
                 border: none;
             }
+
             .btn-primary:hover {
                 background-color: var(--primary-hover);
             }
+
             .btn-outline {
                 background: transparent;
                 border: 1px solid var(--card-border);
                 color: var(--text-main);
             }
+
             .btn-outline:hover {
                 background-color: #334155;
             }
         </style>
     </head>
+
     <body>
         <div class="container">
             <div class="card">
                 <div class="card-header">
                     <div class="header-title">
                         <svg viewBox="0 0 24 24">
-                            <path d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.5 6 2s-2.13 2-6 2-6-1.5-6-2 2.13-2 6-2zm6 12c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V17zm0-4c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V13z"/>
+                            <path
+                                d="M12 3C7.58 3 4 4.79 4 7v10c0 2.21 3.58 4 8 4s8-1.79 8-4V7c0-2.21-3.58-4-8-4zm0 2c3.87 0 6 1.5 6 2s-2.13 2-6 2-6-1.5-6-2 2.13-2 6-2zm6 12c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V17zm0-4c0 .5-2.13 2-6 2s-6-1.5-6-2v-2.23c1.61.78 3.72 1.23 6 1.23s4.39-.45 6-1.23V13z" />
                         </svg>
                         <div>
                             <h1>Database Migration Status</h1>
-                            <p style="font-size: 13px; color: var(--text-muted);">Target Database: <strong><?= htmlspecialchars($database) ?></strong></p>
+                            <p style="font-size: 13px; color: var(--text-muted);">Target Database:
+                                <strong><?= htmlspecialchars($database) ?></strong>
+                            </p>
                         </div>
                     </div>
                     <span class="status-badge <?= $status === 'success' ? 'success' : 'error' ?>">
@@ -469,23 +517,28 @@ function renderOutput($status, $logs, $database, $tableCounts) {
 
                 <div class="card-body">
                     <?php if (!empty($tableCounts)): ?>
-                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Table Record Counts</h3>
-                    <div class="stats-grid">
-                        <?php foreach ($tableCounts as $tbl => $cnt): ?>
-                        <div class="stat-box">
-                            <span class="stat-name"><?= htmlspecialchars($tbl) ?></span>
-                            <span class="stat-count"><?= htmlspecialchars((string)$cnt) ?></span>
+                        <h3
+                            style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                            Table Record Counts</h3>
+                        <div class="stats-grid">
+                            <?php foreach ($tableCounts as $tbl => $cnt): ?>
+                                <div class="stat-box">
+                                    <span class="stat-name"><?= htmlspecialchars($tbl) ?></span>
+                                    <span class="stat-count"><?= htmlspecialchars((string) $cnt) ?></span>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <?php endforeach; ?>
-                    </div>
                     <?php endif; ?>
 
-                    <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Migration Execution Logs</h3>
+                    <h3
+                        style="font-size: 14px; margin-bottom: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+                        Migration Execution Logs</h3>
                     <div class="log-terminal">
                         <?php foreach ($logs as $log): ?>
                             <div class="log-row">
                                 <span class="log-time">[<?= htmlspecialchars($log['timestamp']) ?>]</span>
-                                <span class="log-msg <?= htmlspecialchars($log['type']) ?>"><?= htmlspecialchars($log['message']) ?></span>
+                                <span
+                                    class="log-msg <?= htmlspecialchars($log['type']) ?>"><?= htmlspecialchars($log['message']) ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -498,6 +551,7 @@ function renderOutput($status, $logs, $database, $tableCounts) {
             </div>
         </div>
     </body>
+
     </html>
     <?php
 }
