@@ -71,21 +71,21 @@ $conn->set_charset("utf8mb4");
 
 // 3. Define Table Schema
 $tables = [
-    "Course" => "CREATE TABLE IF NOT EXISTS Course (
+    "course" => "CREATE TABLE IF NOT EXISTS course (
         course_id INT PRIMARY KEY AUTO_INCREMENT,
         course_code VARCHAR(20) NOT NULL UNIQUE,
         course_name VARCHAR(100) NOT NULL,
         required_hours INT DEFAULT 480
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-    "Training_Site" => "CREATE TABLE IF NOT EXISTS Training_Site (
+    "training_site" => "CREATE TABLE IF NOT EXISTS training_site (
         site_id INT PRIMARY KEY AUTO_INCREMENT,
         site_code VARCHAR(20) NOT NULL UNIQUE,
         site_name VARCHAR(100) NOT NULL,
         location VARCHAR(255) NOT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-    "Users" => "CREATE TABLE IF NOT EXISTS Users (
+    "users" => "CREATE TABLE IF NOT EXISTS users (
         user_id INT PRIMARY KEY AUTO_INCREMENT,
         full_name VARCHAR(100) NOT NULL,
         email VARCHAR(100) UNIQUE NOT NULL,
@@ -94,7 +94,7 @@ $tables = [
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-    "Student" => "CREATE TABLE IF NOT EXISTS Student (
+    "student" => "CREATE TABLE IF NOT EXISTS student (
         student_id INT PRIMARY KEY AUTO_INCREMENT,
         student_number VARCHAR(50) UNIQUE NOT NULL,
         full_name VARCHAR(100) NOT NULL,
@@ -103,21 +103,21 @@ $tables = [
         password VARCHAR(255) NOT NULL,
         course_id INT NOT NULL,
         dean_id INT NULL,
-        FOREIGN KEY (course_id) REFERENCES Course(course_id) ON DELETE CASCADE,
-        FOREIGN KEY (dean_id) REFERENCES Users(user_id) ON DELETE SET NULL
+        FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE,
+        FOREIGN KEY (dean_id) REFERENCES users(user_id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-    "OJT" => "CREATE TABLE IF NOT EXISTS OJT (
+    "ojt" => "CREATE TABLE IF NOT EXISTS ojt (
         ojt_id INT PRIMARY KEY AUTO_INCREMENT,
         ojt_no VARCHAR(50) UNIQUE NOT NULL,
         site_id INT NOT NULL,
         student_id INT NOT NULL,
         required_hours INT DEFAULT 480,
-        FOREIGN KEY (site_id) REFERENCES Training_Site(site_id) ON DELETE CASCADE,
-        FOREIGN KEY (student_id) REFERENCES Student(student_id) ON DELETE CASCADE
+        FOREIGN KEY (site_id) REFERENCES training_site(site_id) ON DELETE CASCADE,
+        FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-    "Attendance" => "CREATE TABLE IF NOT EXISTS Attendance (
+    "attendance" => "CREATE TABLE IF NOT EXISTS attendance (
         attendance_id INT PRIMARY KEY AUTO_INCREMENT,
         date DATE NOT NULL,
         time_in_morning TIME NULL,
@@ -127,19 +127,19 @@ $tables = [
         status VARCHAR(50) DEFAULT 'Pending',
         remarks TEXT NULL,
         ojt_id INT NOT NULL,
-        FOREIGN KEY (ojt_id) REFERENCES OJT(ojt_id) ON DELETE CASCADE
+        FOREIGN KEY (ojt_id) REFERENCES ojt(ojt_id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-    "Photo" => "CREATE TABLE IF NOT EXISTS Photo (
+    "photo" => "CREATE TABLE IF NOT EXISTS photo (
         photo_id INT PRIMARY KEY AUTO_INCREMENT,
         attendance_id INT NOT NULL,
         shift_type ENUM('Morning_In', 'Morning_Out', 'Afternoon_In', 'Afternoon_Out') NOT NULL,
         image_path VARCHAR(255) NOT NULL,
         captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (attendance_id) REFERENCES Attendance(attendance_id) ON DELETE CASCADE
+        FOREIGN KEY (attendance_id) REFERENCES attendance(attendance_id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
-    "Absence_Requests" => "CREATE TABLE IF NOT EXISTS Absence_Requests (
+    "absence_requests" => "CREATE TABLE IF NOT EXISTS absence_requests (
         absence_id INT PRIMARY KEY AUTO_INCREMENT,
         student_id INT NOT NULL,
         ojt_id INT NOT NULL,
@@ -150,9 +150,9 @@ $tables = [
         reviewed_by INT NULL,
         remarks TEXT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (student_id) REFERENCES Student(student_id) ON DELETE CASCADE,
-        FOREIGN KEY (ojt_id) REFERENCES OJT(ojt_id) ON DELETE CASCADE,
-        FOREIGN KEY (reviewed_by) REFERENCES Users(user_id) ON DELETE SET NULL
+        FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
+        FOREIGN KEY (ojt_id) REFERENCES ojt(ojt_id) ON DELETE CASCADE,
+        FOREIGN KEY (reviewed_by) REFERENCES users(user_id) ON DELETE SET NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
 ];
 
@@ -167,33 +167,33 @@ foreach ($tables as $tableName => $query) {
 
 // 4. Incremental Alter Migrations (Self-Healing Schema)
 // A. student.dean_id
-$colDean = $conn->query("SHOW COLUMNS FROM Student LIKE 'dean_id'");
+$colDean = $conn->query("SHOW COLUMNS FROM student LIKE 'dean_id'");
 if ($colDean && $colDean->num_rows == 0) {
-    if ($conn->query("ALTER TABLE Student ADD COLUMN dean_id INT NULL AFTER course_id")) {
-        @$conn->query("ALTER TABLE Student ADD CONSTRAINT fk_student_dean FOREIGN KEY (dean_id) REFERENCES Users(user_id) ON DELETE SET NULL");
-        logStep("Migrated: Added `dean_id` to `Student`.", "success");
+    if ($conn->query("ALTER TABLE student ADD COLUMN dean_id INT NULL AFTER course_id")) {
+        @$conn->query("ALTER TABLE student ADD CONSTRAINT fk_student_dean FOREIGN KEY (dean_id) REFERENCES users(user_id) ON DELETE SET NULL");
+        logStep("Migrated: Added `dean_id` to `student`.", "success");
     } else {
         logStep("Migration error adding `dean_id`: " . $conn->error, "error");
     }
 }
 
 // B. course.required_hours
-$colCourseHours = $conn->query("SHOW COLUMNS FROM Course LIKE 'required_hours'");
+$colCourseHours = $conn->query("SHOW COLUMNS FROM course LIKE 'required_hours'");
 if ($colCourseHours && $colCourseHours->num_rows == 0) {
-    if ($conn->query("ALTER TABLE Course ADD COLUMN required_hours INT DEFAULT 480 AFTER course_name")) {
-        @$conn->query("UPDATE Course SET required_hours = 480 WHERE required_hours IS NULL OR required_hours = 0");
-        logStep("Migrated: Added `required_hours` to `Course`.", "success");
+    if ($conn->query("ALTER TABLE course ADD COLUMN required_hours INT DEFAULT 480 AFTER course_name")) {
+        @$conn->query("UPDATE course SET required_hours = 480 WHERE required_hours IS NULL OR required_hours = 0");
+        logStep("Migrated: Added `required_hours` to `course`.", "success");
     } else {
-        logStep("Migration error adding `required_hours` to `Course`: " . $conn->error, "error");
+        logStep("Migration error adding `required_hours` to `course`: " . $conn->error, "error");
     }
 }
 
 // C. ojt.required_hours
-$colOjtHours = $conn->query("SHOW COLUMNS FROM OJT LIKE 'required_hours'");
+$colOjtHours = $conn->query("SHOW COLUMNS FROM ojt LIKE 'required_hours'");
 if ($colOjtHours && $colOjtHours->num_rows == 0) {
-    if ($conn->query("ALTER TABLE OJT ADD COLUMN required_hours INT DEFAULT 480 AFTER student_id")) {
-        @$conn->query("UPDATE OJT SET required_hours = 480 WHERE required_hours IS NULL OR required_hours = 0");
-        logStep("Migrated: Added `required_hours` to `OJT`.", "success");
+    if ($conn->query("ALTER TABLE ojt ADD COLUMN required_hours INT DEFAULT 480 AFTER student_id")) {
+        @$conn->query("UPDATE ojt SET required_hours = 480 WHERE required_hours IS NULL OR required_hours = 0");
+        logStep("Migrated: Added `required_hours` to `ojt`.", "success");
     }
 }
 
@@ -201,7 +201,7 @@ if ($colOjtHours && $colOjtHours->num_rows == 0) {
 $def_hours = DEFAULT_REQUIRED_HOURS;
 
 // A. Courses
-$conn->query("INSERT INTO Course (course_code, course_name, required_hours) VALUES
+$conn->query("INSERT INTO course (course_code, course_name, required_hours) VALUES
     ('BSCS', 'Bachelor of Science in Computer Science', $def_hours),
     ('BSIS', 'Bachelor of Science in Information Systems', $def_hours),
     ('BLIS', 'Bachelor of Library and Information Science', $def_hours)
@@ -209,26 +209,26 @@ $conn->query("INSERT INTO Course (course_code, course_name, required_hours) VALU
 logStep("Courses seeded (BSCS, BSIS, BLIS).", "success");
 
 // B. Training Site
-$conn->query("INSERT IGNORE INTO Training_Site (site_id, site_code, site_name, location)
+$conn->query("INSERT IGNORE INTO training_site (site_id, site_code, site_name, location)
     VALUES (1, 'SBC-IT', 'SBC IT Department', 'M\\'lang, Cotabato');");
 logStep("Default Training Site verified.", "success");
 
 // C. Dean Admin
 $seed_dean_email = $conn->real_escape_string(SEED_DEAN_EMAIL);
 $seed_dean_pass = $conn->real_escape_string(SEED_DEAN_PASSWORD);
-$conn->query("INSERT IGNORE INTO Users (user_id, full_name, email, password, role)
+$conn->query("INSERT IGNORE INTO users (user_id, full_name, email, password, role)
     VALUES (1, 'Dean Admin', '$seed_dean_email', '$seed_dean_pass', 'Dean');");
 logStep("Dean account verified (" . SEED_DEAN_EMAIL . ") — change password after first login!", "success");
 
 // D. Sample Student
 $seed_stu_email = $conn->real_escape_string(SEED_STUDENT_EMAIL);
 $seed_stu_pass = $conn->real_escape_string(SEED_STUDENT_PASS);
-$conn->query("INSERT IGNORE INTO Student (student_id, student_number, full_name, id_no, email, password, course_id, dean_id)
+$conn->query("INSERT IGNORE INTO student (student_id, student_number, full_name, id_no, email, password, course_id, dean_id)
     VALUES (1, '2026-0001', 'Juan Dela Cruz', 'ID-101', '$seed_stu_email', '$seed_stu_pass', 1, 1);");
 logStep("Sample student verified (" . SEED_STUDENT_EMAIL . ") — change password after first login!", "success");
 
 // E. OJT Record
-$conn->query("INSERT IGNORE INTO OJT (ojt_id, ojt_no, site_id, student_id, required_hours)
+$conn->query("INSERT IGNORE INTO ojt (ojt_id, ojt_no, site_id, student_id, required_hours)
     VALUES (1, 'OJT-2026-01', 1, 1, $def_hours);");
 logStep("Sample OJT placement verified.", "success");
 
