@@ -16,13 +16,16 @@ Options +FollowSymLinks
 
 # --------------------------------------------------------
 # Security: Protect sensitive backend config files
-# Nobody outside the server should access config.php directly
+# Direct web requests to config.php and db_connect.php are blocked
 # --------------------------------------------------------
-<FilesMatch "^(config\.php|db_connect\.php|migrate\.php)$">
-    Order Deny,Allow
-    Deny from all
-    Allow from 127.0.0.1
-    Allow from ::1
+<FilesMatch "^(config\.php|db_connect\.php)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Deny,Allow
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
 # --------------------------------------------------------

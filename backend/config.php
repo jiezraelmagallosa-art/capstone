@@ -14,10 +14,10 @@
 // DATABASE CONFIGURATION
 // [CHANGE ME] Update these for your production MySQL server.
 // ------------------------------------------------------------
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_USER', getenv('DB_USER') ?: 'root');             // [CHANGE ME] e.g. 'sbc_user'
-define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : '');  // [CHANGE ME] e.g. 'SecurePass123!'
-define('DB_NAME', getenv('DB_NAME') ?: 'sbc_internship_db');
+define('DB_HOST', getenv('DB_HOST') ?: 'sql110.infinityfree.com');
+define('DB_USER', getenv('DB_USER') ?: 'if0_42771510');
+define('DB_PASS', getenv('DB_PASS') !== false ? getenv('DB_PASS') : '2tG0ijV6kq8');
+define('DB_NAME', getenv('DB_NAME') ?: 'if0_42771510_sbc_internship_db');
 define('DB_PORT', getenv('DB_PORT') ? intval(getenv('DB_PORT')) : 3306);
 
 // ------------------------------------------------------------

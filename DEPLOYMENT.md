@@ -5,66 +5,58 @@
 # ================================================================
 
 
-## STEP 1 — Configure the Backend (ONE FILE TO EDIT)
+## STEP 1 — Backend Configuration (COMPLETED)
 # ----------------------------------------------------------------
-# Open this file and change all values marked [CHANGE ME]:
-
-  backend/config.php
-
-# What to change:
-#   DB_USER     → your production MySQL username
-#   DB_PASS     → your production MySQL password
-#   DB_HOST     → your database server host (usually 'localhost')
-#   CORS_ORIGIN → your production domain, e.g. 'https://sbc.edu.ph'
-#                 (leave as '*' for capstone/demo deployment)
+# Your `backend/config.php` has already been configured with your InfinityFree MySQL credentials:
+#   DB_HOST → sql110.infinityfree.com
+#   DB_USER → if0_42771510
+#   DB_PASS → 2tG0ijV6kq8
+#   DB_NAME → if0_42771510_sbc_internship_db
+#   DB_PORT → 3306
 
 
-## STEP 2 — Configure the Mobile App (ONE LINE TO EDIT)
+## STEP 2 — Upload Files to InfinityFree `htdocs`
 # ----------------------------------------------------------------
-# Open this file:
-
-  mobile_app/lib/core/constants.dart
-
-# Change line 22:
-#   static String _activeHost = "YOUR_SERVER_IP_OR_DOMAIN";
+# Upload the following folders and files directly inside the `htdocs/` folder in InfinityFree
+# (via InfinityFree Online File Manager or FileZilla / FTP):
 #
-# Examples:
-#   static String _activeHost = "192.168.1.100";         # Local school IP
-#   static String _activeHost = "https://sbc.edu.ph";   # Public domain
+#   📁 /backend/          (all PHP API scripts & config)
+#   📁 /web_admin/        (Dean Admin Web Portal HTML/CSS/JS)
+#   📁 /assets/           (shared logos & graphics)
+#   📁 /uploads/          (selfies & document upload directories)
+#   📄 /index.php         (root landing & router)
+#   📄 /.htaccess         (web server configuration)
+#   📁 /database/         (SQL schema & migrate.php)
 #
-# Then rebuild the APK:
+# ⚠️ DO NOT upload:
+#   ❌ /mobile_app/       (Flutter source code — build APK instead)
+#   ❌ /.git/             (Git version control files)
+
+
+## STEP 3 — Initialize / Migrate Database
+# ----------------------------------------------------------------
+# Option A (Easiest — 1-Click Migration via Browser):
+#   Visit in your browser:
+#   👉 http://your-domain.infinityfreeapp.com/backend/migrate.php
+#   (or http://your-domain.epizy.com/backend/migrate.php)
+#
+#   This will automatically create all tables (Users, Student, OJT,
+#   Attendance, Training_Site, Course, Photo, Absence_Requests) and
+#   seed initial course data and dean admin credentials.
+#
+# Option B (phpMyAdmin Manual Import):
+#   1. Go to InfinityFree Control Panel → phpMyAdmin → connect to `if0_42771510_sbc_internship_db`
+#   2. Click "Import" → Select `database/sbc_internship_db.sql` → Click "Go"
+
+
+## STEP 4 — Configure Mobile App & Rebuild APK
+# ----------------------------------------------------------------
+# In `mobile_app/lib/core/constants.dart`, set your hosted InfinityFree URL:
+#   static String _activeHost = "your-domain.infinityfreeapp.com";
+#
+# Build your Flutter APK:
 #   cd mobile_app
 #   flutter build apk --release
-#
-# The built APK will be at:
-#   mobile_app/build/app/outputs/flutter-apk/app-release.apk
-
-
-## STEP 3 — Upload Files to Your Server
-# ----------------------------------------------------------------
-# Upload these folders/files to your web server's public directory:
-
-  /backend/          (all PHP files)
-  /web_admin/        (HTML + CSS + JS for Dean's portal)
-  /assets/           (shared images)
-  /uploads/          (leave empty, auto-created at runtime)
-  /index.php         (root router)
-  /.htaccess         (web server configuration)
-  /database/         (SQL schema + migrate.php)
-
-# DO NOT upload:
-#   /mobile_app/      (this is the Flutter source — compile to APK instead)
-#   /.git/            (not needed on server)
-#   /mobile_app/build/ (build artifacts)
-
-
-## STEP 4 — Set Up the Database
-# ----------------------------------------------------------------
-# Option A: Use the migration tool (recommended)
-#   Visit in browser: https://your-domain.com/backend/migrate.php
-#
-# Option B: Import the SQL file manually
-#   In phpMyAdmin: Import → database/sbc_internship_db.sql
 
 
 ## STEP 5 — Set PHP Upload Limits on Server

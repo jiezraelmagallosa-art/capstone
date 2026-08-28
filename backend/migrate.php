@@ -38,31 +38,34 @@ $password = DB_PASS;
 $database = DB_NAME;
 $port     = DB_PORT;
 
-logStep("Connecting to MySQL at $host:$port (User: $username)...");
+logStep("Connecting to MySQL at $host:$port (User: $username, Database: $database)...");
 
-$conn = @new mysqli($host, $username, $password, "", $port);
+// Try connecting directly with database name (standard for InfinityFree / cPanel / production)
+$conn = @new mysqli($host, $username, $password, $database, $port);
 
 if ($conn->connect_error) {
-    $status = "error";
-    logStep("MySQL connection failed: " . $conn->connect_error, "error");
-    outputJson($status, $logs, $database, []);
-    exit();
-}
-
-logStep("Connected to MySQL server successfully.", "success");
-
-// 2. Create Database if not exists
-$createDbSql = "CREATE DATABASE IF NOT EXISTS `$database` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
-if ($conn->query($createDbSql)) {
-    logStep("Database `$database` checked/created successfully.", "success");
+    // Fallback: try connecting without DB name to attempt creation (for local dev setup)
+    $conn = @new mysqli($host, $username, $password, "", $port);
+    if ($conn->connect_error) {
+        $status = "error";
+        logStep("MySQL connection failed: " . $conn->connect_error, "error");
+        outputJson($status, $logs, $database, []);
+        exit();
+    }
+    
+    // Attempt database creation if permission allows
+    @$conn->query("CREATE DATABASE IF NOT EXISTS `$database` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    if (!$conn->select_db($database)) {
+        $status = "error";
+        logStep("Failed to select database `$database`: " . $conn->error, "error");
+        outputJson($status, $logs, $database, []);
+        exit();
+    }
+    logStep("Database `$database` initialized successfully.", "success");
 } else {
-    $status = "error";
-    logStep("Failed to create database: " . $conn->error, "error");
-    outputJson($status, $logs, $database, []);
-    exit();
+    logStep("Connected to MySQL server and selected database `$database` successfully.", "success");
 }
 
-$conn->select_db($database);
 $conn->query("SET time_zone = '+08:00';");
 $conn->set_charset("utf8mb4");
 

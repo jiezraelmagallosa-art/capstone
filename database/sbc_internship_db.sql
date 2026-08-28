@@ -1,10 +1,5 @@
--- ==========================================================================
 -- SBC Internship Attendance & Verification System Database Schema
--- ==========================================================================
-
-
-CREATE DATABASE IF NOT EXISTS sbc_internship_db;
-USE sbc_internship_db;
+-- Database: if0_42771510_sbc_internship_db
 
 
 CREATE TABLE IF NOT EXISTS Course (
