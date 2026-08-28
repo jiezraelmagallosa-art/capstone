@@ -3,12 +3,144 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:encrypt/encrypt.dart' as enc;
 import '../core/constants.dart';
 
-// Main widget / service implementation
+/// Transparent HTTP Client that handles standard requests and solves
+/// InfinityFree anti-bot security challenges (AES cookie challenge) automatically.
+class InfinityHttpClient {
+  static String? _testCookie;
+  static const String _userAgent =
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+  static Uint8List _hexToBytes(String hex) {
+    final result = Uint8List(hex.length ~/ 2);
+    for (int i = 0; i < hex.length; i += 2) {
+      result[i ~/ 2] = int.parse(hex.substring(i, i + 2), radix: 16);
+    }
+    return result;
+  }
+
+  static String _bytesToHex(List<int> bytes) {
+    return bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+  }
+
+  static String? _solveChallenge(String html) {
+    try {
+      final reg = RegExp(
+        r'a=toNumbers\("([a-f0-9]+)"\),b=toNumbers\("([a-f0-9]+)"\),c=toNumbers\("([a-f0-9]+)"\)',
+      );
+      final match = reg.firstMatch(html);
+      if (match == null) return null;
+
+      final keyBytes = _hexToBytes(match.group(1)!);
+      final ivBytes = _hexToBytes(match.group(2)!);
+      final cipherBytes = _hexToBytes(match.group(3)!);
+
+      final key = enc.Key(keyBytes);
+      final iv = enc.IV(ivBytes);
+      final encrypter = enc.Encrypter(
+        enc.AES(key, mode: enc.AESMode.cbc, padding: null),
+      );
+      final decrypted = encrypter.decryptBytes(
+        enc.Encrypted(cipherBytes),
+        iv: iv,
+      );
+      return _bytesToHex(decrypted);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Map<String, String> _buildHeaders(Map<String, String>? headers) {
+    final map = <String, String>{
+      'User-Agent': _userAgent,
+    };
+    if (_testCookie != null && _testCookie!.isNotEmpty) {
+      map['Cookie'] = '__test=$_testCookie';
+    }
+    if (headers != null) {
+      map.addAll(headers);
+    }
+    return map;
+  }
+
+  static Future<http.Response> get(
+    Uri url, {
+    Map<String, String>? headers,
+    Duration timeout = const Duration(seconds: 8),
+  }) async {
+    final response = await http
+        .get(url, headers: _buildHeaders(headers))
+        .timeout(timeout);
+
+    if (response.body.contains('aes.js') || response.body.contains('toNumbers(')) {
+      final cookie = _solveChallenge(response.body);
+      if (cookie != null) {
+        _testCookie = cookie;
+        return await http
+            .get(url, headers: _buildHeaders(headers))
+            .timeout(timeout);
+      }
+    }
+    return response;
+  }
+
+  static Future<http.Response> post(
+    Uri url, {
+    Map<String, String>? headers,
+    Object? body,
+    Encoding? encoding,
+    Duration timeout = const Duration(seconds: 10),
+  }) async {
+    // If we don't have the __test cookie yet, obtain it first via a quick probe
+    if (_testCookie == null || _testCookie!.isEmpty) {
+      try {
+        final probe = await http
+            .get(url, headers: _buildHeaders(null))
+            .timeout(const Duration(seconds: 5));
+        if (probe.body.contains('aes.js') || probe.body.contains('toNumbers(')) {
+          final cookie = _solveChallenge(probe.body);
+          if (cookie != null) {
+            _testCookie = cookie;
+          }
+        }
+      } catch (_) {}
+    }
+
+    final response = await http
+        .post(
+          url,
+          headers: _buildHeaders(headers),
+          body: body,
+          encoding: encoding,
+        )
+        .timeout(timeout);
+
+    if (response.body.contains('aes.js') || response.body.contains('toNumbers(')) {
+      final cookie = _solveChallenge(response.body);
+      if (cookie != null) {
+        _testCookie = cookie;
+        return await http
+            .post(
+              url,
+              headers: _buildHeaders(headers),
+              body: body,
+              encoding: encoding,
+            )
+            .timeout(timeout);
+      }
+    }
+    return response;
+  }
+}
+
+// Main API service implementation
 class ApiService {
-  static const String serverUnavailableMsg = "Server unavailable. Working in Offline Mode.";
+  static const String serverUnavailableMsg =
+      "Server unavailable. Working in Offline Mode.";
 
   static Map<String, dynamic> _handleException(dynamic e) {
     return {
@@ -18,13 +150,15 @@ class ApiService {
     };
   }
 
-
   static Future<bool> isServerReachable() async {
     try {
-      final response = await http
+      final response = await InfinityHttpClient
           .get(Uri.parse("${AppConfig.baseUrl}/get_courses.php"))
-          .timeout(const Duration(seconds: 4));
-      if (response.statusCode == 200) return true;
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is Map && data['status'] == 'success') return true;
+      }
     } catch (_) {}
 
     return await _tryAutoDiscover();
@@ -36,12 +170,15 @@ class ApiService {
       try {
         final candidateUrl =
             "${AppConfig.getBaseUrlForHost(host)}/get_courses.php";
-        final response = await http
+        final response = await InfinityHttpClient
             .get(Uri.parse(candidateUrl))
-            .timeout(const Duration(seconds: 3));
+            .timeout(const Duration(seconds: 4));
         if (response.statusCode == 200) {
-          AppConfig.serverHost = host;
-          return true;
+          final data = jsonDecode(response.body);
+          if (data is Map && data['status'] == 'success') {
+            AppConfig.serverHost = host;
+            return true;
+          }
         }
       } catch (_) {}
     }
@@ -53,7 +190,7 @@ class ApiService {
     String password,
   ) async {
     try {
-      final response = await http
+      final response = await InfinityHttpClient
           .post(
             Uri.parse("${AppConfig.baseUrl}/login.php"),
             headers: {"Content-Type": "application/json"},
@@ -63,7 +200,7 @@ class ApiService {
               "user_type": "student",
             }),
           )
-          .timeout(const Duration(seconds: 6));
+          .timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -80,7 +217,7 @@ class ApiService {
       bool found = await _tryAutoDiscover();
       if (found) {
         try {
-          final retryResponse = await http
+          final retryResponse = await InfinityHttpClient
               .post(
                 Uri.parse("${AppConfig.baseUrl}/login.php"),
                 headers: {"Content-Type": "application/json"},
@@ -90,7 +227,7 @@ class ApiService {
                   "user_type": "student",
                 }),
               )
-              .timeout(const Duration(seconds: 6));
+              .timeout(const Duration(seconds: 8));
 
           if (retryResponse.statusCode == 200) {
             return jsonDecode(retryResponse.body);
@@ -114,7 +251,6 @@ class ApiService {
     };
   }
 
-
   static Future<Map<String, dynamic>> registerStudent({
     required String fullName,
     String studentNumber = "",
@@ -128,7 +264,7 @@ class ApiService {
     final url = Uri.parse("${AppConfig.baseUrl}/register.php");
 
     try {
-      final response = await http
+      final response = await InfinityHttpClient
           .post(
             url,
             headers: {"Content-Type": "application/json"},
@@ -143,7 +279,7 @@ class ApiService {
               "site_id": siteId,
             }),
           )
-          .timeout(const Duration(seconds: 6));
+          .timeout(const Duration(seconds: 8));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -157,13 +293,12 @@ class ApiService {
       return _handleException(e);
     }
   }
-
 
   static Future<Map<String, dynamic>> getDeans() async {
     final url = Uri.parse("${AppConfig.baseUrl}/get_deans.php");
 
     try {
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await InfinityHttpClient.get(url).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -177,13 +312,12 @@ class ApiService {
       return _handleException(e);
     }
   }
-
 
   static Future<Map<String, dynamic>> getCourses() async {
     final url = Uri.parse("${AppConfig.baseUrl}/get_courses.php");
 
     try {
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await InfinityHttpClient.get(url).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -197,13 +331,12 @@ class ApiService {
       return _handleException(e);
     }
   }
-
 
   static Future<Map<String, dynamic>> getSites() async {
     final url = Uri.parse("${AppConfig.baseUrl}/get_sites.php");
 
     try {
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await InfinityHttpClient.get(url).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -217,7 +350,6 @@ class ApiService {
       return _handleException(e);
     }
   }
-
 
   static Future<Map<String, dynamic>> recordAttendance({
     required String studentId,
@@ -232,7 +364,7 @@ class ApiService {
     final url = Uri.parse("${AppConfig.baseUrl}/submit_attendance.php");
 
     try {
-      final response = await http
+      final response = await InfinityHttpClient
           .post(
             url,
             headers: {"Content-Type": "application/json"},
@@ -247,7 +379,7 @@ class ApiService {
               "longitude": longitude,
             }),
           )
-          .timeout(const Duration(seconds: 8));
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -262,12 +394,11 @@ class ApiService {
     }
   }
 
-
   static Future<Map<String, dynamic>> getDashboardSummary(dynamic studentId) async {
     final url = Uri.parse("${AppConfig.baseUrl}/get_dashboard_summary.php?student_id=$studentId");
 
     try {
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await InfinityHttpClient.get(url).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -281,13 +412,12 @@ class ApiService {
       return _handleException(e);
     }
   }
-
 
   static Future<Map<String, dynamic>> getAttendanceHistory(dynamic studentId) async {
     final url = Uri.parse("${AppConfig.baseUrl}/get_attendance_history.php?student_id=$studentId");
 
     try {
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await InfinityHttpClient.get(url).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -301,7 +431,6 @@ class ApiService {
       return _handleException(e);
     }
   }
-
 
   static Future<Map<String, dynamic>> submitAbsenceRequest(
     int studentId,
@@ -312,7 +441,7 @@ class ApiService {
     final url = Uri.parse("${AppConfig.baseUrl}/submit_absence.php");
 
     try {
-      final response = await http
+      final response = await InfinityHttpClient
           .post(
             url,
             headers: {"Content-Type": "application/json"},
@@ -323,7 +452,7 @@ class ApiService {
               "image_base64": imageBase64,
             }),
           )
-          .timeout(const Duration(seconds: 8));
+          .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -338,12 +467,11 @@ class ApiService {
     }
   }
 
-
   static Future<Map<String, dynamic>> getAbsenceHistory(dynamic studentId) async {
     final url = Uri.parse("${AppConfig.baseUrl}/get_absence_history.php?student_id=$studentId");
 
     try {
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await InfinityHttpClient.get(url).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
@@ -358,12 +486,11 @@ class ApiService {
     }
   }
 
-
   static Future<Map<String, dynamic>> getStudentProfile(dynamic studentId) async {
     final url = Uri.parse("${AppConfig.baseUrl}/get_student_profile.php?student_id=$studentId");
 
     try {
-      final response = await http.get(url).timeout(const Duration(seconds: 5));
+      final response = await InfinityHttpClient.get(url).timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);

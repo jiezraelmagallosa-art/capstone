@@ -23,6 +23,7 @@ dependencies:
   # Packages for PDF Export
   pdf: ^3.10.8
   printing: ^5.13.0
+  encrypt: ^5.0.3
 
 dev_dependencies:
   flutter_test:
