@@ -35,13 +35,20 @@ class AppConfig {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedHost = prefs.getString('server_host');
-      if (savedHost != null && savedHost.trim().isNotEmpty) {
+      if (savedHost != null &&
+          savedHost.trim().isNotEmpty &&
+          savedHost.trim() != "192.168.1.3" &&
+          savedHost.trim() != "YOUR_SERVER_IP_OR_DOMAIN") {
         _activeHost = savedHost.trim().replaceAll(RegExp(r'/+$'), '');
         if (!_customHosts.contains(_activeHost)) {
           _customHosts.insert(0, _activeHost);
         }
+      } else {
+        _activeHost = "deanadmin.infinityfreeapp.com";
       }
-    } catch (_) {}
+    } catch (_) {
+      _activeHost = "deanadmin.infinityfreeapp.com";
+    }
   }
 
   static Future<void> _saveServerHost(String host) async {
@@ -51,33 +58,36 @@ class AppConfig {
     } catch (_) {}
   }
 
-  static String get baseUrl {
-    final host = _activeHost.trim();
+  static String getBaseUrlForHost(String host) {
+    final h = host.trim().replaceAll(RegExp(r'/+$'), '');
 
-    // If active host is already a full HTTP / HTTPS endpoint
-    if (host.startsWith('http://') || host.startsWith('https://')) {
-      if (host.endsWith('/backend')) {
-        return host;
+    // Full HTTP / HTTPS endpoint
+    if (h.startsWith('http://') || h.startsWith('https://')) {
+      if (h.endsWith('/backend')) {
+        return h;
       }
-      return "$host/backend";
+      return "$h/backend";
     }
 
     if (kIsWeb) {
       return "http://localhost/SBC_Internship_Attendance_System/backend";
     }
     try {
-      if (Platform.isWindows && (host == 'localhost' || host == '127.0.0.1')) {
+      if (Platform.isWindows && (h == 'localhost' || h == '127.0.0.1')) {
         return "http://localhost/SBC_Internship_Attendance_System/backend";
       }
     } catch (_) {}
 
-    // If host is a public domain name (e.g. deanadmin.infinityfreeapp.com)
-    if (host.contains('.') && !RegExp(r'^\d+\.\d+\.\d+\.\d+$').hasMatch(host)) {
-      return "http://$host/backend";
+    // Public domain name (e.g. deanadmin.infinityfreeapp.com or custom domain)
+    if (h.contains('.') && !RegExp(r'^\d+\.\d+\.\d+\.\d+$').hasMatch(h)) {
+      return "http://$h/backend";
     }
 
-    return "http://$host/SBC_Internship_Attendance_System/backend";
+    // Local IP on local XAMPP network
+    return "http://$h/SBC_Internship_Attendance_System/backend";
   }
+
+  static String get baseUrl => getBaseUrlForHost(_activeHost);
 
   static List<String> get candidateHosts {
     final list = <String>[];

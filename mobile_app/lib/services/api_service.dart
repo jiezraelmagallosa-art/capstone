@@ -23,7 +23,7 @@ class ApiService {
     try {
       final response = await http
           .get(Uri.parse("${AppConfig.baseUrl}/get_courses.php"))
-          .timeout(const Duration(seconds: 3));
+          .timeout(const Duration(seconds: 4));
       if (response.statusCode == 200) return true;
     } catch (_) {}
 
@@ -34,8 +34,11 @@ class ApiService {
     for (final host in AppConfig.candidateHosts) {
       if (host == AppConfig.serverHost) continue;
       try {
-        final candidateUrl = "http://$host/SBC_Internship_Attendance_System/backend/get_courses.php";
-        final response = await http.get(Uri.parse(candidateUrl)).timeout(const Duration(seconds: 2));
+        final candidateUrl =
+            "${AppConfig.getBaseUrlForHost(host)}/get_courses.php";
+        final response = await http
+            .get(Uri.parse(candidateUrl))
+            .timeout(const Duration(seconds: 3));
         if (response.statusCode == 200) {
           AppConfig.serverHost = host;
           return true;
@@ -44,7 +47,6 @@ class ApiService {
     }
     return false;
   }
-
 
   static Future<Map<String, dynamic>> login(
     String email,
@@ -61,10 +63,18 @@ class ApiService {
               "user_type": "student",
             }),
           )
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 6));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
+      } else {
+        try {
+          final errBody = jsonDecode(response.body);
+          if (errBody is Map<String, dynamic> &&
+              errBody.containsKey('message')) {
+            return errBody;
+          }
+        } catch (_) {}
       }
     } catch (_) {
       bool found = await _tryAutoDiscover();
@@ -80,10 +90,18 @@ class ApiService {
                   "user_type": "student",
                 }),
               )
-              .timeout(const Duration(seconds: 5));
+              .timeout(const Duration(seconds: 6));
 
           if (retryResponse.statusCode == 200) {
             return jsonDecode(retryResponse.body);
+          } else {
+            try {
+              final errBody = jsonDecode(retryResponse.body);
+              if (errBody is Map<String, dynamic> &&
+                  errBody.containsKey('message')) {
+                return errBody;
+              }
+            } catch (_) {}
           }
         } catch (e) {
           return _handleException(e);
