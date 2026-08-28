@@ -1,19 +1,21 @@
 -- SBC Internship Attendance & Verification System Database Schema
 -- Database: if0_42771510_sbc_internship_db
 
+SET FOREIGN_KEY_CHECKS = 0;
+
 CREATE TABLE IF NOT EXISTS course (
     course_id INT PRIMARY KEY AUTO_INCREMENT,
     course_code VARCHAR(20) NOT NULL UNIQUE,
     course_name VARCHAR(100) NOT NULL,
     required_hours INT DEFAULT 480
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS training_site (
     site_id INT PRIMARY KEY AUTO_INCREMENT,
     site_code VARCHAR(20) NOT NULL UNIQUE,
     site_name VARCHAR(100) NOT NULL,
     location VARCHAR(255) NOT NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS users (
     user_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -22,7 +24,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     role ENUM('Dean', 'Admin') DEFAULT 'Dean',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS student (
     student_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -35,7 +37,7 @@ CREATE TABLE IF NOT EXISTS student (
     dean_id INT NULL,
     FOREIGN KEY (course_id) REFERENCES course(course_id) ON DELETE CASCADE,
     FOREIGN KEY (dean_id) REFERENCES users(user_id) ON DELETE SET NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS ojt (
     ojt_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -45,7 +47,7 @@ CREATE TABLE IF NOT EXISTS ojt (
     required_hours INT DEFAULT 480,
     FOREIGN KEY (site_id) REFERENCES training_site(site_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS attendance (
     attendance_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -58,7 +60,7 @@ CREATE TABLE IF NOT EXISTS attendance (
     remarks TEXT NULL,
     ojt_id INT NOT NULL,
     FOREIGN KEY (ojt_id) REFERENCES ojt(ojt_id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS photo (
     photo_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -67,7 +69,7 @@ CREATE TABLE IF NOT EXISTS photo (
     image_path VARCHAR(255) NOT NULL,
     captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (attendance_id) REFERENCES attendance(attendance_id) ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS absence_requests (
     absence_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -83,7 +85,7 @@ CREATE TABLE IF NOT EXISTS absence_requests (
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
     FOREIGN KEY (ojt_id) REFERENCES ojt(ojt_id) ON DELETE CASCADE,
     FOREIGN KEY (reviewed_by) REFERENCES users(user_id) ON DELETE SET NULL
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO course (course_code, course_name, required_hours) VALUES
 ('BSCS', 'Bachelor of Science in Computer Science', 480),
@@ -102,3 +104,5 @@ VALUES (1, '2026-0001', 'Juan Dela Cruz', 'ID-101', 'student@sbc.edu.ph', '$2y$1
 
 INSERT IGNORE INTO ojt (ojt_id, ojt_no, site_id, student_id, required_hours)
 VALUES (1, 'OJT-2026-01', 1, 1, 480);
+
+SET FOREIGN_KEY_CHECKS = 1;

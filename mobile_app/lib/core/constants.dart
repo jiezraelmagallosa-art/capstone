@@ -14,8 +14,8 @@ class AppColors {
 }
 
 class AppConfig {
-  // Default host for local network / XAMPP server (configurable dynamically in app)
-  static String _activeHost = "192.168.1.3";
+  // Default host for production server (configurable dynamically in app)
+  static String _activeHost = "deanadmin.infinityfreeapp.com";
   static final List<String> _customHosts = [];
 
   static String get serverHost => _activeHost;
@@ -71,6 +71,11 @@ class AppConfig {
       }
     } catch (_) {}
 
+    // If host is a public domain name (e.g. deanadmin.infinityfreeapp.com)
+    if (host.contains('.') && !RegExp(r'^\d+\.\d+\.\d+\.\d+$').hasMatch(host)) {
+      return "http://$host/backend";
+    }
+
     return "http://$host/SBC_Internship_Attendance_System/backend";
   }
 
@@ -80,9 +85,8 @@ class AppConfig {
       if (!list.contains(h)) list.add(h);
     }
     // Add known candidate hosts for auto-discovery
-    // [CHANGE ME] Add your actual school network IPs here
     final defaults = [
-      "YOUR_SERVER_IP_OR_DOMAIN", // [CHANGE ME] Primary production server
+      "deanadmin.infinityfreeapp.com",
       "192.168.1.3",
       "192.168.1.100",
       "192.168.1.7",
