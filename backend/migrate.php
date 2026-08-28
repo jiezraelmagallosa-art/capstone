@@ -22,8 +22,8 @@ function logStep($message, $type = "info")
     global $logs, $isCli;
     $logs[] = [
         "timestamp" => date('H:i:s'),
-        "type"      => $type,
-        "message"   => $message
+        "type" => $type,
+        "message" => $message
     ];
     if ($isCli) {
         $prefix = ($type === 'error') ? '[ERROR]' : (($type === 'success') ? '[OK]' : '[INFO]');
@@ -32,11 +32,11 @@ function logStep($message, $type = "info")
 }
 
 // 1. Connection Config — from backend/config.php
-$host     = DB_HOST;
+$host = DB_HOST;
 $username = DB_USER;
 $password = DB_PASS;
 $database = DB_NAME;
-$port     = DB_PORT;
+$port = DB_PORT;
 
 logStep("Connecting to MySQL at $host:$port (User: $username, Database: $database)...");
 
@@ -52,7 +52,7 @@ if ($conn->connect_error) {
         outputJson($status, $logs, $database, []);
         exit();
     }
-    
+
     // Attempt database creation if permission allows
     @$conn->query("CREATE DATABASE IF NOT EXISTS `$database` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
     if (!$conn->select_db($database)) {
@@ -215,14 +215,14 @@ logStep("Default Training Site verified.", "success");
 
 // C. Dean Admin
 $seed_dean_email = $conn->real_escape_string(SEED_DEAN_EMAIL);
-$seed_dean_pass  = $conn->real_escape_string(SEED_DEAN_PASSWORD);
+$seed_dean_pass = $conn->real_escape_string(SEED_DEAN_PASSWORD);
 $conn->query("INSERT IGNORE INTO Users (user_id, full_name, email, password, role)
     VALUES (1, 'Dean Admin', '$seed_dean_email', '$seed_dean_pass', 'Dean');");
 logStep("Dean account verified (" . SEED_DEAN_EMAIL . ") — change password after first login!", "success");
 
 // D. Sample Student
 $seed_stu_email = $conn->real_escape_string(SEED_STUDENT_EMAIL);
-$seed_stu_pass  = $conn->real_escape_string(SEED_STUDENT_PASS);
+$seed_stu_pass = $conn->real_escape_string(SEED_STUDENT_PASS);
 $conn->query("INSERT IGNORE INTO Student (student_id, student_number, full_name, id_no, email, password, course_id, dean_id)
     VALUES (1, '2026-0001', 'Juan Dela Cruz', 'ID-101', '$seed_stu_email', '$seed_stu_pass', 1, 1);");
 logStep("Sample student verified (" . SEED_STUDENT_EMAIL . ") — change password after first login!", "success");
@@ -251,10 +251,10 @@ function outputJson($status, $logs, $database, $tableCounts)
         header('Content-Type: application/json');
     }
     echo json_encode([
-        "status"       => $status,
-        "database"     => $database,
+        "status" => $status,
+        "database" => $database,
         "table_counts" => $tableCounts,
-        "logs"         => $logs
+        "logs" => $logs
     ], JSON_PRETTY_PRINT);
 }
 ?>
