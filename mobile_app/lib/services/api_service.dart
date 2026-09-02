@@ -351,6 +351,41 @@ class ApiService {
     }
   }
 
+  static Future<Map<String, dynamic>> updateStudentSite({
+    required int studentId,
+    required int newSiteId,
+    String? remarks,
+  }) async {
+    final url = Uri.parse("${AppConfig.baseUrl}/update_student_site.php");
+
+    try {
+      final response = await InfinityHttpClient.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "student_id": studentId,
+          "new_site_id": newSiteId,
+          "remarks": remarks ?? "Transferred to new training facility",
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        try {
+          return jsonDecode(response.body);
+        } catch (_) {
+          return {
+            "status": "error",
+            "message": "Failed to update training site (HTTP ${response.statusCode})",
+          };
+        }
+      }
+    } catch (e) {
+      return _handleException(e);
+    }
+  }
+
   static Future<Map<String, dynamic>> recordAttendance({
     required String studentId,
     required String action,

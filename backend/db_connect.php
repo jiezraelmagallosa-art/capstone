@@ -58,6 +58,39 @@ try {
                 ('BLIS', 'Bachelor of Library and Information Science', " . DEFAULT_REQUIRED_HOURS . ")");
         }
     }
+
+    // Add site_id column to attendance table if not present and backfill
+    $col_att_site = @$conn->query("SHOW COLUMNS FROM attendance LIKE 'site_id'");
+    if ($col_att_site && $col_att_site->num_rows == 0) {
+        @$conn->query("ALTER TABLE attendance ADD COLUMN site_id INT NULL AFTER ojt_id");
+        @$conn->query("UPDATE attendance a JOIN ojt o ON a.ojt_id = o.ojt_id SET a.site_id = o.site_id WHERE a.site_id IS NULL");
+    }
+
+    // Create student_site_history table if not exists
+    @$conn->query("CREATE TABLE IF NOT EXISTS student_site_history (
+        history_id INT PRIMARY KEY AUTO_INCREMENT,
+        student_id INT NOT NULL,
+        site_id INT NOT NULL,
+        assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        pulled_out_at TIMESTAMP NULL,
+        is_current TINYINT(1) DEFAULT 1,
+        remarks VARCHAR(255) NULL,
+        INDEX (student_id),
+        INDEX (site_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
+    // Seed existing students into student_site_history if empty
+    $hist_check = @$conn->query("SELECT COUNT(*) as cnt FROM student_site_history");
+    if ($hist_check) {
+        $h_cnt = intval($hist_check->fetch_assoc()['cnt'] ?? 0);
+        if ($h_cnt == 0) {
+            @$conn->query("INSERT INTO student_site_history (student_id, site_id, is_current)
+                SELECT o.student_id, o.site_id, 1 
+                FROM ojt o 
+                WHERE o.student_id IS NOT NULL AND o.site_id IS NOT NULL
+                GROUP BY o.student_id, o.site_id");
+        }
+    }
 } catch (Throwable $e) {
     // Database tables not created yet or query suppressed
 }

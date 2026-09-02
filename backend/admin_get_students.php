@@ -118,16 +118,18 @@ require_once 'db_connect.php';
                 if ($req_h <= 0) $req_h = 480;
             }
 
-            $total_min = 0;
+            require_once 'site_helper.php';
+            $s_breakdown = getStudentSiteBreakdown($conn, intval($row['student_id']));
+            $total_min = $s_breakdown['total_minutes'];
+
+            // Total days across all sites
             $total_days = 0;
-            if ($ojt_id > 0) {
-                $att_stmt = $conn->prepare("SELECT SUM($m_min + $a_min) as total_min, COUNT(DISTINCT date) as total_days FROM attendance WHERE ojt_id = ?");
-                $att_stmt->bind_param("i", $ojt_id);
-                $att_stmt->execute();
-                $att_res = $att_stmt->get_result()->fetch_assoc();
-                $total_min = intval($att_res['total_min'] ?? 0);
-                $total_days = intval($att_res['total_days'] ?? 0);
-                $att_stmt->close();
+            $days_stmt = $conn->prepare("SELECT COUNT(DISTINCT a.date) as total_days FROM attendance a JOIN ojt o ON a.ojt_id = o.ojt_id WHERE o.student_id = ?");
+            if ($days_stmt) {
+                $days_stmt->bind_param("i", $row['student_id']);
+                $days_stmt->execute();
+                $total_days = intval($days_stmt->get_result()->fetch_assoc()['total_days'] ?? 0);
+                $days_stmt->close();
             }
 
             $rendered_hours = floor($total_min / 60);
@@ -164,7 +166,8 @@ require_once 'db_connect.php';
                 "formatted_time" => "{$rendered_hours}h {$rem_mins}m",
                 "progress_percentage" => $progress,
                 "total_days" => $total_days,
-                "status" => $status
+                "status" => $status,
+                "site_breakdown" => $s_breakdown['sites']
             ];
         }
     }

@@ -59,7 +59,21 @@ CREATE TABLE IF NOT EXISTS attendance (
     status VARCHAR(50) DEFAULT 'Pending',
     remarks TEXT NULL,
     ojt_id INT NOT NULL,
-    FOREIGN KEY (ojt_id) REFERENCES ojt(ojt_id) ON DELETE CASCADE
+    site_id INT NULL,
+    FOREIGN KEY (ojt_id) REFERENCES ojt(ojt_id) ON DELETE CASCADE,
+    FOREIGN KEY (site_id) REFERENCES training_site(site_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS student_site_history (
+    history_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    site_id INT NOT NULL,
+    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    pulled_out_at TIMESTAMP NULL,
+    is_current TINYINT(1) DEFAULT 1,
+    remarks VARCHAR(255) NULL,
+    FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (site_id) REFERENCES training_site(site_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS photo (

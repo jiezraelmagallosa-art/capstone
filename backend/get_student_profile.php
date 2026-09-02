@@ -72,24 +72,19 @@ $profile = $result->fetch_assoc();
 $ojt_id = $profile['ojt_id'] ?? 0;
 
 
-$morning_min = "CASE WHEN time_in_morning IS NOT NULL AND time_out_morning IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, time_in_morning, time_out_morning) ELSE 0 END";
-$afternoon_min = "CASE WHEN time_in_afternoon IS NOT NULL AND time_out_afternoon IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, time_in_afternoon, time_out_afternoon) ELSE 0 END";
+require_once 'site_helper.php';
+$site_breakdown_data = getStudentSiteBreakdown($conn, $student_id);
 
-$attendance_sql = "SELECT
-                    SUM($morning_min + $afternoon_min) as total_minutes,
-                    COUNT(DISTINCT date) as total_days
-                   FROM attendance
-                   WHERE ojt_id = ?";
+$total_minutes = $site_breakdown_data['total_minutes'];
+$total_rendered_hours = $site_breakdown_data['total_hours'];
+$remaining_minutes = $site_breakdown_data['remaining_minutes'];
 
-$stmt_att = $conn->prepare($attendance_sql);
-$stmt_att->bind_param("i", $ojt_id);
-$stmt_att->execute();
-$att_res = $stmt_att->get_result()->fetch_assoc();
-
-$total_minutes = intval($att_res['total_minutes'] ?? 0);
-$total_rendered_hours = floor($total_minutes / 60);
-$remaining_minutes = $total_minutes % 60;
-$total_days = intval($att_res['total_days'] ?? 0);
+// Count total unique attendance days across all sites
+$days_stmt = $conn->prepare("SELECT COUNT(DISTINCT a.date) as total_days FROM attendance a JOIN ojt o ON a.ojt_id = o.ojt_id WHERE o.student_id = ?");
+$days_stmt->bind_param("i", $student_id);
+$days_stmt->execute();
+$total_days = intval($days_stmt->get_result()->fetch_assoc()['total_days'] ?? 0);
+$days_stmt->close();
 
 $req_h = intval($profile['required_hours'] ?? ($profile['course_required_hours'] ?? 480));
 $final_required_hours = ($req_h > 0) ? $req_h : 480;
@@ -103,7 +98,7 @@ $profile['total_days'] = $total_days;
 $profile['required_hours'] = $final_required_hours;
 $profile['is_completed'] = $is_completed;
 $profile['completion_message'] = $is_completed ? "🎉 Congratulations! You have successfully completed your {$final_required_hours} internship goal hours!" : "";
-
+$profile['site_breakdown'] = $site_breakdown_data['sites'];
 
 echo json_encode([
     "status" => "success",
@@ -111,6 +106,5 @@ echo json_encode([
 ]);
 
 $stmt->close();
-$stmt_att->close();
 $conn->close();
 ?>

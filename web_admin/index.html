@@ -612,7 +612,7 @@
   </div>
 
   <!-- Student Details Profile Modal -->
-  <div id="studentDetailsModal" class="modal-overlay">
+  <div id="studentDetailsModal" class="modal-overlay" onclick="if(event.target === this) closeStudentDetailsModal()">
     <div class="modal-card" style="max-width: 560px;">
       <div class="modal-header">
         <h3>👨‍🎓 Student Profile & Internship Allocation</h3>
@@ -622,7 +622,8 @@
         style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6; max-height: 70vh; overflow-y: auto; padding-right: 4px;">
         <!-- Dynamically rendered student details -->
       </div>
-      <div style="margin-top: 1.5rem; text-align: right;">
+      <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="btn btn-outline" id="drawerDownloadDtrBtn" style="color: var(--navy-primary); font-weight: 700;">📄 Download Student DTR (PDF)</button>
         <button class="btn btn-navy" onclick="closeStudentDetailsModal()">Close Details</button>
       </div>
     </div>
@@ -685,6 +686,7 @@
     </div>
   </div>
 
+  <script src="js/html2pdf.bundle.min.js"></script>
   <script src="js/admin.js?v=4.0"></script>
 </body>
 

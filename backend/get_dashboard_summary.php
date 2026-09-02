@@ -78,6 +78,9 @@ $progress_percentage = min(100.0, round(($total_minutes / $target_total_minutes)
 $is_completed = ($progress_percentage >= 100.0);
 $completion_message = $is_completed ? "🎉 Congratulations! You have successfully completed your {$target_hours} internship goal hours! SBC is proud of your hard work and dedication." : "";
 
+require_once 'site_helper.php';
+$site_breakdown_data = getStudentSiteBreakdown($conn, $student_id);
+
 echo json_encode([
     "status" => "success",
     "data" => [
@@ -93,7 +96,8 @@ echo json_encode([
         "progress_percentage" => $progress_percentage,
         "total_days" => intval($result['total_days'] ?? 0),
         "is_completed" => $is_completed,
-        "completion_message" => $completion_message
+        "completion_message" => $completion_message,
+        "site_breakdown" => $site_breakdown_data['sites']
     ]
 ]);
 

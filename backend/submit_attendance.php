@@ -40,13 +40,15 @@ try {
 
 
     $resolved_ojt_id = 0;
-    $stmt_find_ojt = $conn->prepare("SELECT ojt_id FROM ojt WHERE ojt_id = ? OR student_id = ? LIMIT 1");
+    $active_site_id = 1;
+    $stmt_find_ojt = $conn->prepare("SELECT ojt_id, site_id FROM ojt WHERE ojt_id = ? OR student_id = ? LIMIT 1");
     if ($stmt_find_ojt) {
         $stmt_find_ojt->bind_param("ii", $raw_ojt_id, $raw_ojt_id);
         $stmt_find_ojt->execute();
         $res_find_ojt = $stmt_find_ojt->get_result();
         if ($row_find_ojt = $res_find_ojt->fetch_assoc()) {
             $resolved_ojt_id = intval($row_find_ojt['ojt_id']);
+            $active_site_id = intval($row_find_ojt['site_id'] ?? 1);
         }
         $stmt_find_ojt->close();
     }
@@ -164,13 +166,13 @@ try {
         $row = $check_result->fetch_assoc();
         $attendance_id = intval($row['attendance_id']);
 
-        $update_stmt = $conn->prepare("UPDATE attendance SET $column_to_update = ?, status = 'Pending', remarks = NULL WHERE attendance_id = ?");
-        $update_stmt->bind_param("si", $current_time, $attendance_id);
+        $update_stmt = $conn->prepare("UPDATE attendance SET $column_to_update = ?, site_id = COALESCE(site_id, ?), status = 'Pending', remarks = NULL WHERE attendance_id = ?");
+        $update_stmt->bind_param("sii", $current_time, $active_site_id, $attendance_id);
         $update_stmt->execute();
         $update_stmt->close();
     } else {
-        $insert_stmt = $conn->prepare("INSERT INTO attendance (date, ojt_id, $column_to_update, status) VALUES (?, ?, ?, 'Pending')");
-        $insert_stmt->bind_param("sis", $current_date, $resolved_ojt_id, $current_time);
+        $insert_stmt = $conn->prepare("INSERT INTO attendance (date, ojt_id, site_id, $column_to_update, status) VALUES (?, ?, ?, ?, 'Pending')");
+        $insert_stmt->bind_param("siis", $current_date, $resolved_ojt_id, $active_site_id, $current_time);
         $insert_stmt->execute();
         $attendance_id = $conn->insert_id;
         $insert_stmt->close();

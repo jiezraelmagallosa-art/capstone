@@ -373,7 +373,7 @@ function renderStudentsTable(students) {
         <td><span class="badge ${statusBadgeClass}">${s.progress_percentage >= 100 || s.status === 'Completed' ? '🏆 Completed 🎉' : s.status}</span></td>
 
         <td>
-          <button class="btn btn-outline" onclick="openStudentDrawer(${s.student_id})">Details</button>
+          <button class="btn btn-outline" onclick="openStudentDrawer('${s.student_id}')">Details</button>
         </td>
       </tr>
     `;
@@ -799,7 +799,7 @@ function renderComplianceSummary() {
   `;
 }
 
-function generatePDFReport() {
+async function generatePDFReport() {
   const targetStudents = getReportStudents();
   if (targetStudents.length === 0) return alert('No student records found to generate PDF report.');
 
@@ -816,142 +816,293 @@ function generatePDFReport() {
   const deanName = currentUser ? currentUser.full_name : 'Dean Admin';
   const deanEmail = currentUser ? currentUser.email : 'dean@sbc.edu.ph';
   const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const dateTag = new Date().toISOString().slice(0, 10);
+  const pdfFilename = `SBC_OJT_Compliance_Report_${selectedReportCourse}_${dateTag}.pdf`;
 
-  const printHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>SBC OJT Compliance Report - ${selectedReportCourse}</title>
-      <style>
-        @page { size: A4 portrait; margin: 15mm; }
-        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; margin: 0; padding: 10px; font-size: 12px; }
-        .header-box { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 15px; margin-bottom: 20px; }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-logo { width: 65px; height: 65px; border-radius: 50%; }
-        .header-title h1 { font-size: 18px; font-weight: 800; color: #002d56; margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
-        .header-title h2 { font-size: 12px; font-weight: 600; color: #475569; margin: 3px 0 0 0; }
-        .header-title h3 { font-size: 13px; font-weight: 700; color: #d97706; margin: 4px 0 0 0; text-transform: uppercase; }
-        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 15px; border-radius: 6px; margin-bottom: 20px; }
-        .meta-item { font-size: 11px; }
-        .meta-item strong { color: #002d56; }
-        .kpi-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
-        .kpi-box { background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; }
-        .kpi-box-title { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-        .kpi-box-value { font-size: 16px; font-weight: 800; color: #002d56; margin-top: 4px; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 11px; }
-        th { background-color: #002d56; color: #ffffff; text-align: left; padding: 8px 10px; font-weight: 700; text-transform: uppercase; font-size: 10px; }
-        td { border-bottom: 1px solid #e2e8f0; padding: 8px 10px; color: #334155; }
-        tr:nth-child(even) td { background-color: #f8fafc; }
-        .badge { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; font-weight: 700; }
-        .badge-success { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
-        .badge-warning { background-color: #fef3c7; color: #b45309; border: 1px solid #fde047; }
-        .sig-container { margin-top: 40px; display: flex; justify-content: space-between; page-break-inside: avoid; }
-        .sig-box { width: 42%; text-align: center; }
-        .sig-line { border-bottom: 1.5px solid #002d56; height: 40px; margin-bottom: 6px; }
-        .sig-name { font-weight: 700; font-size: 12px; color: #002d56; margin: 0; }
-        .sig-title { font-size: 10px; color: #64748b; margin: 2px 0 0 0; }
-        .footer { margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px; text-align: center; font-size: 9px; color: #94a3b8; }
-      </style>
-    </head>
-    <body>
-      <div class="header-box">
-        <div class="header-left">
-          <img src="assets/images/sbc_logo.png" class="header-logo" alt="SBC Logo" onerror="this.style.display='none';">
-          <div class="header-title">
-            <h1>Southern Baptist College</h1>
-            <h2>Office of Student Affairs & Internship Coordination</h2>
-            <h3>Institutional OJT Compliance & Attendance Report</h3>
-          </div>
-        </div>
-        <div style="text-align: right; font-size: 10px; color: #64748b;">
-          <strong>Date Generated:</strong><br>${dateStr}
+  const reportWrapper = document.createElement('div');
+  reportWrapper.style.padding = '25px 30px';
+  reportWrapper.style.backgroundColor = '#ffffff';
+  reportWrapper.style.color = '#1e293b';
+  reportWrapper.style.fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+  reportWrapper.style.fontSize = '12px';
+  reportWrapper.style.width = '780px';
+  reportWrapper.style.margin = '0 auto';
+
+  reportWrapper.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 12px; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <img src="assets/images/sbc_logo.png" style="width: 55px; height: 55px; border-radius: 50%;" alt="SBC Logo" onerror="this.style.display='none';">
+        <div>
+          <div style="font-size: 16px; font-weight: 800; color: #002d56; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Southern Baptist College</div>
+          <div style="font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs & Internship Coordination</div>
+          <div style="font-size: 12px; font-weight: 700; color: #d97706; text-transform: uppercase; margin-top: 3px;">Institutional OJT Compliance & Attendance Report</div>
         </div>
       </div>
-
-      <div class="meta-grid">
-        <div class="meta-item"><strong>Target Program Scope:</strong> ${escapeHtml(programTitle)}</div>
-        <div class="meta-item"><strong>Issued By:</strong> ${escapeHtml(deanName)} (${escapeHtml(deanEmail)})</div>
-        <div class="meta-item"><strong>Required Target Goal:</strong> Per-course defined hours</div>
-        <div class="meta-item"><strong>Report Type:</strong> Official Institutional Verification Summary</div>
+      <div style="text-align: right; font-size: 10px; color: #64748b;">
+        <strong>Date Generated:</strong><br>${dateStr}
       </div>
+    </div>
 
-      <div class="kpi-row">
-        <div class="kpi-box">
-          <div class="kpi-box-title">Total Interns</div>
-          <div class="kpi-box-value">${total}</div>
-        </div>
-        <div class="kpi-box">
-          <div class="kpi-box-title">Completed (Goal Hrs)</div>
-          <div class="kpi-box-value">${completed}</div>
-        </div>
-        <div class="kpi-box">
-          <div class="kpi-box-title">In-Progress</div>
-          <div class="kpi-box-value">${inProgress}</div>
-        </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px;">
+      <div style="font-size: 11px;"><strong>Target Program Scope:</strong> ${escapeHtml(programTitle)}</div>
+      <div style="font-size: 11px;"><strong>Issued By:</strong> ${escapeHtml(deanName)} (${escapeHtml(deanEmail)})</div>
+      <div style="font-size: 11px;"><strong>Required Target Goal:</strong> Per-course defined hours</div>
+      <div style="font-size: 11px;"><strong>Report Type:</strong> Official Institutional Verification Summary</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+      <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
+        <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Interns</div>
+        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 3px;">${total}</div>
       </div>
+      <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
+        <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Completed (Goal Hrs)</div>
+        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 3px;">${completed}</div>
+      </div>
+      <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
+        <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">In-Progress</div>
+        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 3px;">${inProgress}</div>
+      </div>
+    </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Student Name</th>
-            <th>Student #</th>
-            <th>Course</th>
-            <th>Partner Facility Placement</th>
-            <th>Hours Rendered</th>
-            <th>Target Goal</th>
-            <th>Progress %</th>
-            <th>Status</th>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 10.5px;">
+      <thead>
+        <tr style="background-color: #002d56; color: #ffffff;">
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Student Name</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Student #</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Course</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Partner Facility Placement</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Hours Rendered</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Target Goal</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Progress %</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${targetStudents.map((s, idx) => `
+          <tr style="background-color: ${idx % 2 === 1 ? '#f8fafc' : '#ffffff'};">
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700; color: #1e293b;">${escapeHtml(s.full_name)}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${s.student_number}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700; color: #002d56;">${s.course_code}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${escapeHtml(s.site_name)}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700; color: #002d56;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${s.required_hours}h</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700;">${s.progress_percentage}%</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px;">
+              <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; background-color: ${s.status === 'Completed' ? '#dcfce7' : '#fef3c7'}; color: ${s.status === 'Completed' ? '#15803d' : '#b45309'}; border: 1px solid ${s.status === 'Completed' ? '#86efac' : '#fde047'};">
+                ${s.status}
+              </span>
+            </td>
           </tr>
-        </thead>
-        <tbody>
-          ${targetStudents.map(s => `
-            <tr>
-              <td style="font-weight: 700;">${escapeHtml(s.full_name)}</td>
-              <td>${s.student_number}</td>
-              <td style="font-weight: 700; color: #002d56;">${s.course_code}</td>
-              <td>${escapeHtml(s.site_name)}</td>
-              <td style="font-weight: 700;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
-              <td>${s.required_hours}h</td>
-              <td>${s.progress_percentage}%</td>
-              <td><span class="badge ${s.status === 'Completed' ? 'badge-success' : 'badge-warning'}">${s.status}</span></td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
+        `).join('')}
+      </tbody>
+    </table>
 
-      <div class="sig-container">
-        <div class="sig-box">
-          <div class="sig-line"></div>
-          <p class="sig-name">${escapeHtml(deanName)}</p>
-          <p class="sig-title">Dean of Student Affairs / Department Head</p>
-        </div>
-        <div class="sig-box">
-          <div class="sig-line"></div>
-          <p class="sig-name">Institutional OJT Placement Coordinator</p>
-          <p class="sig-title">Office of Industrial Placement & Verification</p>
-        </div>
+    <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+      <div style="width: 42%; text-align: center;">
+        <div style="border-bottom: 1.5px solid #002d56; height: 35px; margin-bottom: 5px;"></div>
+        <p style="font-weight: 700; font-size: 11px; color: #002d56; margin: 0;">${escapeHtml(deanName)}</p>
+        <p style="font-size: 9.5px; color: #64748b; margin: 2px 0 0 0;">Dean of Student Affairs / Department Head</p>
       </div>
-
-      <div class="footer">
-        &copy; ${new Date().getFullYear()} Southern Baptist College &bull; Official Computer Generated OJT Compliance Document
+      <div style="width: 42%; text-align: center;">
+        <div style="border-bottom: 1.5px solid #002d56; height: 35px; margin-bottom: 5px;"></div>
+        <p style="font-weight: 700; font-size: 11px; color: #002d56; margin: 0;">Institutional OJT Placement Coordinator</p>
+        <p style="font-size: 9.5px; color: #64748b; margin: 2px 0 0 0;">Office of Industrial Placement & Verification</p>
       </div>
+    </div>
 
-      <script>
-        window.onload = function() {
-          window.print();
-        };
-      </script>
-    </body>
-    </html>
+    <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 8px; text-align: center; font-size: 8.5px; color: #94a3b8;">
+      &copy; ${new Date().getFullYear()} Southern Baptist College &bull; Official Computer Generated OJT Compliance Document
+    </div>
   `;
 
+  // Check if html2pdf is loaded and download automatically
+  if (typeof html2pdf !== 'undefined') {
+    const btn = document.querySelector('button[onclick="generatePDFReport()"]');
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<span>⏳</span> Downloading PDF...';
+
+    const opt = {
+      margin: [8, 8, 8, 8],
+      filename: pdfFilename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      await html2pdf().set(opt).from(reportWrapper).save();
+    } catch (err) {
+      console.error('html2pdf direct export failed:', err);
+      openPrintWindowFallback(reportWrapper.innerHTML, pdfFilename);
+    } finally {
+      if (btn) btn.innerHTML = originalText;
+    }
+  } else {
+    openPrintWindowFallback(reportWrapper.innerHTML, pdfFilename);
+  }
+}
+
+async function downloadStudentDtrPdf(studentId) {
+  const s = (cachedStudents || []).find(st => String(st.student_id) === String(studentId));
+  if (!s) return alert('Student details not found.');
+
+  const btn = document.getElementById('drawerDownloadDtrBtn');
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) btn.innerHTML = '⏳ Downloading DTR PDF...';
+
+  // Retrieve attendance logs for this student
+  let studentLogs = (cachedLogs || []).filter(l => String(l.student_id) === String(studentId));
+  if (studentLogs.length === 0) {
+    try {
+      const res = await fetch(API_BASE + 'admin_get_logs.php' + getDeanQueryParam());
+      const data = await res.json();
+      if (data.status === 'success' && data.data) {
+        cachedLogs = data.data;
+        studentLogs = cachedLogs.filter(l => String(l.student_id) === String(studentId));
+      }
+    } catch (_) {}
+  }
+
+  // Sort logs by date descending
+  studentLogs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const deanName = currentUser ? currentUser.full_name : 'Dean Admin';
+  const dateTag = new Date().toISOString().slice(0, 10);
+  const cleanName = (s.full_name || 'Student').replace(/[^a-zA-Z0-9]/g, '_');
+  const filename = `DTR_${cleanName}_${s.student_number || 'Record'}_${dateTag}.pdf`;
+
+  const dtrWrapper = document.createElement('div');
+  dtrWrapper.style.padding = '25px 30px';
+  dtrWrapper.style.backgroundColor = '#ffffff';
+  dtrWrapper.style.color = '#1e293b';
+  dtrWrapper.style.fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";
+  dtrWrapper.style.fontSize = '12px';
+  dtrWrapper.style.width = '780px';
+  dtrWrapper.style.margin = '0 auto';
+
+  dtrWrapper.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 12px; margin-bottom: 16px;">
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <img src="assets/images/sbc_logo.png" style="width: 55px; height: 55px; border-radius: 50%;" alt="SBC Logo" onerror="this.style.display='none';">
+        <div>
+          <div style="font-size: 16px; font-weight: 800; color: #002d56; text-transform: uppercase;">Southern Baptist College</div>
+          <div style="font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs & Internship Coordination</div>
+          <div style="font-size: 12px; font-weight: 700; color: #047857; text-transform: uppercase; margin-top: 3px;">Official Daily Time Record (DTR)</div>
+        </div>
+      </div>
+      <div style="text-align: right; font-size: 10px; color: #64748b;">
+        <strong>Date Issued:</strong><br>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+      </div>
+    </div>
+
+    <!-- Student Credentials Box -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px;">
+      <div style="font-size: 11px;"><strong>Intern Name:</strong> ${escapeHtml(s.full_name)}</div>
+      <div style="font-size: 11px;"><strong>Student Number:</strong> ${escapeHtml(s.student_number)}</div>
+      <div style="font-size: 11px;"><strong>Academic Program:</strong> ${escapeHtml(s.course_code)} — ${escapeHtml(s.course_name)}</div>
+      <div style="font-size: 11px;"><strong>Active Facility:</strong> ${escapeHtml(s.site_name)} (${escapeHtml(s.site_location || '')})</div>
+      <div style="font-size: 11px;"><strong>Total Rendered:</strong> ${s.formatted_time}</div>
+      <div style="font-size: 11px;"><strong>Required Goal:</strong> ${s.required_hours} hours (${s.progress_percentage}%)</div>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 10.5px;">
+      <thead>
+        <tr style="background-color: #002d56; color: #ffffff;">
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Date</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Morning In</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Morning Out</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Afternoon In</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Afternoon Out</th>
+          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${studentLogs.length === 0 ? `
+          <tr><td colspan="6" style="padding: 15px; text-align: center; color: #64748b;">No attendance logs recorded yet.</td></tr>
+        ` : studentLogs.map((l, idx) => `
+          <tr style="background-color: ${idx % 2 === 1 ? '#f8fafc' : '#ffffff'};">
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700; color: #1e293b;">${l.date}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${l.time_in_morning || '—'}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${l.time_out_morning || '—'}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${l.time_in_afternoon || '—'}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${l.time_out_afternoon || '—'}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px;">
+              <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; background-color: #dcfce7; color: #15803d; border: 1px solid #86efac;">
+                ${l.attendance_status || 'Verified'}
+              </span>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+
+    <div style="margin-top: 30px; display: flex; justify-content: space-between;">
+      <div style="width: 42%; text-align: center;">
+        <div style="border-bottom: 1.5px solid #002d56; height: 35px; margin-bottom: 5px;"></div>
+        <p style="font-weight: 700; font-size: 11px; color: #002d56; margin: 0;">${escapeHtml(s.full_name)}</p>
+        <p style="font-size: 9.5px; color: #64748b; margin: 2px 0 0 0;">Student Intern Signature</p>
+      </div>
+      <div style="width: 42%; text-align: center;">
+        <div style="border-bottom: 1.5px solid #002d56; height: 35px; margin-bottom: 5px;"></div>
+        <p style="font-weight: 700; font-size: 11px; color: #002d56; margin: 0;">${escapeHtml(deanName)}</p>
+        <p style="font-size: 9.5px; color: #64748b; margin: 2px 0 0 0;">Dean / OJT Coordinator</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 8px; text-align: center; font-size: 8.5px; color: #94a3b8;">
+      &copy; ${new Date().getFullYear()} Southern Baptist College &bull; Official Computer Generated Daily Time Record
+    </div>
+  `;
+
+  try {
+    if (typeof html2pdf !== 'undefined') {
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      await html2pdf().set(opt).from(dtrWrapper).save();
+    } else {
+      openPrintWindowFallback(dtrWrapper.innerHTML, filename);
+    }
+  } catch (err) {
+    console.error('Error exporting student DTR PDF:', err);
+    openPrintWindowFallback(dtrWrapper.innerHTML, filename);
+  } finally {
+    if (btn) btn.innerHTML = originalText;
+  }
+}
+
+function openPrintWindowFallback(innerHtml, title) {
   const printWin = window.open('', '_blank', 'width=900,height=750');
   if (printWin) {
-    printWin.document.write(printHtml);
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>${title}</title>
+        <style>
+          @page { size: A4 portrait; margin: 12mm; }
+          body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; margin: 0; padding: 10px; }
+        </style>
+      </head>
+      <body>
+        ${innerHtml}
+        <script>
+          window.onload = function() {
+            window.print();
+          };
+        <\/script>
+      </body>
+      </html>
+    `);
     printWin.document.close();
   } else {
-    alert('Please allow popups for this site to generate the PDF report.');
+    alert('Please allow popups to view and print the document.');
   }
 }
 
@@ -1046,9 +1197,44 @@ async function reviewAttendanceLog(attendanceId, action) {
   }
 }
 
-function openStudentDrawer(studentId) {
-  const s = cachedStudents.find(st => st.student_id === studentId);
-  if (!s) return;
+async function openStudentDrawer(studentId) {
+  // 1. Ensure student is found regardless of string vs int ID
+  let s = (cachedStudents || []).find(st => String(st.student_id) === String(studentId));
+
+  // If not found in memory cache, try fetching student list once
+  if (!s) {
+    try {
+      const res = await fetch(API_BASE + 'admin_get_students.php' + getDeanQueryParam());
+      const data = await res.json();
+      if (data.status === 'success' && data.data) {
+        cachedStudents = data.data;
+        s = cachedStudents.find(st => String(st.student_id) === String(studentId));
+      }
+    } catch (e) {
+      console.error('Error fetching student for drawer:', e);
+    }
+  }
+
+  if (!s) {
+    alert('Student record could not be loaded. Please refresh the page.');
+    return;
+  }
+
+  // 2. Ensure partner sites and courses are loaded for dropdowns
+  if (!cachedSites || cachedSites.length === 0) {
+    try {
+      const resSites = await fetch(API_BASE + 'admin_sites.php');
+      const dataSites = await resSites.json();
+      if (dataSites.status === 'success' && dataSites.data) {
+        cachedSites = dataSites.data;
+      }
+    } catch (_) {}
+  }
+  if (!cachedCourses || cachedCourses.length === 0) {
+    try {
+      await fetchCourses(false);
+    } catch (_) {}
+  }
 
   const container = document.getElementById('studentDetailsContent');
   if (!container) return;
@@ -1073,7 +1259,7 @@ function openStudentDrawer(studentId) {
       </div>
 
       <div style="border: 1px solid var(--border-light); padding: 0.85rem; border-radius: var(--radius-sm);">
-        <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem;">Partner Training Facility</div>
+        <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.3rem;">Active Partner Facility</div>
         <div style="font-size: 0.85rem; font-weight: 700; color: var(--navy-primary);">${escapeHtml(s.site_name)}</div>
         <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem;">${escapeHtml(s.ojt_no)} &bull; ${escapeHtml(s.site_location)}</div>
       </div>
@@ -1107,14 +1293,64 @@ function openStudentDrawer(studentId) {
       ` : ''}
     </div>
 
+    <!-- Multi-Site Facilities Breakdown -->
+    <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--navy-primary);">🏢 Training Facilities & Logged Hours</div>
+        <span style="font-size: 0.72rem; background: #fff8e1; color: #b7791f; padding: 2px 8px; border-radius: 12px; font-weight: 700;">
+          ${(s.site_breakdown || []).length} ${(s.site_breakdown || []).length === 1 ? 'Site' : 'Sites'}
+        </span>
+      </div>
+      <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+        Hours from earlier training sites remain recorded with their location label. Cumulative time continues at the active site.
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        ${(s.site_breakdown && s.site_breakdown.length > 0 ? s.site_breakdown : [{
+          site_name: s.site_name,
+          location: s.site_location,
+          is_current: true,
+          label: 'Current Location',
+          formatted_time: s.formatted_time,
+          total_days: s.total_days
+        }]).map(st => `
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; border-radius: 6px; background: ${st.is_current ? '#f0fdf4' : '#f8fafc'}; border: 1px solid ${st.is_current ? '#86efac' : 'var(--border-light)'};">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span style="font-weight: 700; font-size: 0.84rem; color: ${st.is_current ? 'var(--navy-primary)' : '#475569'};">${escapeHtml(st.site_name)}</span>
+                <span style="font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 10px; background: ${st.is_current ? '#2e7d32' : '#64748b'}; color: #fff;">
+                  ${st.is_current ? 'CURRENT LOCATION' : 'PREVIOUS LOCATION'}
+                </span>
+              </div>
+              <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">${escapeHtml(st.location || '')} &bull; ${st.total_days || 0} attendance day(s)</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 0.85rem; font-weight: 800; color: ${st.is_current ? '#166534' : '#334155'};">${st.formatted_time || '0 hrs 0 mins'}</div>
+              <div style="font-size: 0.68rem; color: var(--text-muted);">${st.is_current ? 'Active Site Hours' : 'Hours from earlier site'}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
     <!-- Dean Controls: Reassign Course -->
     <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; background: var(--bg-canvas);">
       <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem;">🎓 Reassign Academic Program</div>
       <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
         <select id="drawerCourseSelect" style="flex: 1; min-width: 180px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.85rem; background: #fff; color: var(--navy-primary); font-weight: 600;">
-          ${cachedCourses.map(c => `<option value="${c.course_id}" ${c.course_id == s.course_id ? 'selected' : ''}>${c.course_code} — ${c.course_name} (${c.required_hours}h)</option>`).join('')}
+          ${(cachedCourses || []).map(c => `<option value="${c.course_id}" ${c.course_id == s.course_id ? 'selected' : ''}>${escapeHtml(c.course_code)} — ${escapeHtml(c.course_name)} (${c.required_hours}h)</option>`).join('')}
         </select>
         <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.82rem; white-space: nowrap;" onclick="saveStudentAssignedCourse(${s.student_id})">Save Program</button>
+      </div>
+    </div>
+
+    <!-- Dean Controls: Transfer Training Facility -->
+    <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; background: var(--bg-canvas);">
+      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem;">🏢 Transfer Partner Training Facility</div>
+      <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <select id="drawerSiteSelect" style="flex: 1; min-width: 180px; padding: 0.5rem 0.75rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.85rem; background: #fff; color: var(--navy-primary); font-weight: 600;">
+          ${(cachedSites || []).map(st => `<option value="${st.site_id}" ${st.site_id == s.site_id ? 'selected' : ''}>${escapeHtml(st.site_name)} (${escapeHtml(st.location || '')})</option>`).join('')}
+        </select>
+        <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.82rem; white-space: nowrap;" onclick="saveStudentAssignedSite(${s.student_id})">Transfer Site</button>
       </div>
     </div>
 
@@ -1132,13 +1368,37 @@ function openStudentDrawer(studentId) {
     </div>
   `;
 
+  const modal = document.getElementById('studentDetailsModal');
+  if (modal) {
+    modal.classList.add('active');
+  }
 
-  document.getElementById('studentDetailsModal').classList.add('active');
+  const dtrBtn = document.getElementById('drawerDownloadDtrBtn');
+  if (dtrBtn) {
+    dtrBtn.onclick = () => downloadStudentDtrPdf(s.student_id);
+  }
+}
+
+function setDrawerPresetHours(hours) {
+  const input = document.getElementById('drawerHoursInput');
+  if (input) input.value = hours;
+  document.querySelectorAll('.btn-preset-chip').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.textContent, 10) === hours);
+  });
 }
 
 function closeStudentDetailsModal() {
-  document.getElementById('studentDetailsModal').classList.remove('active');
+  const modal = document.getElementById('studentDetailsModal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
 }
+
+window.openStudentDrawer = openStudentDrawer;
+window.closeStudentDetailsModal = closeStudentDetailsModal;
+window.setDrawerPresetHours = setDrawerPresetHours;
+window.downloadStudentDtrPdf = downloadStudentDtrPdf;
+window.generatePDFReport = generatePDFReport;
 
 function filterActiveTable(query) {
   if (!query) {
@@ -1397,6 +1657,35 @@ async function saveStudentCustomHours(studentId) {
     }
   } catch (err) {
     console.error('Save student hours error:', err);
+  }
+}
+
+async function saveStudentAssignedSite(studentId) {
+  const sel = document.getElementById('drawerSiteSelect');
+  if (!sel) return;
+  const new_site_id = parseInt(sel.value, 10);
+  if (!new_site_id) return;
+
+  try {
+    const res = await fetch(API_BASE + 'update_student_site.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_id: studentId,
+        new_site_id: new_site_id,
+        remarks: 'Transferred by Dean of Student Affairs'
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(data.message || 'Training site transferred successfully. Previous hours preserved.');
+      await fetchStudents();
+      openStudentDrawer(studentId);
+    } else {
+      alert(data.message || 'Failed to transfer site.');
+    }
+  } catch (err) {
+    console.error('Save student site error:', err);
   }
 }
 

@@ -59,6 +59,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   String _formattedRemainingText = "480 hrs 0 mins left";
   int _totalHours = 0;
   final int _targetHours = 480;
+  List<dynamic> _siteBreakdown = [];
 
   static const Color primaryNavy = Color(0xFF002D56);
   static const Color accentGold = Color(0xFFFFB800);
@@ -267,6 +268,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         _formattedRemainingText =
             result['data']['formatted_remaining'] ?? "480 hrs 0 mins left";
         _totalHours = result['data']['total_hours'] ?? 0;
+        _siteBreakdown = result['data']['site_breakdown'] ?? [];
         _isLoadingSummary = false;
       });
     } else {
@@ -874,8 +876,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
-          const SizedBox(height: 24),
-
+          if (_siteBreakdown.isNotEmpty) ...[
+            _buildSiteBreakdownOverview(),
+            const SizedBox(height: 16),
+          ],
 
           const Text(
             'Daily Progress',
@@ -1108,6 +1112,129 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSiteBreakdownOverview() {
+    final currentSite = _siteBreakdown.firstWhere(
+      (s) => s['is_current'] == true,
+      orElse: () => _siteBreakdown.last,
+    );
+    final hasMultipleSites = _siteBreakdown.length > 1;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: cardWhite,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.business_rounded, color: primaryNavy, size: 18),
+                  SizedBox(width: 8),
+                  Text(
+                    'Training Facility Assignment',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: primaryNavy,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text(
+                  'ACTIVE SITE',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 9.5,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            currentSite['site_name'] ?? 'Training Site',
+            style: const TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          if (currentSite['location'] != null && currentSite['location'].toString().isNotEmpty)
+            Text(
+              currentSite['location'],
+              style: const TextStyle(fontSize: 11.5, color: Colors.black54),
+            ),
+          if (hasMultipleSites) ...[
+            const Divider(height: 16),
+            Row(
+              children: [
+                const Icon(Icons.history_edu_rounded, size: 14, color: Color(0xFF8C6600)),
+                const SizedBox(width: 4),
+                Text(
+                  'Multi-Site Transfer History (${_siteBreakdown.length} locations):',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF8C6600),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            ..._siteBreakdown.map((s) {
+              final bool isCurr = s['is_current'] == true;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '${isCurr ? "▶ Current" : "• Earlier"}: ${s['site_name']}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: isCurr ? FontWeight.bold : FontWeight.normal,
+                          color: isCurr ? primaryNavy : Colors.black54,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      s['formatted_time'] ?? '',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: isCurr ? const Color(0xFF2E7D32) : Colors.blueGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const SizedBox(height: 4),
+            const Text(
+              'Hours from earlier locations remain safely recorded towards your total goal.',
+              style: TextStyle(fontSize: 10, color: Colors.grey, fontStyle: FontStyle.italic),
+            ),
+          ],
         ],
       ),
     );
