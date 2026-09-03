@@ -479,6 +479,10 @@ async function fetchLogs() {
     const data = await res.json();
     if (data.status === 'success') {
       cachedLogs = data.data || [];
+      const logDateInput = document.getElementById('logsCustomDateInput');
+      if (logDateInput && !logDateInput.value) {
+        logDateInput.value = getLocalDateISO();
+      }
       updateLogsCourseCounts(data.course_counts || {});
       populateLogsSiteDropdown();
       applyLogsFilters();
@@ -559,31 +563,26 @@ function populateLogsSiteDropdown() {
 // Attendance Logs Filter Handlers
 function setLogsDateFilter(filterKey) {
   currentLogsDateFilter = filterKey;
-  const select = document.getElementById('logsDateSelectFilter');
-  if (select) select.value = filterKey;
   const customInput = document.getElementById('logsCustomDateInput');
-  if (customInput) customInput.style.display = filterKey === 'CUSTOM' ? 'inline-block' : 'none';
-  applyLogsFilters();
-}
-
-function handleDateSelectChange(val) {
-  currentLogsDateFilter = val;
-  const customInput = document.getElementById('logsCustomDateInput');
-  if (val === 'CUSTOM') {
-    if (customInput) {
-      customInput.style.display = 'inline-block';
-      if (!customInput.value) customInput.value = getLocalDateISO();
-      currentLogsCustomDate = customInput.value;
-    }
-  } else {
-    if (customInput) customInput.style.display = 'none';
+  if (filterKey === 'TODAY') {
+    if (customInput) customInput.value = getLocalDateISO();
   }
   applyLogsFilters();
 }
 
+function handleDateSelectChange(val) {
+  setLogsDateFilter(val);
+}
+
 function handleCustomDateChange(val) {
   currentLogsCustomDate = val;
-  currentLogsDateFilter = 'CUSTOM';
+  if (!val) {
+    currentLogsDateFilter = 'TODAY';
+    const customInput = document.getElementById('logsCustomDateInput');
+    if (customInput) customInput.value = getLocalDateISO();
+  } else {
+    currentLogsDateFilter = 'CUSTOM';
+  }
   applyLogsFilters();
 }
 
@@ -1080,6 +1079,10 @@ async function fetchJournals() {
 
     if (data.status === 'success') {
       cachedJournals = data.data || [];
+      const journalDateInput = document.getElementById('journalCustomDateInput');
+      if (journalDateInput && !journalDateInput.value) {
+        journalDateInput.value = getLocalDateISO();
+      }
       populateJournalSiteDropdown();
       populateJournalCourseDropdown();
       applyJournalFilters();
@@ -1099,7 +1102,7 @@ function populateJournalSiteDropdown() {
   (cachedJournals || []).forEach(j => { if (j.site_name) sitesSet.add(j.site_name); });
 
   const sortedSites = Array.from(sitesSet).sort();
-  let html = `<option value="ALL">🏢 All Partner Facilities (${sortedSites.length})</option>`;
+  let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
   sortedSites.forEach(name => {
     html += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
   });
@@ -1131,32 +1134,26 @@ function populateJournalCourseDropdown() {
 
 function setJournalDateFilter(type) {
   currentJournalDateFilter = type;
-  const dateSelect = document.getElementById('journalDateSelectFilter');
   const customInput = document.getElementById('journalCustomDateInput');
-  if (dateSelect) dateSelect.value = type;
-  if (customInput) customInput.style.display = (type === 'CUSTOM') ? 'inline-block' : 'none';
-  applyJournalFilters();
-}
-
-function handleJournalDateSelectChange(val) {
-  currentJournalDateFilter = val;
-  const customInput = document.getElementById('journalCustomDateInput');
-  if (customInput) {
-    if (val === 'CUSTOM') {
-      customInput.style.display = 'inline-block';
-      if (!currentJournalCustomDate) {
-        customInput.value = getLocalDateISO();
-        currentJournalCustomDate = customInput.value;
-      }
-    } else {
-      customInput.style.display = 'none';
-    }
+  if (type === 'TODAY') {
+    if (customInput) customInput.value = getLocalDateISO();
   }
   applyJournalFilters();
 }
 
+function handleJournalDateSelectChange(val) {
+  setJournalDateFilter(val);
+}
+
 function handleJournalCustomDateChange(val) {
   currentJournalCustomDate = val;
+  if (!val) {
+    currentJournalDateFilter = 'TODAY';
+    const customInput = document.getElementById('journalCustomDateInput');
+    if (customInput) customInput.value = getLocalDateISO();
+  } else {
+    currentJournalDateFilter = 'CUSTOM';
+  }
   applyJournalFilters();
 }
 
@@ -1182,18 +1179,15 @@ function resetJournalFilters() {
   currentJournalSiteFilter = 'ALL';
   currentJournalCourseFilter = 'ALL';
 
-  const dateSelect = document.getElementById('journalDateSelectFilter');
   const customInput = document.getElementById('journalCustomDateInput');
+  if (customInput) customInput.value = getLocalDateISO();
   const statusSelect = document.getElementById('journalStatusSelectFilter');
-  const siteSelect = document.getElementById('journalSiteSelectFilter');
-  const courseSelect = document.getElementById('journalCourseSelectFilter');
-  const globalSearch = document.getElementById('globalSearch');
-
-  if (dateSelect) dateSelect.value = 'TODAY';
-  if (customInput) { customInput.value = ''; customInput.style.display = 'none'; }
   if (statusSelect) statusSelect.value = 'ALL';
+  const siteSelect = document.getElementById('journalSiteSelectFilter');
   if (siteSelect) siteSelect.value = 'ALL';
+  const courseSelect = document.getElementById('journalCourseSelectFilter');
   if (courseSelect) courseSelect.value = 'ALL';
+  const globalSearch = document.getElementById('globalSearch');
   if (globalSearch && currentTab === 'journals') globalSearch.value = '';
 
   applyJournalFilters();

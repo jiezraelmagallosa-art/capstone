@@ -389,19 +389,10 @@
 
             <!-- Filter Controls Grid -->
             <div class="logs-filter-grid">
-              <!-- 1. Date Filter Dropdown & Custom Picker -->
+              <!-- 1. Specific Date Picker -->
               <div class="filter-item">
-                <label for="logsDateSelectFilter" class="filter-label">Date Range:</label>
-                <div style="display: flex; gap: 0.35rem;">
-                  <select id="logsDateSelectFilter" class="form-control" onchange="handleDateSelectChange(this.value)">
-                    <option value="TODAY" selected>Today (Default)</option>
-                    <option value="YESTERDAY">Yesterday</option>
-                    <option value="THIS_WEEK">Past 7 Days</option>
-                    <option value="CUSTOM">Specific Date</option>
-                    <option value="ALL">All Dates (Full History)</option>
-                  </select>
-                  <input type="date" id="logsCustomDateInput" class="form-control" style="display: none; max-width: 135px; font-size: 0.78rem;" onchange="handleCustomDateChange(this.value)">
-                </div>
+                <label for="logsCustomDateInput" class="filter-label">Specific Date:</label>
+                <input type="date" id="logsCustomDateInput" class="form-control" onchange="handleCustomDateChange(this.value)">
               </div>
 
               <!-- 2. Verification Status Filter -->
@@ -544,21 +535,8 @@
                 <span id="journalsFilterCounterBadge" class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">Today's Submissions</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-right: 0.2rem;">Quick Date:</span>
-                <button type="button" class="btn-filter-quick active" id="btnJournalQuickToday" onclick="setJournalDateFilter('TODAY')">
+                <button type="button" class="btn-filter-quick active" id="btnJournalQuickToday" onclick="setJournalDateFilter('TODAY')" style="cursor: default;" title="Showing today's submissions">
                   Today
-                </button>
-                <button type="button" class="btn-filter-quick" id="btnJournalQuickYesterday" onclick="setJournalDateFilter('YESTERDAY')">
-                  Yesterday
-                </button>
-                <button type="button" class="btn-filter-quick" id="btnJournalQuickWeek" onclick="setJournalDateFilter('THIS_WEEK')">
-                  Past 7 Days
-                </button>
-                <button type="button" class="btn-filter-quick" id="btnJournalQuickAll" onclick="setJournalDateFilter('ALL')">
-                  All Dates
-                </button>
-                <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.65rem; color: var(--navy-primary); font-weight: 700; margin-left: 0.35rem;" onclick="resetJournalFilters()">
-                  Reset Filters
                 </button>
               </div>
             </div>
@@ -566,17 +544,8 @@
             <!-- Filter Controls Grid -->
             <div class="logs-filter-grid">
               <div class="filter-item">
-                <label for="journalDateSelectFilter" class="filter-label">Date Range:</label>
-                <div style="display: flex; gap: 0.35rem;">
-                  <select id="journalDateSelectFilter" class="form-control" onchange="handleJournalDateSelectChange(this.value)">
-                    <option value="TODAY" selected>Today (Default)</option>
-                    <option value="YESTERDAY">Yesterday</option>
-                    <option value="THIS_WEEK">Past 7 Days</option>
-                    <option value="CUSTOM">Specific Date</option>
-                    <option value="ALL">All Dates (Full History)</option>
-                  </select>
-                  <input type="date" id="journalCustomDateInput" class="form-control" style="display: none; max-width: 135px; font-size: 0.78rem;" onchange="handleJournalCustomDateChange(this.value)">
-                </div>
+                <label for="journalCustomDateInput" class="filter-label">Specific Date:</label>
+                <input type="date" id="journalCustomDateInput" class="form-control" onchange="handleJournalCustomDateChange(this.value)">
               </div>
 
               <div class="filter-item">
@@ -1062,7 +1031,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=4.7"></script>
+  <script src="js/admin.js?v=4.8"></script>
 </body>
 
 </html>
