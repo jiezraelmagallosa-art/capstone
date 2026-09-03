@@ -302,14 +302,18 @@
           </div>
 
           <!-- Student Tracking Multi-Criteria Filter Toolbar -->
-          <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; align-items: flex-end;">
+          <div class="card"
+            style="padding: 1rem 1.25rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; align-items: flex-end;">
               <!-- 1. Academic Program -->
               <div>
-                <label for="courseSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                <label for="courseSelectFilter"
+                  style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
                   Academic Program:
                 </label>
-                <select id="courseSelectFilter" class="form-control course-select-dropdown" onchange="handleStudentFilterChange()">
+                <select id="courseSelectFilter" class="form-control course-select-dropdown"
+                  onchange="handleStudentFilterChange()">
                   <option value="ALL">All Programs (0)</option>
                   <option value="BSCS">BSCS - Computer Science (0)</option>
                   <option value="BSIS">BSIS - Information Systems (0)</option>
@@ -319,7 +323,8 @@
 
               <!-- 2. OJT Progress Status -->
               <div>
-                <label for="studentStatusSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                <label for="studentStatusSelectFilter"
+                  style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
                   Progress Status:
                 </label>
                 <select id="studentStatusSelectFilter" class="form-control" onchange="handleStudentFilterChange()">
@@ -332,7 +337,8 @@
 
               <!-- 3. Partner Training Facility -->
               <div>
-                <label for="studentSiteSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                <label for="studentSiteSelectFilter"
+                  style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
                   Partner Facility:
                 </label>
                 <select id="studentSiteSelectFilter" class="form-control" onchange="handleStudentFilterChange()">
@@ -374,14 +380,21 @@
           </div>
 
           <!-- Attendance Logs Advanced Filter Toolbar: Date, Verification Status, Partner Facility, Academic Program -->
-          <div class="logs-filter-toolbar card" style="padding: 1.1rem 1.35rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.65rem;">
+          <div class="logs-filter-toolbar card"
+            style="padding: 1.1rem 1.35rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.65rem;">
               <div style="display: flex; align-items: center; gap: 0.55rem;">
-                <span style="font-size: 0.88rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.5px;">Logs Filter &amp; Verification Criteria</span>
-                <span id="logsFilterCounterBadge" class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">Showing Today's Logs</span>
+                <span
+                  style="font-size: 0.88rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.5px;">Logs
+                  Filter &amp; Verification Criteria</span>
+                <span id="logsFilterCounterBadge" class="badge"
+                  style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">Showing
+                  Today's Logs</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                <button type="button" class="btn-filter-quick active" id="btnQuickToday" onclick="setLogsDateFilter('TODAY')" style="cursor: default;" title="Showing today's logs">
+                <button type="button" class="btn-filter-quick active" id="btnQuickToday"
+                  onclick="setLogsDateFilter('TODAY')" style="cursor: default;" title="Showing today's logs">
                   Today
                 </button>
               </div>
@@ -392,13 +405,15 @@
               <!-- 1. Specific Date Picker -->
               <div class="filter-item">
                 <label for="logsCustomDateInput" class="filter-label">Specific Date:</label>
-                <input type="date" id="logsCustomDateInput" class="form-control" onchange="handleCustomDateChange(this.value)">
+                <input type="date" id="logsCustomDateInput" class="form-control"
+                  onchange="handleCustomDateChange(this.value)">
               </div>
 
               <!-- 2. Verification Status Filter -->
               <div class="filter-item">
                 <label for="logsStatusSelectFilter" class="filter-label">Verification Status:</label>
-                <select id="logsStatusSelectFilter" class="form-control" onchange="handleLogsStatusFilterChange(this.value)">
+                <select id="logsStatusSelectFilter" class="form-control"
+                  onchange="handleLogsStatusFilterChange(this.value)">
                   <option value="ALL" selected>All Statuses (Pending &amp; Evaluated)</option>
                   <option value="Pending">Pending Review Only</option>
                   <option value="Confirmed">Confirmed Only</option>
@@ -409,7 +424,8 @@
               <!-- 3. Partner Training Facility Filter -->
               <div class="filter-item">
                 <label for="logsSiteSelectFilter" class="filter-label">Partner Facility:</label>
-                <select id="logsSiteSelectFilter" class="form-control" onchange="handleLogsSiteFilterChange(this.value)">
+                <select id="logsSiteSelectFilter" class="form-control"
+                  onchange="handleLogsSiteFilterChange(this.value)">
                   <option value="ALL" selected>All Partner Facilities</option>
                   <!-- Dynamically populated -->
                 </select>
@@ -418,7 +434,8 @@
               <!-- 4. Academic Program Filter -->
               <div class="filter-item">
                 <label for="logsCourseSelectFilter" class="filter-label">Academic Program:</label>
-                <select id="logsCourseSelectFilter" class="form-control course-select-dropdown" onchange="handleLogsCourseFilterChange(this.value)">
+                <select id="logsCourseSelectFilter" class="form-control course-select-dropdown"
+                  onchange="handleLogsCourseFilterChange(this.value)">
                   <option value="ALL">All Programs (0)</option>
                   <option value="BSCS">BSCS - Computer Science (0)</option>
                   <option value="BSIS">BSIS - Information Systems (0)</option>
@@ -461,11 +478,14 @@
           </div>
 
           <!-- Absence Requests Filter Toolbar -->
-          <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; align-items: flex-end;">
+          <div class="card"
+            style="padding: 1rem 1.25rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div
+              style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; align-items: flex-end;">
               <!-- 1. Review Status -->
               <div>
-                <label for="absenceStatusSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                <label for="absenceStatusSelectFilter"
+                  style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
                   Evaluation Status:
                 </label>
                 <select id="absenceStatusSelectFilter" class="form-control" onchange="applyAbsenceFilters()">
@@ -478,10 +498,12 @@
 
               <!-- 2. Academic Program -->
               <div>
-                <label for="absenceCourseSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                <label for="absenceCourseSelectFilter"
+                  style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
                   Academic Program:
                 </label>
-                <select id="absenceCourseSelectFilter" class="form-control course-select-dropdown" onchange="applyAbsenceFilters()">
+                <select id="absenceCourseSelectFilter" class="form-control course-select-dropdown"
+                  onchange="applyAbsenceFilters()">
                   <option value="ALL">All Programs (0)</option>
                   <option value="BSCS">BSCS - Computer Science (0)</option>
                   <option value="BSIS">BSIS - Information Systems (0)</option>
@@ -521,21 +543,29 @@
               <p>Read daily activities, key reflections, and evaluate intern performance with feedback.</p>
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <button type="button" class="btn btn-danger" id="btnDeleteAllJournals" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="deleteAllFilteredJournals()">
+              <button type="button" class="btn btn-danger" id="btnDeleteAllJournals"
+                style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="deleteAllFilteredJournals()">
                 Delete All Filtered Journals
               </button>
             </div>
           </div>
 
           <!-- Advanced Journal Filter Toolbar -->
-          <div class="logs-filter-toolbar card" style="padding: 1.1rem 1.35rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.65rem;">
+          <div class="logs-filter-toolbar card"
+            style="padding: 1.1rem 1.35rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.65rem;">
               <div style="display: flex; align-items: center; gap: 0.55rem;">
-                <span style="font-size: 0.88rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.5px;">Journal Criteria &amp; Filters</span>
-                <span id="journalsFilterCounterBadge" class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">Today's Submissions</span>
+                <span
+                  style="font-size: 0.88rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.5px;">Journal
+                  Criteria &amp; Filters</span>
+                <span id="journalsFilterCounterBadge" class="badge"
+                  style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">Today's
+                  Submissions</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                <button type="button" class="btn-filter-quick active" id="btnJournalQuickToday" onclick="setJournalDateFilter('TODAY')" style="cursor: default;" title="Showing today's submissions">
+                <button type="button" class="btn-filter-quick active" id="btnJournalQuickToday"
+                  onclick="setJournalDateFilter('TODAY')" style="cursor: default;" title="Showing today's submissions">
                   Today
                 </button>
               </div>
@@ -545,12 +575,14 @@
             <div class="logs-filter-grid">
               <div class="filter-item">
                 <label for="journalCustomDateInput" class="filter-label">Specific Date:</label>
-                <input type="date" id="journalCustomDateInput" class="form-control" onchange="handleJournalCustomDateChange(this.value)">
+                <input type="date" id="journalCustomDateInput" class="form-control"
+                  onchange="handleJournalCustomDateChange(this.value)">
               </div>
 
               <div class="filter-item">
                 <label for="journalStatusSelectFilter" class="filter-label">Review Status:</label>
-                <select id="journalStatusSelectFilter" class="form-control" onchange="handleJournalStatusFilterChange(this.value)">
+                <select id="journalStatusSelectFilter" class="form-control"
+                  onchange="handleJournalStatusFilterChange(this.value)">
                   <option value="ALL" selected>All Statuses</option>
                   <option value="Pending">Pending Evaluation Only</option>
                   <option value="Reviewed">Reviewed Only</option>
@@ -560,14 +592,16 @@
 
               <div class="filter-item">
                 <label for="journalSiteSelectFilter" class="filter-label">Training Facility:</label>
-                <select id="journalSiteSelectFilter" class="form-control" onchange="handleJournalSiteFilterChange(this.value)">
+                <select id="journalSiteSelectFilter" class="form-control"
+                  onchange="handleJournalSiteFilterChange(this.value)">
                   <option value="ALL" selected>All Partner Facilities</option>
                 </select>
               </div>
 
               <div class="filter-item">
                 <label for="journalCourseSelectFilter" class="filter-label">Academic Program:</label>
-                <select id="journalCourseSelectFilter" class="form-control" onchange="handleJournalCourseFilterChange(this.value)">
+                <select id="journalCourseSelectFilter" class="form-control"
+                  onchange="handleJournalCourseFilterChange(this.value)">
                   <option value="ALL">All Programs (0)</option>
                 </select>
               </div>
@@ -637,24 +671,32 @@
           </div>
 
           <!-- Academic Year-End Batch Manager Card -->
-          <div class="card batch-manager-card" style="padding: 1.15rem 1.4rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid var(--navy-primary); border-radius: var(--radius-sm); box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div class="card batch-manager-card"
+            style="padding: 1.15rem 1.4rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid var(--navy-primary); border-radius: var(--radius-sm); box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
               <div style="max-width: 620px;">
                 <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
-                  <h3 style="margin: 0; font-size: 0.98rem; color: var(--navy-primary); font-weight: 800; letter-spacing: 0.2px;">
+                  <h3
+                    style="margin: 0; font-size: 0.98rem; color: var(--navy-primary); font-weight: 800; letter-spacing: 0.2px;">
                     Academic Year-End Batch Manager &amp; Storage Reset
                   </h3>
-                  <span class="badge" style="background: #0284c7; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 4px; white-space: nowrap;">Annual Transition</span>
+                  <span class="badge"
+                    style="background: #0284c7; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 4px; white-space: nowrap;">Annual
+                    Transition</span>
                 </div>
                 <p style="font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.45;">
-                  Download consolidated school records (Excel &amp; PDF) to permanent school storage, then purge graduated intern accounts to reclaim 100% hosting storage for the new incoming academic year.
+                  Download consolidated school records (Excel &amp; PDF) to permanent school storage, then purge
+                  graduated intern accounts to reclaim 100% hosting storage for the new incoming academic year.
                 </p>
               </div>
               <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-                <button type="button" class="btn btn-navy" onclick="downloadBatchArchive()" style="font-size: 0.82rem; font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 6px; white-space: nowrap;">
+                <button type="button" class="btn btn-navy" onclick="downloadBatchArchive()"
+                  style="font-size: 0.82rem; font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 6px; white-space: nowrap;">
                   Download Batch Archive (CSV &amp; PDF)
                 </button>
-                <button type="button" class="btn btn-danger" onclick="openBatchResetModal()" style="font-size: 0.82rem; font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 6px; white-space: nowrap;">
+                <button type="button" class="btn btn-danger" onclick="openBatchResetModal()"
+                  style="font-size: 0.82rem; font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 6px; white-space: nowrap;">
                   Purge Batch &amp; Reset Storage
                 </button>
               </div>
@@ -724,7 +766,8 @@
   </div>
 
   <!-- Full Picture / High-Resolution Facial Verification Lightbox Modal -->
-  <div id="imageLightboxModal" class="modal-overlay image-lightbox-overlay" onclick="handleLightboxBackdropClick(event)">
+  <div id="imageLightboxModal" class="modal-overlay image-lightbox-overlay"
+    onclick="handleLightboxBackdropClick(event)">
     <div class="image-lightbox-card">
       <div class="image-lightbox-header">
         <div class="image-lightbox-title-box">
@@ -734,27 +777,40 @@
         </div>
         <div class="image-lightbox-actions">
           <div id="lightboxNavControls" style="display: flex; align-items: center; gap: 0.35rem; margin-right: 0.5rem;">
-            <button type="button" id="lightboxPrevBtn" class="btn-lightbox-action" onclick="navigateLightbox(-1)" title="Previous photo (Left Arrow)" style="display: none;">
+            <button type="button" id="lightboxPrevBtn" class="btn-lightbox-action" onclick="navigateLightbox(-1)"
+              title="Previous photo (Left Arrow)" style="display: none;">
               ‹ Prev
             </button>
-            <span id="lightboxCounter" style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; display: none; padding: 0 4px;"></span>
-            <button type="button" id="lightboxNextBtn" class="btn-lightbox-action" onclick="navigateLightbox(1)" title="Next photo (Right Arrow)" style="display: none;">
+            <span id="lightboxCounter"
+              style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; display: none; padding: 0 4px;"></span>
+            <button type="button" id="lightboxNextBtn" class="btn-lightbox-action" onclick="navigateLightbox(1)"
+              title="Next photo (Right Arrow)" style="display: none;">
               Next ›
             </button>
           </div>
-          <a id="imageLightboxExternalBtn" href="#" target="_blank" rel="noopener noreferrer" class="btn-lightbox-action" title="Open full photo in original size in new tab">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          <a id="imageLightboxExternalBtn" href="#" target="_blank" rel="noopener noreferrer"
+            class="btn-lightbox-action" title="Open full photo in original size in new tab">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
             <span>Open in Tab</span>
           </a>
-          <button type="button" class="btn-lightbox-close" onclick="closeImageLightbox()" aria-label="Close" title="Close (Esc)">&times;</button>
+          <button type="button" class="btn-lightbox-close" onclick="closeImageLightbox()" aria-label="Close"
+            title="Close (Esc)">&times;</button>
         </div>
       </div>
       <div class="image-lightbox-body" onclick="closeImageLightbox()">
-        <img id="imageLightboxImg" src="" alt="Full facial verification capture" class="image-lightbox-img" onclick="event.stopPropagation()">
+        <img id="imageLightboxImg" src="" alt="Full facial verification capture" class="image-lightbox-img"
+          onclick="event.stopPropagation()">
       </div>
       <div class="image-lightbox-footer">
         <span class="lightbox-hint">💡 Click image or press <kbd>ESC</kbd> / outside to close</span>
-        <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.3rem 0.75rem; color: #cbd5e1; border-color: rgba(255,255,255,0.25);" onclick="closeImageLightbox()">Close Full View</button>
+        <button type="button" class="btn btn-outline"
+          style="font-size: 0.75rem; padding: 0.3rem 0.75rem; color: #cbd5e1; border-color: rgba(255,255,255,0.25);"
+          onclick="closeImageLightbox()">Close Full View</button>
       </div>
     </div>
   </div>
@@ -864,8 +920,10 @@
         style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6; max-height: 70vh; overflow-y: auto; padding-right: 4px;">
         <!-- Dynamically rendered student details -->
       </div>
-      <div style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-        <button class="btn btn-outline" id="drawerDownloadDtrBtn" style="color: var(--navy-primary); font-weight: 700;">📄 Download Student DTR (PDF)</button>
+      <div
+        style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="btn btn-outline" id="drawerDownloadDtrBtn"
+          style="color: var(--navy-primary); font-weight: 700;">📄 Download Student DTR (PDF)</button>
         <button class="btn btn-navy" onclick="closeStudentDetailsModal()">Close Details</button>
       </div>
     </div>
@@ -935,19 +993,24 @@
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <span style="font-size: 1.3rem;">📝</span>
           <div>
-            <h3 id="journalModalTitle" style="margin: 0; font-size: 1.15rem; color: var(--navy-primary);">Daily Narrative Journal</h3>
-            <span id="journalModalSubtitle" style="font-size: 0.78rem; color: var(--text-muted);">Student Submission Details</span>
+            <h3 id="journalModalTitle" style="margin: 0; font-size: 1.15rem; color: var(--navy-primary);">Daily
+              Narrative Journal</h3>
+            <span id="journalModalSubtitle" style="font-size: 0.78rem; color: var(--text-muted);">Student Submission
+              Details</span>
           </div>
         </div>
         <button class="close-btn" onclick="closeJournalModal()">&times;</button>
       </div>
 
-      <div id="journalModalContent" style="max-height: 60vh; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 1rem;">
+      <div id="journalModalContent"
+        style="max-height: 60vh; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 1rem;">
         <!-- Dynamically rendered journal details -->
       </div>
 
-      <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-        <button type="button" id="journalModalDeleteBtn" class="btn btn-danger" style="font-size: 0.8rem;" onclick="handleModalDeleteJournal()">
+      <div
+        style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <button type="button" id="journalModalDeleteBtn" class="btn btn-danger" style="font-size: 0.8rem;"
+          onclick="handleModalDeleteJournal()">
           🗑️ Delete Entry
         </button>
         <div style="display: flex; gap: 0.5rem; margin-left: auto;">
@@ -967,7 +1030,8 @@
         <div style="display: flex; align-items: center; gap: 0.6rem;">
           <span style="font-size: 1.5rem;">⚠️</span>
           <div>
-            <h3 style="margin: 0; font-size: 1.15rem; color: #991b1b; font-weight: 800;">Academic Year-End Batch Reset</h3>
+            <h3 style="margin: 0; font-size: 1.15rem; color: #991b1b; font-weight: 800;">Academic Year-End Batch Reset
+            </h3>
             <span style="font-size: 0.78rem; color: #b91c1c;">Permanent Storage Cleanup &amp; Roster Purge</span>
           </div>
         </div>
@@ -975,15 +1039,18 @@
       </div>
 
       <div style="padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
-        <div style="background: #fff7ed; border-left: 4px solid #f97316; padding: 0.85rem 1rem; border-radius: var(--radius-sm);">
+        <div
+          style="background: #fff7ed; border-left: 4px solid #f97316; padding: 0.85rem 1rem; border-radius: var(--radius-sm);">
           <strong style="color: #9a3412; font-size: 0.88rem;">⚠️ Important Permanent Cleanup:</strong>
           <p style="font-size: 0.82rem; color: #7c2d12; margin: 0.35rem 0 0 0; line-height: 1.4;">
-            This action will <strong>permanently delete</strong> all student accounts for this cohort, freeing up hosting storage for the new incoming school year. Ensure you have exported the Excel/PDF archive first!
+            This action will <strong>permanently delete</strong> all student accounts for this cohort, freeing up
+            hosting storage for the new incoming school year. Ensure you have exported the Excel/PDF archive first!
           </p>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.8rem;">
-          <div style="background: #f8fafc; border: 1px solid var(--border-light); padding: 0.75rem; border-radius: 6px;">
+          <div
+            style="background: #f8fafc; border: 1px solid var(--border-light); padding: 0.75rem; border-radius: 6px;">
             <strong style="color: #dc2626; display: block; margin-bottom: 0.3rem;">❌ What will be deleted:</strong>
             <ul style="margin: 0; padding-left: 1.1rem; color: #475569; line-height: 1.4;">
               <li>Current student accounts</li>
@@ -992,7 +1059,8 @@
               <li>Daily narrative journals</li>
             </ul>
           </div>
-          <div style="background: #f8fafc; border: 1px solid var(--border-light); padding: 0.75rem; border-radius: 6px;">
+          <div
+            style="background: #f8fafc; border: 1px solid var(--border-light); padding: 0.75rem; border-radius: 6px;">
             <strong style="color: #16a34a; display: block; margin-bottom: 0.3rem;">✓ What will STAY SAFE:</strong>
             <ul style="margin: 0; padding-left: 1.1rem; color: #475569; line-height: 1.4;">
               <li>Academic Programs (BSCS, etc.)</li>
@@ -1005,22 +1073,30 @@
 
         <div style="border-top: 1px solid var(--border-light); padding-top: 0.85rem;">
           <label style="display: flex; align-items: flex-start; gap: 0.5rem; cursor: pointer;">
-            <input type="checkbox" id="chkBackupDownloaded" onchange="validateBatchResetForm()" style="margin-top: 3px; cursor: pointer;">
+            <input type="checkbox" id="chkBackupDownloaded" onchange="validateBatchResetForm()"
+              style="margin-top: 3px; cursor: pointer;">
             <span style="font-size: 0.82rem; color: #334155; font-weight: 600;">
-              I have downloaded and safely saved the School-Year Archive (CSV &amp; PDF) to the school Google Drive or local PC.
+              I have downloaded and safely saved the School-Year Archive (CSV &amp; PDF) to the school Google Drive or
+              local PC.
             </span>
           </label>
         </div>
 
         <div style="background: #f1f5f9; padding: 0.85rem 1rem; border-radius: 6px;">
-          <label for="txtResetConfirmation" style="display: block; font-size: 0.82rem; font-weight: 700; color: #1e293b; margin-bottom: 0.35rem;">
-            Type <span style="color: #dc2626; font-family: monospace; font-size: 0.95rem; font-weight: 800;">RESET</span> below to confirm permanent deletion:
+          <label for="txtResetConfirmation"
+            style="display: block; font-size: 0.82rem; font-weight: 700; color: #1e293b; margin-bottom: 0.35rem;">
+            Type <span
+              style="color: #dc2626; font-family: monospace; font-size: 0.95rem; font-weight: 800;">RESET</span> below
+            to confirm permanent deletion:
           </label>
-          <input type="text" id="txtResetConfirmation" class="form-control" placeholder="Type RESET" oninput="validateBatchResetForm()" style="text-transform: uppercase; font-weight: 800; letter-spacing: 1px; color: #dc2626;">
+          <input type="text" id="txtResetConfirmation" class="form-control" placeholder="Type RESET"
+            oninput="validateBatchResetForm()"
+            style="text-transform: uppercase; font-weight: 800; letter-spacing: 1px; color: #dc2626;">
         </div>
       </div>
 
-      <div class="modal-footer" style="padding: 1rem 1.4rem; background: #f8fafc; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
+      <div class="modal-footer"
+        style="padding: 1rem 1.4rem; background: #f8fafc; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
         <button type="button" class="btn btn-outline" onclick="closeBatchResetModal()">Cancel</button>
         <button type="button" id="btnExecuteBatchReset" class="btn btn-danger" disabled onclick="executeBatchReset()">
           Execute Permanent Batch Reset
