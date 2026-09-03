@@ -105,6 +105,25 @@ CREATE TABLE IF NOT EXISTS absence_requests (
     FOREIGN KEY (reviewed_by) REFERENCES users(user_id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS daily_journal (
+    journal_id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    ojt_id INT NOT NULL,
+    attendance_id INT NULL,
+    entry_date DATE NOT NULL,
+    tasks_completed TEXT NOT NULL,
+    learnings_reflection TEXT NULL,
+    challenges_encountered TEXT NULL,
+    dean_feedback TEXT NULL,
+    dean_status ENUM('Pending', 'Reviewed', 'Commended') DEFAULT 'Pending',
+    reviewed_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (ojt_id) REFERENCES ojt(ojt_id) ON DELETE CASCADE,
+    FOREIGN KEY (attendance_id) REFERENCES attendance(attendance_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT INTO course (course_code, course_name, required_hours) VALUES
 ('BSCS', 'Bachelor of Science in Computer Science', 480),
 ('BSIS', 'Bachelor of Science in Information Systems', 480),

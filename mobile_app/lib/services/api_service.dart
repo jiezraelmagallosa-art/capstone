@@ -539,4 +539,95 @@ class ApiService {
       return _handleException(e);
     }
   }
+
+  static Future<Map<String, dynamic>> updateStudentProfile({
+    required int studentId,
+    String? fullName,
+    String? idNo,
+    int? courseId,
+    int? deanId,
+    int? siteId,
+  }) async {
+    final url = Uri.parse("${AppConfig.baseUrl}/update_student_profile.php");
+
+    try {
+      final response = await InfinityHttpClient.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'student_id': studentId,
+          if (fullName != null) 'full_name': fullName,
+          if (idNo != null) 'id_no': idNo,
+          if (courseId != null && courseId > 0) 'course_id': courseId,
+          if (deanId != null && deanId > 0) 'dean_id': deanId,
+          if (siteId != null && siteId > 0) 'site_id': siteId,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'status': 'error',
+          'message': serverUnavailableMsg,
+        };
+      }
+    } catch (e) {
+      return _handleException(e);
+    }
+  }
+
+  static Future<Map<String, dynamic>> submitDailyJournal({
+    required int studentId,
+    required String entryDate,
+    required String tasksCompleted,
+    String? learningsReflection,
+    String? challengesEncountered,
+  }) async {
+    final url = Uri.parse("${AppConfig.baseUrl}/submit_journal.php");
+
+    try {
+      final response = await InfinityHttpClient.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'student_id': studentId,
+          'entry_date': entryDate,
+          'tasks_completed': tasksCompleted,
+          'learnings_reflection': learningsReflection ?? '',
+          'challenges_encountered': challengesEncountered ?? '',
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'status': 'error',
+          'message': serverUnavailableMsg,
+        };
+      }
+    } catch (e) {
+      return _handleException(e);
+    }
+  }
+
+  static Future<Map<String, dynamic>> getStudentJournals(dynamic studentId) async {
+    final url = Uri.parse("${AppConfig.baseUrl}/get_student_journals.php?student_id=$studentId");
+
+    try {
+      final response = await InfinityHttpClient.get(url).timeout(const Duration(seconds: 8));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'status': 'error',
+          'message': serverUnavailableMsg,
+        };
+      }
+    } catch (e) {
+      return _handleException(e);
+    }
+  }
 }

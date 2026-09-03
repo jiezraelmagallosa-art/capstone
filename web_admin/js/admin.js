@@ -14,12 +14,28 @@ let currentUser = null;
 let currentTab = 'overview';
 let currentCourseFilter = 'ALL';
 let currentLogsCourseFilter = 'ALL';
+let currentLogsDateFilter = 'TODAY'; // Default to Today's data!
+let currentLogsCustomDate = '';
+let currentLogsStatusFilter = 'ALL';
+let currentLogsSiteFilter = 'ALL';
 let selectedReportCourse = 'ALL';
 let cachedStudents = [];
 let cachedLogs = [];
 let cachedAbsences = [];
+let cachedJournals = [];
+let currentJournalCourseFilter = 'ALL';
+let currentJournalDateFilter = 'TODAY'; // Default to Today's data!
+let currentJournalCustomDate = '';
+let currentJournalStatusFilter = 'ALL';
+let currentJournalSiteFilter = 'ALL';
+let currentActiveJournalId = null;
 let cachedSites = [];
 let cachedCourses = [];
+let cachedLiveCaptures = [];
+let currentModalPhotos = [];
+let currentModalPhotoIndex = 0;
+let currentLightboxGallery = null;
+let currentLightboxIndex = -1;
 
 // UI Initialization & Main Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -88,6 +104,35 @@ function setupEventListeners() {
       filterActiveTable(e.target.value.trim().toLowerCase());
     });
   }
+
+  // Global Keyboard Shortcuts (ESC to close modals/lightbox, Arrow keys for photo gallery)
+  document.addEventListener('keydown', (e) => {
+    const lightbox = document.getElementById('imageLightboxModal');
+    if (lightbox && lightbox.classList.contains('active')) {
+      if (e.key === 'Escape') {
+        closeImageLightbox();
+        e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+      if (e.key === 'ArrowLeft') {
+        navigateLightbox(-1);
+        e.preventDefault();
+      }
+      if (e.key === 'ArrowRight') {
+        navigateLightbox(1);
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      const photoModal = document.getElementById('photoModal');
+      if (photoModal && photoModal.classList.contains('active')) {
+        closePhotoModal();
+      }
+    }
+  });
 }
 
 // Administrative Login Handler
@@ -191,6 +236,7 @@ function showAppShell() {
   }
   fetchLogs();
   fetchAbsences();
+  fetchJournals();
 }
 
 function switchTab(tabId) {
@@ -224,6 +270,9 @@ function loadTabContent(tabId) {
       break;
     case 'absences':
       fetchAbsences();
+      break;
+    case 'journals':
+      fetchJournals();
       break;
     case 'courses':
       fetchCourses();
@@ -268,6 +317,8 @@ function renderLiveCaptures(captures) {
   const container = document.getElementById('liveCaptureFeed');
   if (!container) return;
 
+  cachedLiveCaptures = captures || [];
+
   if (captures.length === 0) {
     container.innerHTML = `
       <div style="grid-column: 1 / -1; padding: 2rem; text-align: center; color: var(--text-muted);">
@@ -276,11 +327,12 @@ function renderLiveCaptures(captures) {
     return;
   }
 
-  container.innerHTML = captures.map(c => `
-    <div class="capture-card">
+  container.innerHTML = captures.map((c, idx) => `
+    <div class="capture-card" onclick="openLiveCaptureLightbox(${idx})" title="Click to view whole picture (Full Size)">
       <div class="capture-img-box">
-        <img src="${c.full_url}" alt="${c.full_name}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';">
+        <img src="${c.full_url}" alt="${escapeHtml(c.full_name)}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';">
         <span class="capture-badge">${c.shift_type}</span>
+        <div class="capture-zoom-overlay">🔍 View Full</div>
       </div>
       <div class="capture-info">
         <h4>${escapeHtml(c.full_name)}</h4>
@@ -381,6 +433,14 @@ function renderStudentsTable(students) {
 }
 
 
+// Date helper for local ISO date YYYY-MM-DD
+function getLocalDateISO(dateObj = new Date()) {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Attendance Verification Logs Fetcher
 async function fetchLogs() {
   try {
@@ -389,7 +449,8 @@ async function fetchLogs() {
     if (data.status === 'success') {
       cachedLogs = data.data || [];
       updateLogsCourseCounts(data.course_counts || {});
-      filterLogsByCourse(currentLogsCourseFilter, false);
+      populateLogsSiteDropdown();
+      applyLogsFilters();
       updateNotifications();
     }
   } catch (err) {
@@ -401,19 +462,235 @@ function updateLogsCourseCounts(counts) {
   populateDynamicCourseDropdowns();
 }
 
+// Populate Partner Facility dropdown dynamically from registered sites & active log sites
+function populateLogsSiteDropdown() {
+  const siteSelect = document.getElementById('logsSiteSelectFilter');
+  if (!siteSelect) return;
+
+  const currentVal = currentLogsSiteFilter;
+  const siteSet = new Set();
+
+  (cachedSites || []).forEach(st => {
+    if (st.site_name && st.site_name.trim()) siteSet.add(st.site_name.trim());
+  });
+
+  (cachedLogs || []).forEach(l => {
+    if (l.site_name && l.site_name.trim()) siteSet.add(l.site_name.trim());
+  });
+
+  const sortedSites = Array.from(siteSet).sort((a, b) => a.localeCompare(b));
+
+  let html = `<option value="ALL">🏢 All Partner Facilities (${sortedSites.length})</option>`;
+  sortedSites.forEach(name => {
+    const isSelected = name === currentVal ? 'selected' : '';
+    html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
+  });
+
+  siteSelect.innerHTML = html;
+}
+
+// Attendance Logs Filter Handlers
+function setLogsDateFilter(filterKey) {
+  currentLogsDateFilter = filterKey;
+  const select = document.getElementById('logsDateSelectFilter');
+  if (select) select.value = filterKey;
+  const customInput = document.getElementById('logsCustomDateInput');
+  if (customInput) customInput.style.display = filterKey === 'CUSTOM' ? 'inline-block' : 'none';
+  applyLogsFilters();
+}
+
+function handleDateSelectChange(val) {
+  currentLogsDateFilter = val;
+  const customInput = document.getElementById('logsCustomDateInput');
+  if (val === 'CUSTOM') {
+    if (customInput) {
+      customInput.style.display = 'inline-block';
+      if (!customInput.value) customInput.value = getLocalDateISO();
+      currentLogsCustomDate = customInput.value;
+    }
+  } else {
+    if (customInput) customInput.style.display = 'none';
+  }
+  applyLogsFilters();
+}
+
+function handleCustomDateChange(val) {
+  currentLogsCustomDate = val;
+  currentLogsDateFilter = 'CUSTOM';
+  applyLogsFilters();
+}
+
+function handleLogsStatusFilterChange(val) {
+  currentLogsStatusFilter = val;
+  applyLogsFilters();
+}
+
+function handleLogsSiteFilterChange(val) {
+  currentLogsSiteFilter = val;
+  applyLogsFilters();
+}
+
+function handleLogsCourseFilterChange(val) {
+  currentLogsCourseFilter = val;
+  applyLogsFilters();
+}
+
 function filterLogsByCourse(courseCode, updateSelect = true) {
   currentLogsCourseFilter = courseCode || 'ALL';
-
   const selectEl = document.getElementById('logsCourseSelectFilter');
   if (selectEl && updateSelect) {
     selectEl.value = currentLogsCourseFilter;
   }
+  applyLogsFilters();
+}
 
-  let filtered = cachedLogs;
-  if (currentLogsCourseFilter !== 'ALL') {
-    filtered = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === currentLogsCourseFilter.toUpperCase());
+function resetLogsFilters() {
+  currentLogsDateFilter = 'TODAY';
+  currentLogsCustomDate = '';
+  currentLogsStatusFilter = 'ALL';
+  currentLogsSiteFilter = 'ALL';
+  currentLogsCourseFilter = 'ALL';
+
+  const dateSelect = document.getElementById('logsDateSelectFilter');
+  if (dateSelect) dateSelect.value = 'TODAY';
+  const customDate = document.getElementById('logsCustomDateInput');
+  if (customDate) { customDate.value = ''; customDate.style.display = 'none'; }
+
+  const statusSelect = document.getElementById('logsStatusSelectFilter');
+  if (statusSelect) statusSelect.value = 'ALL';
+
+  const siteSelect = document.getElementById('logsSiteSelectFilter');
+  if (siteSelect) siteSelect.value = 'ALL';
+
+  const courseSelect = document.getElementById('logsCourseSelectFilter');
+  if (courseSelect) courseSelect.value = 'ALL';
+
+  const searchInput = document.getElementById('globalSearch');
+  if (searchInput) searchInput.value = '';
+
+  applyLogsFilters('');
+}
+
+function updateQuickDatePills() {
+  const pills = {
+    'TODAY': document.getElementById('btnQuickToday'),
+    'YESTERDAY': document.getElementById('btnQuickYesterday'),
+    'THIS_WEEK': document.getElementById('btnQuickWeek'),
+    'ALL': document.getElementById('btnQuickAll')
+  };
+
+  Object.keys(pills).forEach(key => {
+    if (pills[key]) {
+      if (currentLogsDateFilter === key) {
+        pills[key].classList.add('active');
+      } else {
+        pills[key].classList.remove('active');
+      }
+    }
+  });
+
+  const dateSelect = document.getElementById('logsDateSelectFilter');
+  if (dateSelect && dateSelect.value !== currentLogsDateFilter) {
+    dateSelect.value = currentLogsDateFilter;
+  }
+}
+
+function updateFilterStatusBadge(filteredCount, totalCount) {
+  const badge = document.getElementById('logsFilterCounterBadge');
+  if (!badge) return;
+
+  let label = '';
+  if (currentLogsDateFilter === 'TODAY') {
+    label = `📅 Showing Today's Logs (${filteredCount})`;
+    badge.style.background = '#0284c7';
+  } else if (currentLogsDateFilter === 'YESTERDAY') {
+    label = `📅 Showing Yesterday's Logs (${filteredCount})`;
+    badge.style.background = '#0f766e';
+  } else if (currentLogsDateFilter === 'THIS_WEEK') {
+    label = `📅 Past 7 Days (${filteredCount})`;
+    badge.style.background = '#4338ca';
+  } else if (currentLogsDateFilter === 'CUSTOM') {
+    label = `🗓️ Date: ${currentLogsCustomDate} (${filteredCount})`;
+    badge.style.background = '#7c3aed';
+  } else {
+    label = `🗓️ All Historical Logs (${filteredCount} of ${totalCount})`;
+    badge.style.background = 'var(--navy-primary)';
   }
 
+  if (currentLogsStatusFilter !== 'ALL' || currentLogsSiteFilter !== 'ALL' || currentLogsCourseFilter !== 'ALL') {
+    label += ` • Filtered`;
+  }
+
+  badge.textContent = label;
+}
+
+// Unified Multi-Criteria Logs Filter Engine
+function applyLogsFilters(searchQuery = null) {
+  const globalSearchInput = document.getElementById('globalSearch');
+  const q = searchQuery !== null ? searchQuery : (globalSearchInput ? globalSearchInput.value.trim().toLowerCase() : '');
+
+  const todayISO = getLocalDateISO();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayISO = getLocalDateISO(yesterday);
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  let filtered = (cachedLogs || []).filter(l => {
+    // 1. Date Filter
+    const cleanDate = (l.raw_date || '').substring(0, 10);
+    if (currentLogsDateFilter === 'TODAY') {
+      if (cleanDate !== todayISO) return false;
+    } else if (currentLogsDateFilter === 'YESTERDAY') {
+      if (cleanDate !== yesterdayISO) return false;
+    } else if (currentLogsDateFilter === 'THIS_WEEK') {
+      const logD = new Date(l.raw_date || l.date);
+      if (isNaN(logD.getTime()) || logD < sevenDaysAgo) return false;
+    } else if (currentLogsDateFilter === 'CUSTOM') {
+      if (currentLogsCustomDate && cleanDate !== currentLogsCustomDate) return false;
+    }
+
+    // 2. Verification Status Filter
+    if (currentLogsStatusFilter === 'Pending') {
+      const isPending = l.status === 'Pending' || l.status === 'Partial' || l.morning_status === 'Pending' || l.afternoon_status === 'Pending';
+      if (!isPending) return false;
+    } else if (currentLogsStatusFilter === 'Confirmed') {
+      if (l.status !== 'Confirmed' && l.morning_status !== 'Confirmed' && l.afternoon_status !== 'Confirmed') return false;
+    } else if (currentLogsStatusFilter === 'Rejected') {
+      if (l.status !== 'Rejected' && l.morning_status !== 'Rejected' && l.afternoon_status !== 'Rejected') return false;
+    }
+
+    // 3. Partner Facility Filter
+    if (currentLogsSiteFilter !== 'ALL') {
+      if (!l.site_name || l.site_name.trim().toLowerCase() !== currentLogsSiteFilter.trim().toLowerCase()) {
+        return false;
+      }
+    }
+
+    // 4. Academic Program / Course Filter
+    if (currentLogsCourseFilter !== 'ALL') {
+      if ((l.course_code || '').toUpperCase() !== currentLogsCourseFilter.toUpperCase()) {
+        return false;
+      }
+    }
+
+    // 5. Search Query Filter
+    if (q) {
+      const match = (l.full_name && l.full_name.toLowerCase().includes(q)) ||
+                    (l.student_number && l.student_number.toLowerCase().includes(q)) ||
+                    (l.date && l.date.toLowerCase().includes(q)) ||
+                    (l.course_code && l.course_code.toLowerCase().includes(q)) ||
+                    (l.site_name && l.site_name.toLowerCase().includes(q));
+      if (!match) return false;
+    }
+
+    return true;
+  });
+
+  updateQuickDatePills();
+  updateFilterStatusBadge(filtered.length, cachedLogs.length);
   renderLogsTable(filtered);
 }
 
@@ -422,7 +699,47 @@ function renderLogsTable(logs) {
   if (!tbody) return;
 
   if (logs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
+    let emptyMsg = '';
+    if (currentLogsDateFilter === 'TODAY') {
+      const todayFormatted = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+      emptyMsg = `
+        <tr>
+          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📅</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
+              No Attendance Logs Recorded for Today (${todayFormatted})
+            </div>
+            <p style="font-size: 0.85rem; color: #64748b; max-width: 450px; margin: 0 auto 1.25rem auto;">
+              Interns may not have clocked in yet today, or may be assigned to afternoon shifts.
+            </p>
+            <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-navy" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="setLogsDateFilter('ALL')">
+                🗓️ View All Historical Logs
+              </button>
+              <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="setLogsDateFilter('YESTERDAY')">
+                View Yesterday's Logs
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    } else {
+      emptyMsg = `
+        <tr>
+          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🔍</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
+              No Logs Match Current Filter Criteria
+            </div>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.25rem;">
+              Try adjusting your Date, Verification Status, Partner Facility, or Program filters.
+            </p>
+            <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="resetLogsFilters()">
+              ↺ Reset All Filters
+            </button>
+          </td>
+        </tr>`;
+    }
+    tbody.innerHTML = emptyMsg;
     return;
   }
 
@@ -584,6 +901,571 @@ async function reviewAbsence(absenceId, status) {
   }
 }
 
+// ─── DAILY STUDENT JOURNALS & NARRATIVE REPORTS LOGIC ────────────────────────
+
+async function fetchJournals() {
+  try {
+    const deanParam = currentUser && currentUser.user_id ? `?dean_id=${currentUser.user_id}` : '';
+    const res = await fetch(API_BASE + 'admin_get_journals.php' + deanParam);
+    const data = await res.json();
+
+    if (data.status === 'success') {
+      cachedJournals = data.data || [];
+      populateJournalSiteDropdown();
+      populateJournalCourseDropdown();
+      applyJournalFilters();
+    }
+  } catch (err) {
+    console.error('Fetch journals error:', err);
+  }
+}
+
+function populateJournalSiteDropdown() {
+  const select = document.getElementById('journalSiteSelectFilter');
+  if (!select) return;
+
+  const currentVal = select.value;
+  const sitesSet = new Set();
+  (cachedSites || []).forEach(s => { if (s.site_name) sitesSet.add(s.site_name); });
+  (cachedJournals || []).forEach(j => { if (j.site_name) sitesSet.add(j.site_name); });
+
+  const sortedSites = Array.from(sitesSet).sort();
+  let html = `<option value="ALL">🏢 All Partner Facilities (${sortedSites.length})</option>`;
+  sortedSites.forEach(name => {
+    html += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+  });
+  select.innerHTML = html;
+  if (currentVal && (currentVal === 'ALL' || sitesSet.has(currentVal))) {
+    select.value = currentVal;
+  }
+}
+
+function populateJournalCourseDropdown() {
+  const select = document.getElementById('journalCourseSelectFilter');
+  if (!select) return;
+
+  const currentVal = select.value;
+  const coursesSet = new Set();
+  (cachedCourses || []).forEach(c => { if (c.course_code) coursesSet.add(c.course_code.toUpperCase()); });
+  (cachedJournals || []).forEach(j => { if (j.course_code) coursesSet.add(j.course_code.toUpperCase()); });
+
+  const sorted = Array.from(coursesSet).sort();
+  let html = `<option value="ALL">All Programs (${sorted.length})</option>`;
+  sorted.forEach(code => {
+    html += `<option value="${code}">${code}</option>`;
+  });
+  select.innerHTML = html;
+  if (currentVal && (currentVal === 'ALL' || coursesSet.has(currentVal.toUpperCase()))) {
+    select.value = currentVal;
+  }
+}
+
+function setJournalDateFilter(type) {
+  currentJournalDateFilter = type;
+  const dateSelect = document.getElementById('journalDateSelectFilter');
+  const customInput = document.getElementById('journalCustomDateInput');
+  if (dateSelect) dateSelect.value = type;
+  if (customInput) customInput.style.display = (type === 'CUSTOM') ? 'inline-block' : 'none';
+  applyJournalFilters();
+}
+
+function handleJournalDateSelectChange(val) {
+  currentJournalDateFilter = val;
+  const customInput = document.getElementById('journalCustomDateInput');
+  if (customInput) {
+    if (val === 'CUSTOM') {
+      customInput.style.display = 'inline-block';
+      if (!currentJournalCustomDate) {
+        customInput.value = getLocalDateISO();
+        currentJournalCustomDate = customInput.value;
+      }
+    } else {
+      customInput.style.display = 'none';
+    }
+  }
+  applyJournalFilters();
+}
+
+function handleJournalCustomDateChange(val) {
+  currentJournalCustomDate = val;
+  applyJournalFilters();
+}
+
+function handleJournalStatusFilterChange(val) {
+  currentJournalStatusFilter = val;
+  applyJournalFilters();
+}
+
+function handleJournalSiteFilterChange(val) {
+  currentJournalSiteFilter = val;
+  applyJournalFilters();
+}
+
+function handleJournalCourseFilterChange(val) {
+  currentJournalCourseFilter = val;
+  applyJournalFilters();
+}
+
+function resetJournalFilters() {
+  currentJournalDateFilter = 'TODAY';
+  currentJournalCustomDate = '';
+  currentJournalStatusFilter = 'ALL';
+  currentJournalSiteFilter = 'ALL';
+  currentJournalCourseFilter = 'ALL';
+
+  const dateSelect = document.getElementById('journalDateSelectFilter');
+  const customInput = document.getElementById('journalCustomDateInput');
+  const statusSelect = document.getElementById('journalStatusSelectFilter');
+  const siteSelect = document.getElementById('journalSiteSelectFilter');
+  const courseSelect = document.getElementById('journalCourseSelectFilter');
+  const globalSearch = document.getElementById('globalSearch');
+
+  if (dateSelect) dateSelect.value = 'TODAY';
+  if (customInput) { customInput.value = ''; customInput.style.display = 'none'; }
+  if (statusSelect) statusSelect.value = 'ALL';
+  if (siteSelect) siteSelect.value = 'ALL';
+  if (courseSelect) courseSelect.value = 'ALL';
+  if (globalSearch && currentTab === 'journals') globalSearch.value = '';
+
+  applyJournalFilters();
+}
+
+function updateJournalQuickDatePills() {
+  const pills = {
+    'TODAY': document.getElementById('btnJournalQuickToday'),
+    'YESTERDAY': document.getElementById('btnJournalQuickYesterday'),
+    'THIS_WEEK': document.getElementById('btnJournalQuickWeek'),
+    'ALL': document.getElementById('btnJournalQuickAll'),
+  };
+
+  Object.entries(pills).forEach(([key, btn]) => {
+    if (!btn) return;
+    if (currentJournalDateFilter === key) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+function updateJournalFilterStatusBadge(filteredCount, totalCount) {
+  const badge = document.getElementById('journalsFilterCounterBadge');
+  if (!badge) return;
+
+  let label = '';
+  if (currentJournalDateFilter === 'TODAY') {
+    label = `📅 Today's Submissions (${filteredCount})`;
+    badge.style.background = '#0284c7';
+  } else if (currentJournalDateFilter === 'YESTERDAY') {
+    label = `📅 Yesterday's Submissions (${filteredCount})`;
+    badge.style.background = '#d97706';
+  } else if (currentJournalDateFilter === 'THIS_WEEK') {
+    label = `📅 Past 7 Days (${filteredCount})`;
+    badge.style.background = '#4338ca';
+  } else if (currentJournalDateFilter === 'CUSTOM') {
+    label = `🗓️ Date: ${currentJournalCustomDate} (${filteredCount})`;
+    badge.style.background = '#7c3aed';
+  } else {
+    label = `🗓️ All Historical Entries (${filteredCount} of ${totalCount})`;
+    badge.style.background = 'var(--navy-primary)';
+  }
+
+  if (currentJournalStatusFilter !== 'ALL' || currentJournalSiteFilter !== 'ALL' || currentJournalCourseFilter !== 'ALL') {
+    label += ` • Filtered`;
+  }
+
+  badge.textContent = label;
+}
+
+function applyJournalFilters(searchQuery = null) {
+  const globalSearchInput = document.getElementById('globalSearch');
+  const q = searchQuery !== null ? searchQuery : (globalSearchInput ? globalSearchInput.value.trim().toLowerCase() : '');
+
+  const todayISO = getLocalDateISO();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayISO = getLocalDateISO(yesterday);
+
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  let filtered = (cachedJournals || []).filter(j => {
+    // 1. Date Filter
+    const cleanDate = (j.raw_date || '').substring(0, 10);
+    if (currentJournalDateFilter === 'TODAY') {
+      if (cleanDate !== todayISO) return false;
+    } else if (currentJournalDateFilter === 'YESTERDAY') {
+      if (cleanDate !== yesterdayISO) return false;
+    } else if (currentJournalDateFilter === 'THIS_WEEK') {
+      const entryD = new Date(j.raw_date || j.date);
+      if (isNaN(entryD.getTime()) || entryD < sevenDaysAgo) return false;
+    } else if (currentJournalDateFilter === 'CUSTOM') {
+      if (currentJournalCustomDate && cleanDate !== currentJournalCustomDate) return false;
+    }
+
+    // 2. Status Filter
+    if (currentJournalStatusFilter !== 'ALL') {
+      if ((j.dean_status || 'Pending') !== currentJournalStatusFilter) return false;
+    }
+
+    // 3. Site Filter
+    if (currentJournalSiteFilter !== 'ALL') {
+      if ((j.site_name || '').toLowerCase() !== currentJournalSiteFilter.toLowerCase()) return false;
+    }
+
+    // 4. Course Filter
+    if (currentJournalCourseFilter !== 'ALL') {
+      if ((j.course_code || '').toUpperCase() !== currentJournalCourseFilter.toUpperCase()) return false;
+    }
+
+    // 5. Global Search Text Filter
+    if (q) {
+      const matchName = (j.full_name || '').toLowerCase().includes(q);
+      const matchNumber = (j.student_number || '').toLowerCase().includes(q);
+      const matchTasks = (j.tasks_completed || '').toLowerCase().includes(q);
+      const matchLearnings = (j.learnings_reflection || '').toLowerCase().includes(q);
+      const matchSite = (j.site_name || '').toLowerCase().includes(q);
+      if (!matchName && !matchNumber && !matchTasks && !matchLearnings && !matchSite) return false;
+    }
+
+    return true;
+  });
+
+  updateJournalQuickDatePills();
+  updateJournalFilterStatusBadge(filtered.length, cachedJournals.length);
+  renderJournalsTable(filtered);
+}
+
+function renderJournalsTable(journals) {
+  const tbody = document.getElementById('journalsTableBody');
+  if (!tbody) return;
+
+  if (journals.length === 0) {
+    let emptyMsg = '';
+    if (currentJournalDateFilter === 'TODAY') {
+      const todayFormatted = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+      emptyMsg = `
+        <tr>
+          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📝</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
+              No Daily Journals Submitted for Today (${todayFormatted})
+            </div>
+            <p style="font-size: 0.85rem; color: #64748b; max-width: 450px; margin: 0 auto 1.25rem auto;">
+              Students typically submit their narrative reports at the end of their shift.
+            </p>
+            <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+              <button type="button" class="btn btn-navy" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="setJournalDateFilter('ALL')">
+                🗓️ View All Historical Journals
+              </button>
+              <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="setJournalDateFilter('YESTERDAY')">
+                View Yesterday's Journals
+              </button>
+            </div>
+          </td>
+        </tr>`;
+    } else {
+      emptyMsg = `
+        <tr>
+          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
+            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🔍</div>
+            <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
+              No Daily Journals Match Filter Criteria
+            </div>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.25rem;">
+              Try adjusting your Date, Review Status, Partner Facility, or Program filters.
+            </p>
+            <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="resetJournalFilters()">
+              ↺ Reset All Filters
+            </button>
+          </td>
+        </tr>`;
+    }
+    tbody.innerHTML = emptyMsg;
+    return;
+  }
+
+  tbody.innerHTML = journals.map(j => {
+    let statusBadge = `<span class="journal-badge-pending">⏳ Pending Review</span>`;
+    if (j.dean_status === 'Reviewed') {
+      statusBadge = `<span class="journal-badge-reviewed">✓ Reviewed</span>`;
+    } else if (j.dean_status === 'Commended') {
+      statusBadge = `<span class="journal-badge-commended">⭐ Commended</span>`;
+    }
+
+    const courseBadge = getCourseBadgeClass(j.course_code);
+    const feedbackHtml = j.dean_feedback ? `
+      <div class="journal-feedback-quote">
+        <strong>Dean:</strong> "${escapeHtml(j.dean_feedback)}"
+      </div>` : `<span style="font-size: 0.78rem; color: #94a3b8; font-style: italic;">No feedback entered</span>`;
+
+    return `
+      <tr>
+        <td style="font-weight: 700; color: var(--navy-primary); white-space: nowrap;">
+          ${escapeHtml(j.date)}
+        </td>
+        <td>
+          <div style="font-weight: 700; color: var(--text-main);">${escapeHtml(j.full_name)}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            ${escapeHtml(j.student_number)} • <span class="badge ${courseBadge}" style="font-size: 0.68rem;">${escapeHtml(j.course_code)}</span>
+          </div>
+        </td>
+        <td>
+          <div style="font-weight: 600; font-size: 0.82rem; color: var(--navy-primary);">${escapeHtml(j.site_name)}</div>
+          <div style="font-size: 0.72rem; color: #64748b; margin-top: 2px;">
+            AM: ${j.time_in_morning} - ${j.time_out_morning} | PM: ${j.time_in_afternoon} - ${j.time_out_afternoon}
+          </div>
+        </td>
+        <td>
+          <div class="journal-excerpt-box" title="${escapeHtml(j.tasks_completed)}">
+            ${escapeHtml(j.tasks_completed)}
+          </div>
+        </td>
+        <td>
+          <div class="journal-excerpt-box" title="${escapeHtml(j.learnings_reflection || 'None')}">
+            ${escapeHtml(j.learnings_reflection || 'None')}
+          </div>
+        </td>
+        <td>
+          <div>${statusBadge}</div>
+          ${feedbackHtml}
+        </td>
+        <td>
+          <div style="display: flex; gap: 0.35rem; align-items: center;">
+            <button type="button" class="btn btn-navy" style="font-size: 0.72rem; padding: 0.3rem 0.65rem;" onclick="openJournalModal(${j.journal_id})">
+              📖 Read & Feedback
+            </button>
+            <button type="button" class="btn btn-danger" style="font-size: 0.72rem; padding: 0.3rem 0.55rem;" title="Permanently Delete Journal from Database" onclick="deleteJournal(${j.journal_id})">
+              🗑️
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openJournalModal(journalId) {
+  const j = (cachedJournals || []).find(item => item.journal_id === journalId);
+  if (!j) return;
+
+  currentActiveJournalId = journalId;
+
+  const modal = document.getElementById('journalModal');
+  const title = document.getElementById('journalModalTitle');
+  const subtitle = document.getElementById('journalModalSubtitle');
+  const content = document.getElementById('journalModalContent');
+
+  if (!modal || !content) return;
+
+  title.textContent = `Daily Journal: ${j.full_name}`;
+  subtitle.textContent = `${j.date} • ${j.student_number} • ${j.course_code} • ${j.site_name}`;
+
+  content.innerHTML = `
+    <!-- Intern & Shift Information Banner -->
+    <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-canvas); border: 1px solid var(--border-light); padding: 0.75rem 1rem; border-radius: var(--radius-sm); flex-wrap: wrap; gap: 0.5rem;">
+      <div>
+        <div style="font-size: 0.88rem; font-weight: 800; color: var(--navy-primary);">${escapeHtml(j.full_name)} (${escapeHtml(j.student_number)})</div>
+        <div style="font-size: 0.78rem; color: var(--text-muted);">${escapeHtml(j.course_name)} &bull; ${escapeHtml(j.site_name)}</div>
+      </div>
+      <div style="text-align: right; font-size: 0.75rem; color: #475569;">
+        <div><strong>Entry Date:</strong> ${escapeHtml(j.date)}</div>
+        <div><strong>Attendance:</strong> AM: ${j.time_in_morning} - ${j.time_out_morning} | PM: ${j.time_in_afternoon} - ${j.time_out_afternoon}</div>
+      </div>
+    </div>
+
+    <!-- Section 1: Tasks Accomplished -->
+    <div class="journal-section-card">
+      <div class="journal-section-title">
+        <span>📋</span> Daily Activities &amp; Tasks Accomplished
+      </div>
+      <div class="journal-section-text">${escapeHtml(j.tasks_completed)}</div>
+    </div>
+
+    <!-- Section 2: Learnings & Reflections -->
+    <div class="journal-section-card">
+      <div class="journal-section-title">
+        <span>💡</span> Key Learnings &amp; Reflections
+      </div>
+      <div class="journal-section-text">${escapeHtml(j.learnings_reflection || 'No specific reflections noted for this shift.')}</div>
+    </div>
+
+    <!-- Section 3: Challenges Encountered -->
+    ${j.challenges_encountered ? `
+      <div class="journal-section-card">
+        <div class="journal-section-title">
+          <span>⚠️</span> Challenges Encountered &amp; Resolutions
+        </div>
+        <div class="journal-section-text">${escapeHtml(j.challenges_encountered)}</div>
+      </div>
+    ` : ''}
+
+    <!-- Section 4: Dean Evaluation & Feedback Input -->
+    <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 1rem;">
+      <div style="font-size: 0.84rem; font-weight: 800; color: #1e3a8a; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.35rem;">
+        <span>🎓</span> Dean Evaluation &amp; Feedback Remarks
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; margin-bottom: 0.65rem;">
+        <div>
+          <label style="display: block; font-size: 0.74rem; font-weight: 700; color: #1e3a8a; margin-bottom: 0.25rem;">Evaluation Status:</label>
+          <select id="modalJournalStatusSelect" class="form-control" style="font-size: 0.82rem; height: 36px; border-color: #93c5fd;">
+            <option value="Reviewed" ${j.dean_status === 'Reviewed' ? 'selected' : ''}>✓ Reviewed &amp; Noted</option>
+            <option value="Commended" ${j.dean_status === 'Commended' ? 'selected' : ''}>⭐ Commended (Exemplary)</option>
+            <option value="Pending" ${j.dean_status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; font-size: 0.74rem; font-weight: 700; color: #1e3a8a; margin-bottom: 0.25rem;">Last Evaluation Timestamp:</label>
+          <div style="font-size: 0.78rem; color: #475569; padding-top: 0.45rem;">
+            ${j.reviewed_at ? `Evaluated on ${j.reviewed_at}` : 'Not evaluated yet'}
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label style="display: block; font-size: 0.74rem; font-weight: 700; color: #1e3a8a; margin-bottom: 0.25rem;">Dean Feedback / Guidance for Student:</label>
+        <textarea id="modalJournalFeedbackText" class="form-control" rows="3" placeholder="Type constructive feedback, guidance, or words of encouragement for this intern..." style="font-size: 0.82rem; border-color: #93c5fd; resize: vertical;">${escapeHtml(j.dean_feedback || '')}</textarea>
+        <small style="display: block; color: #64748b; font-size: 0.72rem; margin-top: 0.25rem;">
+          💡 This feedback is immediately visible to the intern inside their mobile app.
+        </small>
+      </div>
+    </div>
+  `;
+
+  modal.classList.add('active');
+}
+
+function closeJournalModal() {
+  const modal = document.getElementById('journalModal');
+  if (modal) modal.classList.remove('active');
+  currentActiveJournalId = null;
+}
+
+async function saveJournalEvaluation() {
+  if (!currentActiveJournalId) return;
+
+  const statusSelect = document.getElementById('modalJournalStatusSelect');
+  const feedbackText = document.getElementById('modalJournalFeedbackText');
+
+  const deanStatus = statusSelect ? statusSelect.value : 'Reviewed';
+  const deanFeedback = feedbackText ? feedbackText.value.trim() : '';
+
+  try {
+    const res = await fetch(API_BASE + 'admin_review_journal.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        journal_id: currentActiveJournalId,
+        dean_status: deanStatus,
+        dean_feedback: deanFeedback
+      })
+    });
+
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert('✓ Journal evaluation and feedback saved successfully.');
+      closeJournalModal();
+      fetchJournals();
+    } else {
+      alert(data.message || 'Failed to save evaluation.');
+    }
+  } catch (err) {
+    console.error('Save journal evaluation error:', err);
+    alert('Server error saving evaluation.');
+  }
+}
+
+async function deleteJournal(journalId) {
+  if (!confirm('⚠️ PERMANENT DATABASE DELETION:\nAre you sure you want to delete this daily student journal from the database? This cannot be undone.')) {
+    return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + 'admin_delete_journal.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'delete_one',
+        journal_id: journalId,
+        dean_id: currentUser ? currentUser.user_id : 0
+      })
+    });
+
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(data.message);
+      if (currentActiveJournalId === journalId) {
+        closeJournalModal();
+      }
+      cachedJournals = (cachedJournals || []).filter(j => j.journal_id !== journalId);
+      applyJournalFilters();
+    } else {
+      alert(data.message || 'Failed to delete journal entry.');
+    }
+  } catch (err) {
+    console.error('Delete journal error:', err);
+    alert('Server error processing deletion.');
+  }
+}
+
+function handleModalDeleteJournal() {
+  if (currentActiveJournalId) {
+    deleteJournal(currentActiveJournalId);
+  }
+}
+
+async function deleteAllFilteredJournals() {
+  const currentCount = document.querySelectorAll('#journalsTableBody tr').length;
+  if (currentCount === 0 || cachedJournals.length === 0) {
+    alert('No journal entries currently available to delete.');
+    return;
+  }
+
+  let promptMsg = `⚠️ PERMANENT BULK DATABASE DELETION:\n\nAre you sure you want to permanently delete all journal entries from the database?`;
+  if (currentJournalDateFilter === 'TODAY') {
+    promptMsg = `⚠️ PERMANENT DELETION: Delete all of TODAY's journal entries from the database?`;
+  } else if (currentJournalDateFilter === 'YESTERDAY') {
+    promptMsg = `⚠️ PERMANENT DELETION: Delete all of YESTERDAY's journal entries from the database?`;
+  }
+
+  if (!confirm(promptMsg)) return;
+
+  try {
+    const bodyPayload = {
+      action: 'delete_all',
+      dean_id: currentUser ? currentUser.user_id : 0
+    };
+
+    if (currentJournalDateFilter === 'TODAY') {
+      bodyPayload.date = getLocalDateISO();
+    } else if (currentJournalDateFilter === 'YESTERDAY') {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      bodyPayload.date = getLocalDateISO(yesterday);
+    } else if (currentJournalDateFilter === 'CUSTOM' && currentJournalCustomDate) {
+      bodyPayload.date = currentJournalCustomDate;
+    }
+
+    const res = await fetch(API_BASE + 'admin_delete_journal.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(bodyPayload)
+    });
+
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(data.message);
+      fetchJournals();
+    } else {
+      alert(data.message || 'Bulk deletion failed.');
+    }
+  } catch (err) {
+    console.error('Delete all journals error:', err);
+    alert('Server error executing bulk deletion.');
+  }
+}
 
 async function fetchSites() {
   try {
@@ -1164,15 +2046,30 @@ function openPhotoModal(photos, attendanceId = null) {
   const confirmContainer = document.getElementById('photoModalConfirmContainer');
   if (!container) return;
 
-  if (!photos || photos.length === 0) {
+  currentModalPhotos = Array.isArray(photos) ? photos : [];
+  currentModalPhotoIndex = 0;
+
+  if (currentModalPhotos.length === 0) {
     container.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No facial verification photos recorded for this log.</div>`;
   } else {
-    container.innerHTML = photos.map(p => `
-      <div style="margin-bottom: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden;">
-        <div style="padding: 0.5rem 0.85rem; background-color: var(--bg-canvas); font-weight: 700; font-size: 0.8rem; color: var(--navy-primary);">
-          Shift: ${p.shift_type} &bull; Captured at ${p.captured_at}
+    container.innerHTML = currentModalPhotos.map((p, idx) => `
+      <div style="margin-bottom: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+        <div style="padding: 0.55rem 0.85rem; background-color: var(--bg-canvas); font-weight: 700; font-size: 0.8rem; color: var(--navy-primary); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light);">
+          <span>Shift: ${escapeHtml(p.shift_type)} &bull; Captured at ${escapeHtml(p.captured_at)}</span>
+          <button type="button" class="btn-view-full-pill" onclick="openModalPhotoByIndex(${idx})" title="Click to view whole picture">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+            View Whole Picture
+          </button>
         </div>
-        <img src="${p.full_url}" style="width: 100%; height: 260px; object-fit: cover;" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';">
+        <div class="photo-preview-wrapper" onclick="openModalPhotoByIndex(${idx})" title="Click to view whole picture (Full Size)">
+          <img src="${p.full_url}" class="verification-preview-img" alt="Shift: ${escapeHtml(p.shift_type)}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';">
+          <div class="photo-hover-overlay">
+            <span class="photo-hover-badge">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+              Click to view whole picture
+            </span>
+          </div>
+        </div>
       </div>
     `).join('');
   }
@@ -1216,6 +2113,82 @@ function openPhotoModal(photos, attendanceId = null) {
 
 function closePhotoModal() {
   document.getElementById('photoModal').classList.remove('active');
+}
+
+function openModalPhotoByIndex(idx) {
+  if (!currentModalPhotos || !currentModalPhotos[idx]) return;
+  currentModalPhotoIndex = idx;
+  const p = currentModalPhotos[idx];
+  const shiftLabel = p.shift_type ? `Shift: ${p.shift_type}` : 'Verification Photo';
+  const timeLabel = p.captured_at ? `Captured at ${p.captured_at}` : '';
+  openImageLightbox(p.full_url, shiftLabel, timeLabel, currentModalPhotos, idx);
+}
+
+function openLiveCaptureLightbox(idx) {
+  if (!cachedLiveCaptures || !cachedLiveCaptures[idx]) return;
+  const c = cachedLiveCaptures[idx];
+  const title = `${c.full_name} (${c.student_number}) • Shift: ${c.shift_type}`;
+  const subtitle = `Captured at ${c.captured_time} (${c.date}) • Facility: ${c.site_name || 'Assigned Site'}`;
+  openImageLightbox(c.full_url, title, subtitle);
+}
+
+// Lightbox Core Functions
+function openImageLightbox(imageUrl, title = 'Facial Verification Photo', subtitle = '', galleryItems = null, activeIndex = -1) {
+  const modal = document.getElementById('imageLightboxModal');
+  const img = document.getElementById('imageLightboxImg');
+  const titleEl = document.getElementById('imageLightboxTitle');
+  const subtitleEl = document.getElementById('imageLightboxSubtitle');
+  const externalBtn = document.getElementById('imageLightboxExternalBtn');
+  const prevBtn = document.getElementById('lightboxPrevBtn');
+  const nextBtn = document.getElementById('lightboxNextBtn');
+  const counterEl = document.getElementById('lightboxCounter');
+
+  if (!modal || !img) return;
+
+  currentLightboxGallery = Array.isArray(galleryItems) && galleryItems.length > 1 ? galleryItems : null;
+  currentLightboxIndex = activeIndex;
+
+  img.src = imageUrl;
+  if (titleEl) titleEl.textContent = title;
+  if (subtitleEl) subtitleEl.textContent = subtitle;
+  if (externalBtn) externalBtn.href = imageUrl;
+
+  if (currentLightboxGallery && currentLightboxIndex >= 0) {
+    if (prevBtn) prevBtn.style.display = 'inline-flex';
+    if (nextBtn) nextBtn.style.display = 'inline-flex';
+    if (counterEl) {
+      counterEl.style.display = 'inline-block';
+      counterEl.textContent = `${currentLightboxIndex + 1} / ${currentLightboxGallery.length}`;
+    }
+  } else {
+    if (prevBtn) prevBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (counterEl) counterEl.style.display = 'none';
+  }
+
+  modal.classList.add('active');
+}
+
+function navigateLightbox(direction) {
+  if (!currentLightboxGallery || currentLightboxGallery.length <= 1) return;
+  let newIdx = currentLightboxIndex + direction;
+  if (newIdx < 0) newIdx = currentLightboxGallery.length - 1;
+  if (newIdx >= currentLightboxGallery.length) newIdx = 0;
+
+  openModalPhotoByIndex(newIdx);
+}
+
+function closeImageLightbox() {
+  const modal = document.getElementById('imageLightboxModal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
+function handleLightboxBackdropClick(event) {
+  if (event.target.id === 'imageLightboxModal' || event.target.classList.contains('image-lightbox-body')) {
+    closeImageLightbox();
+  }
 }
 
 async function reviewAttendanceLog(attendanceId, action, shift = 'both') {
@@ -1459,12 +2432,26 @@ window.closeStudentDetailsModal = closeStudentDetailsModal;
 window.setDrawerPresetHours = setDrawerPresetHours;
 window.downloadStudentDtrPdf = downloadStudentDtrPdf;
 window.generatePDFReport = generatePDFReport;
+window.openJournalModal = openJournalModal;
+window.closeJournalModal = closeJournalModal;
+window.saveJournalEvaluation = saveJournalEvaluation;
+window.deleteJournal = deleteJournal;
+window.deleteAllFilteredJournals = deleteAllFilteredJournals;
+window.setJournalDateFilter = setJournalDateFilter;
+window.handleJournalDateSelectChange = handleJournalDateSelectChange;
+window.handleJournalCustomDateChange = handleJournalCustomDateChange;
+window.handleJournalStatusFilterChange = handleJournalStatusFilterChange;
+window.handleJournalSiteFilterChange = handleJournalSiteFilterChange;
+window.handleJournalCourseFilterChange = handleJournalCourseFilterChange;
+window.resetJournalFilters = resetJournalFilters;
+window.handleModalDeleteJournal = handleModalDeleteJournal;
 
 function filterActiveTable(query) {
   if (!query) {
     if (currentTab === 'students') filterByCourse(currentCourseFilter, false);
     if (currentTab === 'logs') filterLogsByCourse(currentLogsCourseFilter, false);
     if (currentTab === 'absences') renderAbsencesTable(cachedAbsences);
+    if (currentTab === 'journals') applyJournalFilters('');
     if (currentTab === 'sites') renderSitesTable(cachedSites);
     return;
   }
@@ -1477,15 +2464,12 @@ function filterActiveTable(query) {
     const filtered = baseStudents.filter(s => s.full_name.toLowerCase().includes(query) || s.student_number.toLowerCase().includes(query) || s.course_code.toLowerCase().includes(query) || s.site_name.toLowerCase().includes(query));
     renderStudentsTable(filtered);
   } else if (currentTab === 'logs') {
-    let baseLogs = cachedLogs;
-    if (currentLogsCourseFilter !== 'ALL') {
-      baseLogs = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === currentLogsCourseFilter.toUpperCase());
-    }
-    const filtered = baseLogs.filter(l => l.full_name.toLowerCase().includes(query) || l.student_number.toLowerCase().includes(query) || l.date.toLowerCase().includes(query) || (l.course_code && l.course_code.toLowerCase().includes(query)));
-    renderLogsTable(filtered);
+    applyLogsFilters(query);
   } else if (currentTab === 'absences') {
     const filtered = cachedAbsences.filter(a => a.full_name.toLowerCase().includes(query) || a.student_number.toLowerCase().includes(query) || a.reason.toLowerCase().includes(query));
     renderAbsencesTable(filtered);
+  } else if (currentTab === 'journals') {
+    applyJournalFilters(query);
   } else if (currentTab === 'sites') {
     const filtered = cachedSites.filter(st => st.site_name.toLowerCase().includes(query) || st.site_code.toLowerCase().includes(query) || st.location.toLowerCase().includes(query));
     renderSitesTable(filtered);
@@ -1847,3 +2831,104 @@ function closeHelpModal() {
   const modal = document.getElementById('helpModal');
   if (modal) modal.classList.remove('active');
 }
+
+// ─── ACADEMIC YEAR-END BATCH ARCHIVE & STORAGE RESET ─────────────────────────
+
+function downloadBatchArchive() {
+  // 1. Export CSV
+  exportCSVReport();
+
+  // 2. Generate PDF Report after brief delay
+  setTimeout(() => {
+    generatePDFReport();
+  }, 600);
+
+  alert('📥 School-Year Archive is downloading!\n\nPlease save both the CSV Spreadsheet and PDF Report to the SBC Dean\'s Google Drive or local archive folder before executing a batch purge.');
+}
+
+function openBatchResetModal() {
+  const modal = document.getElementById('batchResetModal');
+  const chk = document.getElementById('chkBackupDownloaded');
+  const txt = document.getElementById('txtResetConfirmation');
+  const btn = document.getElementById('btnExecuteBatchReset');
+
+  if (chk) chk.checked = false;
+  if (txt) txt.value = '';
+  if (btn) btn.disabled = true;
+
+  if (modal) modal.classList.add('active');
+}
+
+function closeBatchResetModal() {
+  const modal = document.getElementById('batchResetModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function validateBatchResetForm() {
+  const chk = document.getElementById('chkBackupDownloaded');
+  const txt = document.getElementById('txtResetConfirmation');
+  const btn = document.getElementById('btnExecuteBatchReset');
+
+  const isChecked = chk ? chk.checked : false;
+  const isConfirmed = txt ? (txt.value.trim().toUpperCase() === 'RESET') : false;
+
+  if (btn) {
+    btn.disabled = !(isChecked && isConfirmed);
+  }
+}
+
+async function executeBatchReset() {
+  const chk = document.getElementById('chkBackupDownloaded');
+  const txt = document.getElementById('txtResetConfirmation');
+
+  if (!chk || !chk.checked || !txt || txt.value.trim().toUpperCase() !== 'RESET') {
+    alert('Please confirm that you have saved the archive backup and type RESET.');
+    return;
+  }
+
+  const btn = document.getElementById('btnExecuteBatchReset');
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> Purging Cohort & Freeing Storage...';
+  }
+
+  try {
+    const res = await fetch(API_BASE + 'admin_year_end_reset.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        confirmation_code: 'RESET',
+        dean_id: currentUser ? currentUser.user_id : 0,
+        scope: 'all_students'
+      })
+    });
+
+    const data = await res.json();
+    if (data.status === 'success') {
+      closeBatchResetModal();
+      alert(`✓ ${data.message}`);
+      fetchAllData();
+    } else {
+      alert(`⚠️ ${data.message || 'Batch reset failed.'}`);
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+  } catch (err) {
+    console.error('Batch reset error:', err);
+    alert('Server error executing annual batch reset.');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  }
+}
+
+window.downloadBatchArchive = downloadBatchArchive;
+window.openBatchResetModal = openBatchResetModal;
+window.closeBatchResetModal = closeBatchResetModal;
+window.validateBatchResetForm = validateBatchResetForm;
+window.executeBatchReset = executeBatchReset;
+

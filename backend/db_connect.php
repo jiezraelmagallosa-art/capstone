@@ -88,6 +88,26 @@ try {
         INDEX (site_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
 
+    // Create daily_journal table if not exists
+    @$conn->query("CREATE TABLE IF NOT EXISTS daily_journal (
+        journal_id INT PRIMARY KEY AUTO_INCREMENT,
+        student_id INT NOT NULL,
+        ojt_id INT NOT NULL,
+        attendance_id INT NULL,
+        entry_date DATE NOT NULL,
+        tasks_completed TEXT NOT NULL,
+        learnings_reflection TEXT NULL,
+        challenges_encountered TEXT NULL,
+        dean_feedback TEXT NULL,
+        dean_status ENUM('Pending', 'Reviewed', 'Commended') DEFAULT 'Pending',
+        reviewed_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX (student_id),
+        INDEX (entry_date),
+        INDEX (ojt_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
     // Seed existing students into student_site_history if empty
     $hist_check = @$conn->query("SELECT COUNT(*) as cnt FROM student_site_history");
     if ($hist_check) {

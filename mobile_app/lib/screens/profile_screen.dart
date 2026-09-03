@@ -184,7 +184,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+
+              // Edit Profile & Assignments Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _showEditAccountDialog,
+                  icon: const Icon(Icons.manage_accounts_rounded, size: 18),
+                  label: const Text(
+                    'Edit Profile & Assignment Settings',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryNavy,
+                    foregroundColor: Colors.white,
+                    elevation: 1,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
 
 
               _buildInfoCard(
@@ -976,6 +997,315 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(res['message'] ?? 'Failed to update training site.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
+  }
+
+  Future<void> _showEditAccountDialog() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const Center(
+        child: CircularProgressIndicator(color: primaryNavy),
+      ),
+    );
+
+    final results = await Future.wait([
+      ApiService.getDeans(),
+      ApiService.getSites(),
+      ApiService.getCourses(),
+    ]);
+
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    final deansRes = results[0];
+    final sitesRes = results[1];
+    final coursesRes = results[2];
+
+    final List<dynamic> deans = (deansRes['status'] == 'success') ? (deansRes['data'] ?? []) : [];
+    final List<dynamic> sites = (sitesRes['status'] == 'success') ? (sitesRes['data'] ?? []) : [];
+    final List<dynamic> courses = (coursesRes['status'] == 'success') ? (coursesRes['data'] ?? []) : [];
+
+    final nameCtrl = TextEditingController(text: _profileData['full_name'] ?? widget.studentName);
+    final idNoCtrl = TextEditingController(text: _profileData['id_no'] ?? '');
+
+    int? selectedDeanId = int.tryParse(_profileData['dean_id']?.toString() ?? '');
+    int? selectedSiteId = int.tryParse(_profileData['site_id']?.toString() ?? '');
+    int? selectedCourseId = int.tryParse(_profileData['course_id']?.toString() ?? '');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (bCtx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.manage_accounts_rounded, color: primaryNavy, size: 24),
+                            SizedBox(width: 8),
+                            Text(
+                              'Edit Profile & Assignments',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: primaryNavy,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF0F7FF),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFBAE6FD)),
+                      ),
+                      child: const Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.info_outline, size: 16, color: primaryNavy),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Re-assigning your Dean automatically moves you to their active student roster. Changing your training site transfers your facility while keeping completed hours intact.',
+                              style: TextStyle(fontSize: 11.5, color: primaryNavy, height: 1.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Full Name
+                    const Text('Full Name', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryNavy)),
+                    const SizedBox(height: 4),
+                    TextFormField(
+                      controller: nameCtrl,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Institutional ID
+                    const Text('Institutional ID (Optional)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryNavy)),
+                    const SizedBox(height: 4),
+                    TextFormField(
+                      controller: idNoCtrl,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Assigned Dean Dropdown
+                    const Text('Assigned Dean / Department', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryNavy)),
+                    const SizedBox(height: 4),
+                    DropdownButtonFormField<int>(
+                      value: deans.any((d) => int.tryParse(d['user_id'].toString()) == selectedDeanId) ? selectedDeanId : null,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      hint: const Text('Select Assigned Dean', style: TextStyle(fontSize: 12)),
+                      items: deans.map<DropdownMenuItem<int>>((d) {
+                        final dId = int.tryParse(d['user_id'].toString()) ?? 0;
+                        return DropdownMenuItem<int>(
+                          value: dId,
+                          child: Text(
+                            d['full_name'] ?? 'Dean',
+                            style: const TextStyle(fontSize: 12.5),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setModalState(() {
+                          selectedDeanId = val;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Partner Training Facility Dropdown
+                    const Text('Partner Training Facility', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryNavy)),
+                    const SizedBox(height: 4),
+                    DropdownButtonFormField<int>(
+                      value: sites.any((s) => int.tryParse(s['site_id'].toString()) == selectedSiteId) ? selectedSiteId : null,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      hint: const Text('Select Training Site', style: TextStyle(fontSize: 12)),
+                      items: sites.map<DropdownMenuItem<int>>((s) {
+                        final sId = int.tryParse(s['site_id'].toString()) ?? 0;
+                        return DropdownMenuItem<int>(
+                          value: sId,
+                          child: Text(
+                            s['site_name'] ?? 'Facility',
+                            style: const TextStyle(fontSize: 12.5),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setModalState(() {
+                          selectedSiteId = val;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Academic Program Dropdown
+                    const Text('Academic Program', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryNavy)),
+                    const SizedBox(height: 4),
+                    DropdownButtonFormField<int>(
+                      value: courses.any((c) => int.tryParse(c['course_id'].toString()) == selectedCourseId) ? selectedCourseId : null,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      hint: const Text('Select Academic Course', style: TextStyle(fontSize: 12)),
+                      items: courses.map<DropdownMenuItem<int>>((c) {
+                        final cId = int.tryParse(c['course_id'].toString()) ?? 0;
+                        return DropdownMenuItem<int>(
+                          value: cId,
+                          child: Text(
+                            '${c['course_code']} - ${c['course_name']}',
+                            style: const TextStyle(fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setModalState(() {
+                          selectedCourseId = val;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 18),
+
+                    SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryNavy,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
+                        label: const Text(
+                          'SAVE & APPLY ASSIGNMENTS',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(context);
+                          await _handleProfileUpdate(
+                            fullName: nameCtrl.text.trim(),
+                            idNo: idNoCtrl.text.trim(),
+                            deanId: selectedDeanId,
+                            siteId: selectedSiteId,
+                            courseId: selectedCourseId,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _handleProfileUpdate({
+    String? fullName,
+    String? idNo,
+    int? deanId,
+    int? siteId,
+    int? courseId,
+  }) async {
+    setState(() => _isLoading = true);
+
+    final res = await ApiService.updateStudentProfile(
+      studentId: widget.studentId,
+      fullName: fullName,
+      idNo: idNo,
+      deanId: deanId,
+      siteId: siteId,
+      courseId: courseId,
+    );
+
+    if (!mounted) return;
+
+    if (res['status'] == 'success') {
+      final data = res['data'] ?? {};
+      final deanName = data['dean_name'] ?? 'Assigned Dean';
+      final siteName = data['site_name'] ?? 'Training Site';
+
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          title: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Color(0xFF2E7D32)),
+              SizedBox(width: 8),
+              Text('Assignments Updated', style: TextStyle(color: primaryNavy, fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Text(
+            'Your account details have been saved.\n\n• Assigned Dean: $deanName\n• Active Facility: $siteName\n\nYour profile and Dean tracking records have been updated automatically.',
+            style: const TextStyle(fontSize: 13, height: 1.4),
+          ),
+          actions: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: primaryNavy),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('OK', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+
+      await _fetchProfile();
+    } else {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(res['message'] ?? 'Failed to update profile details.'),
           backgroundColor: Colors.redAccent,
         ),
       );

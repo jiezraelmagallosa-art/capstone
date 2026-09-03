@@ -10,6 +10,7 @@ import '../main.dart';
 import '../services/api_service.dart';
 import '../core/motivational_messages.dart';
 import 'dtr_log_screen.dart';
+import 'journal_screen.dart';
 import 'absence_screen.dart';
 import 'profile_screen.dart';
 
@@ -458,6 +459,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         studentId: widget.studentId,
         studentName: widget.studentName,
       ),
+      JournalScreen(
+        studentId: widget.studentId,
+        studentName: widget.studentName,
+      ),
       AbsenceScreen(studentId: widget.studentId),
       ProfileScreen(
         studentId: widget.studentId,
@@ -537,6 +542,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           BottomNavigationBarItem(
             icon: Icon(Icons.assessment_outlined),
             label: 'DTR Log',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.edit_note_rounded),
+            label: 'Journal',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.assignment_late_outlined),
