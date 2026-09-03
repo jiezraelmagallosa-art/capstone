@@ -1973,7 +1973,7 @@ async function generatePDFReport() {
       </div>
     </div>
 
-    <div style="display: flex; gap: 8px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 7px 10px; border-radius: 5px; margin-bottom: 10px;">
+    <div style="display: flex; gap: 8px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 5px; margin-bottom: 14px;">
       <div style="flex: 1; font-size: 9.5px;">
         <div><strong style="color: #002d56;">Target Program Scope:</strong> ${escapeHtml(programTitle)}</div>
         <div style="margin-top: 2px;"><strong style="color: #002d56;">Required Target Goal:</strong> Per-course defined hours</div>
@@ -1981,21 +1981,6 @@ async function generatePDFReport() {
       <div style="flex: 1; font-size: 9.5px;">
         <div><strong style="color: #002d56;">Issued By:</strong> ${escapeHtml(deanName)} (${escapeHtml(deanEmail)})</div>
         <div style="margin-top: 2px;"><strong style="color: #002d56;">Report Type:</strong> Official Institutional Verification Summary</div>
-      </div>
-    </div>
-
-    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-      <div style="flex: 1; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; text-align: center;">
-        <div style="font-size: 8.5px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Interns</div>
-        <div style="font-size: 15px; font-weight: 800; color: #002d56; margin-top: 1px;">${total}</div>
-      </div>
-      <div style="flex: 1; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; text-align: center;">
-        <div style="font-size: 8.5px; font-weight: 700; color: #64748b; text-transform: uppercase;">Completed (Goal Hrs)</div>
-        <div style="font-size: 15px; font-weight: 800; color: #15803d; margin-top: 1px;">${completed}</div>
-      </div>
-      <div style="flex: 1; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; text-align: center;">
-        <div style="font-size: 8.5px; font-weight: 700; color: #64748b; text-transform: uppercase;">In-Progress</div>
-        <div style="font-size: 15px; font-weight: 800; color: #002d56; margin-top: 1px;">${inProgress}</div>
       </div>
     </div>
 
