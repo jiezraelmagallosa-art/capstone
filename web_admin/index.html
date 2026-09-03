@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InternLog | Dean's Administrative Suite</title>
-  <link rel="stylesheet" href="css/admin.css?v=4.4">
+  <link rel="stylesheet" href="css/admin.css?v=4.5">
 </head>
 
 <body>
@@ -301,19 +301,45 @@
             </div>
           </div>
 
-          <!-- Course Categorization Filter Dropdown for Dean View -->
-          <div class="course-filter-bar" id="courseFilterContainer">
-            <label for="courseSelectFilter"
-              style="font-size: 0.88rem; font-weight: 700; color: var(--navy-primary); margin-right: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
-              <span>🎓</span> Filter by Course:
-            </label>
-            <select id="courseSelectFilter" class="form-control course-select-dropdown"
-              onchange="filterByCourse(this.value)">
-              <option value="ALL">All Programs (0)</option>
-              <option value="BSCS">BSCS - Bachelor of Science in Computer Science (0)</option>
-              <option value="BSIS">BSIS - Bachelor of Science in Information Systems (0)</option>
-              <option value="BLIS">BLIS - Bachelor of Library & Info Science (0)</option>
-            </select>
+          <!-- Student Tracking Multi-Criteria Filter Toolbar -->
+          <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; align-items: flex-end;">
+              <!-- 1. Academic Program -->
+              <div>
+                <label for="courseSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
+                  <span>🎓</span> Academic Program:
+                </label>
+                <select id="courseSelectFilter" class="form-control course-select-dropdown" onchange="handleStudentFilterChange()">
+                  <option value="ALL">All Programs (0)</option>
+                  <option value="BSCS">BSCS - Computer Science (0)</option>
+                  <option value="BSIS">BSIS - Information Systems (0)</option>
+                  <option value="BLIS">BLIS - Library &amp; Info Science (0)</option>
+                </select>
+              </div>
+
+              <!-- 2. OJT Progress Status -->
+              <div>
+                <label for="studentStatusSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
+                  <span>📊</span> Progress Status:
+                </label>
+                <select id="studentStatusSelectFilter" class="form-control" onchange="handleStudentFilterChange()">
+                  <option value="ALL" selected>All Statuses (Active &amp; Done)</option>
+                  <option value="In Progress">🟢 In Progress (Rendering)</option>
+                  <option value="Completed">🎓 Completed (480h Met)</option>
+                  <option value="Not Started">⏳ Not Started (0h)</option>
+                </select>
+              </div>
+
+              <!-- 3. Partner Training Facility -->
+              <div>
+                <label for="studentSiteSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
+                  <span>🏢</span> Partner Facility:
+                </label>
+                <select id="studentSiteSelectFilter" class="form-control" onchange="handleStudentFilterChange()">
+                  <option value="ALL" selected>All Partner Facilities</option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="card">
@@ -356,21 +382,8 @@
                 <span id="logsFilterCounterBadge" class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">📅 Showing Today's Logs</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-right: 0.2rem;">Quick Date:</span>
-                <button type="button" class="btn-filter-quick active" id="btnQuickToday" onclick="setLogsDateFilter('TODAY')" title="Show today's logs (default)">
+                <button type="button" class="btn-filter-quick active" id="btnQuickToday" onclick="setLogsDateFilter('TODAY')" style="cursor: default;" title="Showing today's logs">
                   📅 Today
-                </button>
-                <button type="button" class="btn-filter-quick" id="btnQuickYesterday" onclick="setLogsDateFilter('YESTERDAY')" title="Show yesterday's logs">
-                  Yesterday
-                </button>
-                <button type="button" class="btn-filter-quick" id="btnQuickWeek" onclick="setLogsDateFilter('THIS_WEEK')" title="Show logs from the past 7 days">
-                  Past 7 Days
-                </button>
-                <button type="button" class="btn-filter-quick" id="btnQuickAll" onclick="setLogsDateFilter('ALL')" title="Show all historical logs">
-                  All Dates
-                </button>
-                <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.65rem; color: var(--navy-primary); font-weight: 700; margin-left: 0.35rem;" onclick="resetLogsFilters()" title="Reset all filters to defaults">
-                  ↺ Reset Filters
                 </button>
               </div>
             </div>
@@ -462,6 +475,37 @@
             <div class="page-header-title">
               <h1>Absence Request Queue</h1>
               <p>Evaluate student absence applications, supporting documents, and record administrative decisions.</p>
+            </div>
+          </div>
+
+          <!-- Absence Requests Filter Toolbar -->
+          <div class="card" style="padding: 1rem 1.25rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; align-items: flex-end;">
+              <!-- 1. Review Status -->
+              <div>
+                <label for="absenceStatusSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
+                  <span>📋</span> Evaluation Status:
+                </label>
+                <select id="absenceStatusSelectFilter" class="form-control" onchange="applyAbsenceFilters()">
+                  <option value="ALL" selected>All Requests (Pending &amp; Decided)</option>
+                  <option value="Pending">⏳ Pending Review Only</option>
+                  <option value="Approved">✓ Approved Only</option>
+                  <option value="Rejected">✕ Rejected Only</option>
+                </select>
+              </div>
+
+              <!-- 2. Academic Program -->
+              <div>
+                <label for="absenceCourseSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
+                  <span>🎓</span> Academic Program:
+                </label>
+                <select id="absenceCourseSelectFilter" class="form-control course-select-dropdown" onchange="applyAbsenceFilters()">
+                  <option value="ALL">All Programs (0)</option>
+                  <option value="BSCS">BSCS - Computer Science (0)</option>
+                  <option value="BSIS">BSIS - Information Systems (0)</option>
+                  <option value="BLIS">BLIS - Library &amp; Info Science (0)</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1028,7 +1072,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=4.4"></script>
+  <script src="js/admin.js?v=4.5"></script>
 </body>
 
 </html>

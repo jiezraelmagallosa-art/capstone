@@ -18,7 +18,13 @@ let currentLogsDateFilter = 'TODAY'; // Default to Today's data!
 let currentLogsCustomDate = '';
 let currentLogsStatusFilter = 'ALL';
 let currentLogsSiteFilter = 'ALL';
+let currentStudentStatusFilter = 'ALL';
+let currentStudentSiteFilter = 'ALL';
+let currentAbsenceStatusFilter = 'ALL';
+let currentAbsenceCourseFilter = 'ALL';
 let selectedReportCourse = 'ALL';
+let selectedReportStatus = 'ALL';
+let selectedReportSite = 'ALL';
 let cachedStudents = [];
 let cachedLogs = [];
 let cachedAbsences = [];
@@ -360,8 +366,38 @@ async function fetchStudents() {
   }
 }
 
-function updateCourseCounts(counts) {
-  populateDynamicCourseDropdowns();
+function handleStudentFilterChange() {
+  const courseEl = document.getElementById('courseSelectFilter');
+  const statusEl = document.getElementById('studentStatusSelectFilter');
+  const siteEl = document.getElementById('studentSiteSelectFilter');
+
+  if (courseEl) currentCourseFilter = courseEl.value || 'ALL';
+  if (statusEl) currentStudentStatusFilter = statusEl.value || 'ALL';
+  if (siteEl) currentStudentSiteFilter = siteEl.value || 'ALL';
+
+  applyStudentFilters();
+}
+
+function applyStudentFilters() {
+  let filtered = cachedStudents || [];
+
+  if (currentCourseFilter !== 'ALL') {
+    filtered = filtered.filter(s => (s.course_code || '').toUpperCase() === currentCourseFilter.toUpperCase());
+  }
+
+  if (currentStudentStatusFilter !== 'ALL') {
+    filtered = filtered.filter(s => (s.status || '').toLowerCase() === currentStudentStatusFilter.toLowerCase());
+  }
+
+  if (currentStudentSiteFilter !== 'ALL') {
+    filtered = filtered.filter(s => {
+      const siteMatch = (s.site_id?.toString() === currentStudentSiteFilter.toString()) ||
+                        (s.site_name && s.site_name.trim().toLowerCase() === currentStudentSiteFilter.trim().toLowerCase());
+      return siteMatch;
+    });
+  }
+
+  renderStudentsTable(filtered);
 }
 
 function filterByCourse(courseCode, updateSelect = true) {
@@ -372,12 +408,7 @@ function filterByCourse(courseCode, updateSelect = true) {
     selectEl.value = currentCourseFilter;
   }
 
-  let filtered = cachedStudents;
-  if (currentCourseFilter !== 'ALL') {
-    filtered = cachedStudents.filter(s => (s.course_code || '').toUpperCase() === currentCourseFilter.toUpperCase());
-  }
-
-  renderStudentsTable(filtered);
+  applyStudentFilters();
 }
 
 function getCourseBadgeClass(courseCode) {
@@ -462,16 +493,16 @@ function updateLogsCourseCounts(counts) {
   populateDynamicCourseDropdowns();
 }
 
-// Populate Partner Facility dropdown dynamically from registered sites & active log sites
+// Populate Partner Facility dropdown dynamically across all views
 function populateLogsSiteDropdown() {
-  const siteSelect = document.getElementById('logsSiteSelectFilter');
-  if (!siteSelect) return;
-
-  const currentVal = currentLogsSiteFilter;
   const siteSet = new Set();
 
   (cachedSites || []).forEach(st => {
     if (st.site_name && st.site_name.trim()) siteSet.add(st.site_name.trim());
+  });
+
+  (cachedStudents || []).forEach(s => {
+    if (s.site_name && s.site_name.trim()) siteSet.add(s.site_name.trim());
   });
 
   (cachedLogs || []).forEach(l => {
@@ -480,13 +511,49 @@ function populateLogsSiteDropdown() {
 
   const sortedSites = Array.from(siteSet).sort((a, b) => a.localeCompare(b));
 
-  let html = `<option value="ALL">🏢 All Partner Facilities (${sortedSites.length})</option>`;
-  sortedSites.forEach(name => {
-    const isSelected = name === currentVal ? 'selected' : '';
-    html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
-  });
+  // 1. Logs Filter Dropdown
+  const logsSiteSelect = document.getElementById('logsSiteSelectFilter');
+  if (logsSiteSelect) {
+    let html = `<option value="ALL">🏢 All Partner Facilities (${sortedSites.length})</option>`;
+    sortedSites.forEach(name => {
+      const isSelected = name === currentLogsSiteFilter ? 'selected' : '';
+      html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
+    });
+    logsSiteSelect.innerHTML = html;
+  }
 
-  siteSelect.innerHTML = html;
+  // 2. Student Tracking Filter Dropdown
+  const studentSiteSelect = document.getElementById('studentSiteSelectFilter');
+  if (studentSiteSelect) {
+    let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
+    sortedSites.forEach(name => {
+      const isSelected = name === currentStudentSiteFilter ? 'selected' : '';
+      html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
+    });
+    studentSiteSelect.innerHTML = html;
+  }
+
+  // 3. Journal Filter Dropdown
+  const journalSiteSelect = document.getElementById('journalSiteSelectFilter');
+  if (journalSiteSelect) {
+    let html = `<option value="ALL">🏢 All Partner Facilities (${sortedSites.length})</option>`;
+    sortedSites.forEach(name => {
+      const isSelected = name === currentJournalSiteFilter ? 'selected' : '';
+      html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
+    });
+    journalSiteSelect.innerHTML = html;
+  }
+
+  // 4. Report Filter Dropdown
+  const reportSiteSelect = document.getElementById('reportSiteFilterSelect');
+  if (reportSiteSelect) {
+    let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
+    sortedSites.forEach(name => {
+      const isSelected = name === selectedReportSite ? 'selected' : '';
+      html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
+    });
+    reportSiteSelect.innerHTML = html;
+  }
 }
 
 // Attendance Logs Filter Handlers
@@ -825,12 +892,32 @@ async function fetchAbsences() {
     const data = await res.json();
     if (data.status === 'success') {
       cachedAbsences = data.data || [];
-      renderAbsencesTable(cachedAbsences);
+      applyAbsenceFilters();
       updateNotifications();
     }
   } catch (err) {
     console.error('Fetch absences error:', err);
   }
+}
+
+function applyAbsenceFilters() {
+  const statusEl = document.getElementById('absenceStatusSelectFilter');
+  const courseEl = document.getElementById('absenceCourseSelectFilter');
+
+  if (statusEl) currentAbsenceStatusFilter = statusEl.value || 'ALL';
+  if (courseEl) currentAbsenceCourseFilter = courseEl.value || 'ALL';
+
+  let filtered = cachedAbsences || [];
+
+  if (currentAbsenceStatusFilter !== 'ALL') {
+    filtered = filtered.filter(a => (a.status || '').toLowerCase() === currentAbsenceStatusFilter.toLowerCase());
+  }
+
+  if (currentAbsenceCourseFilter !== 'ALL') {
+    filtered = filtered.filter(a => (a.course_code || '').toUpperCase() === currentAbsenceCourseFilter.toUpperCase());
+  }
+
+  renderAbsencesTable(filtered);
 }
 
 function renderAbsencesTable(absences) {
@@ -1604,11 +1691,47 @@ function filterReportByCourse(courseCode) {
   renderComplianceSummary();
 }
 
+function filterReportByStatus(status) {
+  selectedReportStatus = status || 'ALL';
+  renderComplianceSummary();
+}
+
+function filterReportBySite(siteName) {
+  selectedReportSite = siteName || 'ALL';
+  renderComplianceSummary();
+}
+
+function getReportSiteOptionsHtml() {
+  const siteSet = new Set();
+  (cachedSites || []).forEach(st => {
+    if (st.site_name && st.site_name.trim()) siteSet.add(st.site_name.trim());
+  });
+  (cachedStudents || []).forEach(s => {
+    if (s.site_name && s.site_name.trim()) siteSet.add(s.site_name.trim());
+  });
+  const sorted = Array.from(siteSet).sort((a, b) => a.localeCompare(b));
+  return sorted.map(name => {
+    const isSel = name === selectedReportSite ? 'selected' : '';
+    return `<option value="${escapeHtml(name)}" ${isSel}>${escapeHtml(name)}</option>`;
+  }).join('');
+}
+
 function getReportStudents() {
-  if (selectedReportCourse === 'ALL') {
-    return cachedStudents;
+  let filtered = cachedStudents || [];
+
+  if (selectedReportCourse !== 'ALL') {
+    filtered = filtered.filter(s => (s.course_code || '').toUpperCase() === selectedReportCourse.toUpperCase());
   }
-  return cachedStudents.filter(s => (s.course_code || '').toUpperCase() === selectedReportCourse.toUpperCase());
+
+  if (selectedReportStatus !== 'ALL') {
+    filtered = filtered.filter(s => (s.status || '').toLowerCase() === selectedReportStatus.toLowerCase());
+  }
+
+  if (selectedReportSite !== 'ALL') {
+    filtered = filtered.filter(s => (s.site_name && s.site_name.trim().toLowerCase() === selectedReportSite.trim().toLowerCase()));
+  }
+
+  return filtered;
 }
 
 function renderComplianceSummary() {
@@ -1622,18 +1745,45 @@ function renderComplianceSummary() {
   const totalHours = targetStudents.reduce((acc, s) => acc + s.rendered_hours, 0);
 
   container.innerHTML = `
-    <!-- Course Filter & Action Controls Header -->
+    <!-- Multi-Criteria Report Filters Header -->
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; background: #ffffff; padding: 1rem 1.25rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); flex-wrap: wrap; gap: 1rem;">
-      <div style="display: flex; align-items: center; gap: 0.75rem;">
-        <label for="reportCourseFilterSelect" style="font-size: 0.88rem; font-weight: 700; color: var(--navy-primary); display: flex; align-items: center; gap: 0.4rem;">
-          <span>🎓</span> Select Program / Course for Report:
-        </label>
-        <select id="reportCourseFilterSelect" class="form-control course-select-dropdown" style="max-width: 340px;" onchange="filterReportByCourse(this.value)">
-          <option value="ALL" ${selectedReportCourse === 'ALL' ? 'selected' : ''}>All Academic Programs</option>
-          <option value="BSCS" ${selectedReportCourse === 'BSCS' ? 'selected' : ''}>BSCS - Bachelor of Science in Computer Science</option>
-          <option value="BSIS" ${selectedReportCourse === 'BSIS' ? 'selected' : ''}>BSIS - Bachelor of Science in Information Systems</option>
-          <option value="BLIS" ${selectedReportCourse === 'BLIS' ? 'selected' : ''}>BLIS - Bachelor of Library & Info Science</option>
-        </select>
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+        <!-- Program -->
+        <div style="display: flex; align-items: center; gap: 0.35rem;">
+          <label for="reportCourseFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); display: flex; align-items: center; gap: 0.25rem;">
+            <span>🎓</span> Program:
+          </label>
+          <select id="reportCourseFilterSelect" class="form-control course-select-dropdown" style="max-width: 220px;" onchange="filterReportByCourse(this.value)">
+            <option value="ALL" ${selectedReportCourse === 'ALL' ? 'selected' : ''}>All Academic Programs</option>
+            <option value="BSCS" ${selectedReportCourse === 'BSCS' ? 'selected' : ''}>BSCS - Computer Science</option>
+            <option value="BSIS" ${selectedReportCourse === 'BSIS' ? 'selected' : ''}>BSIS - Information Systems</option>
+            <option value="BLIS" ${selectedReportCourse === 'BLIS' ? 'selected' : ''}>BLIS - Library &amp; Info Science</option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div style="display: flex; align-items: center; gap: 0.35rem;">
+          <label for="reportStatusFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); display: flex; align-items: center; gap: 0.25rem;">
+            <span>📊</span> Status:
+          </label>
+          <select id="reportStatusFilterSelect" class="form-control" style="max-width: 190px;" onchange="filterReportByStatus(this.value)">
+            <option value="ALL" ${selectedReportStatus === 'ALL' ? 'selected' : ''}>All Statuses</option>
+            <option value="In Progress" ${selectedReportStatus === 'In Progress' ? 'selected' : ''}>🟢 In Progress</option>
+            <option value="Completed" ${selectedReportStatus === 'Completed' ? 'selected' : ''}>🎓 Completed (480h Met)</option>
+            <option value="Not Started" ${selectedReportStatus === 'Not Started' ? 'selected' : ''}>⏳ Not Started (0h)</option>
+          </select>
+        </div>
+
+        <!-- Partner Facility -->
+        <div style="display: flex; align-items: center; gap: 0.35rem;">
+          <label for="reportSiteFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); display: flex; align-items: center; gap: 0.25rem;">
+            <span>🏢</span> Facility:
+          </label>
+          <select id="reportSiteFilterSelect" class="form-control" style="max-width: 210px;" onchange="filterReportBySite(this.value)">
+            <option value="ALL">All Partner Facilities</option>
+            ${getReportSiteOptionsHtml()}
+          </select>
+        </div>
       </div>
 
       <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -2931,4 +3081,11 @@ window.openBatchResetModal = openBatchResetModal;
 window.closeBatchResetModal = closeBatchResetModal;
 window.validateBatchResetForm = validateBatchResetForm;
 window.executeBatchReset = executeBatchReset;
+window.handleStudentFilterChange = handleStudentFilterChange;
+window.applyStudentFilters = applyStudentFilters;
+window.applyAbsenceFilters = applyAbsenceFilters;
+window.filterReportByCourse = filterReportByCourse;
+window.filterReportByStatus = filterReportByStatus;
+window.filterReportBySite = filterReportBySite;
+
 

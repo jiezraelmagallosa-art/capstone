@@ -139,7 +139,7 @@ require_once 'db_connect.php';
             $status = "In Progress";
             if ($progress >= 100.0) {
                 $status = "Completed";
-            } elseif ($rendered_hours == 0) {
+            } elseif ($total_min == 0) {
                 $status = "Not Started";
             }
 
