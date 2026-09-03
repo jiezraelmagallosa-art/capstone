@@ -38,9 +38,16 @@ try {
         exit();
     }
 
-    if (empty($tasks)) {
-        echo json_encode(["status" => "error", "message" => "Please provide details of tasks and activities performed today."]);
+    if (empty($learnings) && empty($tasks)) {
+        echo json_encode(["status" => "error", "message" => "Please provide your key learnings & reflections for today."]);
         exit();
+    }
+
+    if (empty($learnings) && !empty($tasks)) {
+        $learnings = $tasks;
+    }
+    if (empty($tasks) && !empty($learnings)) {
+        $tasks = $learnings;
     }
 
     // 1. Get active ojt_id for this student

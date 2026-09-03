@@ -29,9 +29,7 @@ class _JournalScreenState extends State<JournalScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
 
-  final TextEditingController _tasksController = TextEditingController();
   final TextEditingController _learningsController = TextEditingController();
-  final TextEditingController _challengesController = TextEditingController();
 
   List<dynamic> _pastJournals = [];
   Map<String, dynamic>? _currentJournal;
@@ -44,9 +42,7 @@ class _JournalScreenState extends State<JournalScreen> {
 
   @override
   void dispose() {
-    _tasksController.dispose();
     _learningsController.dispose();
-    _challengesController.dispose();
     super.dispose();
   }
 
@@ -81,13 +77,12 @@ class _JournalScreenState extends State<JournalScreen> {
     setState(() {
       _currentJournal = match;
       if (match != null) {
-        _tasksController.text = match['tasks_completed'] ?? '';
-        _learningsController.text = match['learnings_reflection'] ?? '';
-        _challengesController.text = match['challenges_encountered'] ?? '';
+        final val = (match['learnings_reflection'] != null && match['learnings_reflection'].toString().trim().isNotEmpty)
+            ? match['learnings_reflection']
+            : (match['tasks_completed'] ?? '');
+        _learningsController.text = val;
       } else {
-        _tasksController.clear();
         _learningsController.clear();
-        _challengesController.clear();
       }
     });
   }
@@ -121,12 +116,12 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   Future<void> _saveJournal() async {
-    final tasks = _tasksController.text.trim();
-    if (tasks.isEmpty) {
+    final learnings = _learningsController.text.trim();
+    if (learnings.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Please describe the activities & tasks accomplished today.',
+            'Please enter your key learnings & reflections for today.',
           ),
           backgroundColor: Colors.redAccent,
         ),
@@ -139,9 +134,9 @@ class _JournalScreenState extends State<JournalScreen> {
     final res = await ApiService.submitDailyJournal(
       studentId: widget.studentId,
       entryDate: _formattedSelectedDateISO,
-      tasksCompleted: tasks,
-      learningsReflection: _learningsController.text.trim(),
-      challengesEncountered: _challengesController.text.trim(),
+      tasksCompleted: learnings,
+      learningsReflection: learnings,
+      challengesEncountered: '',
     );
 
     if (!mounted) return;
@@ -326,13 +321,13 @@ class _JournalScreenState extends State<JournalScreen> {
                           Row(
                             children: [
                               const Icon(
-                                Icons.assignment_outlined,
+                                Icons.lightbulb_outline_rounded,
                                 color: primaryNavy,
                                 size: 20,
                               ),
                               const SizedBox(width: 6),
                               const Text(
-                                'Tasks & Activities Performed',
+                                'Key Learnings & Reflections',
                                 style: TextStyle(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.bold,
@@ -350,125 +345,19 @@ class _JournalScreenState extends State<JournalScreen> {
                           ),
                           const SizedBox(height: 4),
                           const Text(
-                            'Detail the tasks, projects, or duties you carried out during this shift.',
+                            'What new skills, techniques, or insights did you gain during this shift?',
                             style: TextStyle(
                               fontSize: 11.5,
                               color: Colors.black54,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _tasksController,
-                            maxLines: 4,
-                            decoration: InputDecoration(
-                              hintText:
-                                  'e.g., Assisted department staff with network maintenance, backed up database records, resolved PC troubleshooting tickets...',
-                              hintStyle: TextStyle(
-                                fontSize: 12.5,
-                                color: Colors.grey.shade400,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.all(12),
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.lightbulb_outline_rounded,
-                                color: primaryNavy,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'Key Learnings & Reflections',
-                                style: TextStyle(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: primaryNavy,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'What new skills, techniques, or insights did you gain today?',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              color: Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
                           TextFormField(
                             controller: _learningsController,
-                            maxLines: 3,
+                            maxLines: 7,
                             decoration: InputDecoration(
                               hintText:
-                                  'e.g., Learned how subnet masking works in enterprise networks; practiced professional customer communication...',
-                              hintStyle: TextStyle(
-                                fontSize: 12.5,
-                                color: Colors.grey.shade400,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.all(12),
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.troubleshoot_rounded,
-                                color: primaryNavy,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 6),
-                              const Text(
-                                'Challenges & Resolutions',
-                                style: TextStyle(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: primaryNavy,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                '(Optional)',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Encountered any technical or workplace difficulties and how were they solved?',
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              color: Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _challengesController,
-                            maxLines: 2,
-                            decoration: InputDecoration(
-                              hintText:
-                                  'e.g., IP conflict occurred on printer; resolved by checking DHCP leases...',
+                                  'e.g., Learned how subnet masking works in enterprise networks; practiced professional customer communication and resolved network tickets...',
                               hintStyle: TextStyle(
                                 fontSize: 12.5,
                                 color: Colors.grey.shade400,
@@ -608,7 +497,14 @@ class _JournalScreenState extends State<JournalScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    item['tasks_completed'] ?? '',
+                                    ((item['learnings_reflection'] != null &&
+                                            item['learnings_reflection']
+                                                .toString()
+                                                .trim()
+                                                .isNotEmpty)
+                                        ? item['learnings_reflection']
+                                        : (item['tasks_completed'] ?? ''))
+                                        .toString(),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
@@ -676,18 +572,18 @@ class _JournalScreenState extends State<JournalScreen> {
     Color bg = const Color(0xFFFFFBEB);
     Color border = const Color(0xFFFDE68A);
     Color textCol = const Color(0xFF92400E);
-    String statusText = "⏳ Pending Dean Evaluation";
+    String statusText = "Pending Dean Evaluation";
 
     if (status == 'Reviewed') {
       bg = const Color(0xFFF0FDF4);
       border = const Color(0xFFBBF7D0);
       textCol = const Color(0xFF166534);
-      statusText = "✓ Reviewed & Noted by Dean";
+      statusText = "Reviewed & Noted by Dean";
     } else if (status == 'Commended') {
       bg = const Color(0xFFFDF2F8);
       border = const Color(0xFFFBCFE8);
       textCol = const Color(0xFF9D174D);
-      statusText = "⭐ Commended by Dean (Exemplary)";
+      statusText = "Commended by Dean (Exemplary)";
     }
 
     return Container(

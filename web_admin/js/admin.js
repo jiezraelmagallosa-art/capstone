@@ -1392,27 +1392,29 @@ function openJournalModal(journalId) {
       </div>
     </div>
 
-    <!-- Section 1: Tasks Accomplished -->
+    <!-- Key Learnings & Reflections -->
     <div class="journal-section-card">
       <div class="journal-section-title">
-        <span>📋</span> Daily Activities &amp; Tasks Accomplished
+        Key Learnings &amp; Reflections
       </div>
-      <div class="journal-section-text">${escapeHtml(j.tasks_completed)}</div>
+      <div class="journal-section-text">${escapeHtml(j.learnings_reflection || j.tasks_completed || 'No specific reflections noted for this shift.')}</div>
     </div>
 
-    <!-- Section 2: Learnings & Reflections -->
-    <div class="journal-section-card">
-      <div class="journal-section-title">
-        <span>💡</span> Key Learnings &amp; Reflections
+    <!-- Legacy Tasks (if distinct from learnings) -->
+    ${(j.tasks_completed && j.tasks_completed !== j.learnings_reflection) ? `
+      <div class="journal-section-card">
+        <div class="journal-section-title">
+          Daily Activities &amp; Tasks Accomplished
+        </div>
+        <div class="journal-section-text">${escapeHtml(j.tasks_completed)}</div>
       </div>
-      <div class="journal-section-text">${escapeHtml(j.learnings_reflection || 'No specific reflections noted for this shift.')}</div>
-    </div>
+    ` : ''}
 
-    <!-- Section 3: Challenges Encountered -->
+    <!-- Challenges Encountered (if any) -->
     ${j.challenges_encountered ? `
       <div class="journal-section-card">
         <div class="journal-section-title">
-          <span>⚠️</span> Challenges Encountered &amp; Resolutions
+          Challenges Encountered &amp; Resolutions
         </div>
         <div class="journal-section-text">${escapeHtml(j.challenges_encountered)}</div>
       </div>
