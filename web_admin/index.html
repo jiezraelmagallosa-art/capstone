@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InternLog | Dean's Administrative Suite</title>
-  <link rel="stylesheet" href="css/admin.css?v=6.5">
+  <link rel="stylesheet" href="css/admin.css?v=6.6">
 </head>
 
 <body>
@@ -637,26 +637,25 @@
           </div>
 
           <!-- Academic Year-End Batch Manager Card -->
-          <div class="card batch-manager-card" style="padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 1.5px solid #e2e8f0; border-radius: var(--radius-sm); box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
+          <div class="card batch-manager-card" style="padding: 1.15rem 1.4rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid var(--navy-primary); border-radius: var(--radius-sm); box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-              <div style="max-width: 580px;">
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
-                  <span style="font-size: 1.2rem;">🎓</span>
-                  <h3 style="margin: 0; font-size: 1rem; color: var(--navy-primary); font-weight: 800; letter-spacing: 0.3px;">
+              <div style="max-width: 620px;">
+                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+                  <h3 style="margin: 0; font-size: 0.98rem; color: var(--navy-primary); font-weight: 800; letter-spacing: 0.2px;">
                     Academic Year-End Batch Manager &amp; Storage Reset
                   </h3>
-                  <span class="badge" style="background: #0284c7; color: #fff; font-size: 0.72rem; padding: 0.2rem 0.55rem;">Annual Transition</span>
+                  <span class="badge" style="background: #0284c7; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 4px; white-space: nowrap;">Annual Transition</span>
                 </div>
-                <p style="font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.4;">
+                <p style="font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.45;">
                   Download consolidated school records (Excel &amp; PDF) to permanent school storage, then purge graduated intern accounts to reclaim 100% hosting storage for the new incoming academic year.
                 </p>
               </div>
               <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-                <button type="button" class="btn btn-navy" onclick="downloadBatchArchive()" style="font-size: 0.82rem; padding: 0.55rem 1rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-                  <span>📥</span> Download Batch Archive (CSV &amp; PDF)
+                <button type="button" class="btn btn-navy" onclick="downloadBatchArchive()" style="font-size: 0.82rem; font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 6px; white-space: nowrap;">
+                  Download Batch Archive (CSV &amp; PDF)
                 </button>
-                <button type="button" class="btn btn-danger" onclick="openBatchResetModal()" style="font-size: 0.82rem; padding: 0.55rem 1rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-                  <span>🧹</span> Purge Batch &amp; Reset Storage
+                <button type="button" class="btn btn-danger" onclick="openBatchResetModal()" style="font-size: 0.82rem; font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 6px; white-space: nowrap;">
+                  Purge Batch &amp; Reset Storage
                 </button>
               </div>
             </div>
@@ -1031,7 +1030,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=6.5"></script>
+  <script src="js/admin.js?v=6.6"></script>
 </body>
 
 </html>

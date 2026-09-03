@@ -1786,14 +1786,14 @@ function renderComplianceSummary() {
 
   container.innerHTML = `
     <!-- Multi-Criteria Report Filters Header -->
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; background: #ffffff; padding: 1rem 1.25rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); flex-wrap: wrap; gap: 1rem;">
-      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+    <div class="card" style="padding: 1.15rem 1.4rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid #e2e8f0; border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+      <div class="report-filter-grid">
         <!-- Program -->
-        <div style="display: flex; align-items: center; gap: 0.35rem;">
-          <label for="reportCourseFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary);">
-            Program:
+        <div>
+          <label for="reportCourseFilterSelect" style="display: block; font-size: 0.73rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem;">
+            Academic Program
           </label>
-          <select id="reportCourseFilterSelect" class="form-control course-select-dropdown" style="max-width: 220px;" onchange="filterReportByCourse(this.value)">
+          <select id="reportCourseFilterSelect" class="form-control" style="width: 100%; height: 38px; font-size: 0.83rem; font-weight: 600; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 0.75rem;" onchange="filterReportByCourse(this.value)">
             <option value="ALL" ${selectedReportCourse === 'ALL' ? 'selected' : ''}>All Academic Programs</option>
             <option value="BSCS" ${selectedReportCourse === 'BSCS' ? 'selected' : ''}>BSCS - Computer Science</option>
             <option value="BSIS" ${selectedReportCourse === 'BSIS' ? 'selected' : ''}>BSIS - Information Systems</option>
@@ -1802,37 +1802,38 @@ function renderComplianceSummary() {
         </div>
 
         <!-- Status -->
-        <div style="display: flex; align-items: center; gap: 0.35rem;">
-          <label for="reportStatusFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary);">
-            Status:
+        <div>
+          <label for="reportStatusFilterSelect" style="display: block; font-size: 0.73rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem;">
+            Compliance Status
           </label>
-          <select id="reportStatusFilterSelect" class="form-control" style="max-width: 190px;" onchange="filterReportByStatus(this.value)">
+          <select id="reportStatusFilterSelect" class="form-control" style="width: 100%; height: 38px; font-size: 0.83rem; font-weight: 600; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 0.75rem;" onchange="filterReportByStatus(this.value)">
             <option value="ALL" ${selectedReportStatus === 'ALL' ? 'selected' : ''}>All Statuses</option>
             <option value="In Progress" ${selectedReportStatus === 'In Progress' ? 'selected' : ''}>In Progress</option>
-            <option value="Completed" ${selectedReportStatus === 'Completed' ? 'selected' : ''}>Completed (480h Met)</option>
+            <option value="Completed" ${selectedReportStatus === 'Completed' ? 'selected' : ''}>Completed (Goal Met)</option>
             <option value="Not Started" ${selectedReportStatus === 'Not Started' ? 'selected' : ''}>Not Started (0h)</option>
           </select>
         </div>
 
         <!-- Partner Facility -->
-        <div style="display: flex; align-items: center; gap: 0.35rem;">
-          <label for="reportSiteFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary);">
-            Facility:
+        <div>
+          <label for="reportSiteFilterSelect" style="display: block; font-size: 0.73rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.35rem;">
+            Partner Facility
           </label>
-          <select id="reportSiteFilterSelect" class="form-control" style="max-width: 210px;" onchange="filterReportBySite(this.value)">
+          <select id="reportSiteFilterSelect" class="form-control" style="width: 100%; height: 38px; font-size: 0.83rem; font-weight: 600; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0 0.75rem;" onchange="filterReportBySite(this.value)">
             <option value="ALL">All Partner Facilities</option>
             ${getReportSiteOptionsHtml()}
           </select>
         </div>
-      </div>
 
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <button class="btn btn-navy" onclick="generatePDFReport()" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1.25rem;">
-          <span>📄</span> Generate PDF Report
-        </button>
-        <button class="btn btn-outline" onclick="exportCSVReport()" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem;">
-          <span>📊</span> Export CSV
-        </button>
+        <!-- Actions -->
+        <div class="report-filter-actions">
+          <button type="button" class="btn btn-outline" onclick="exportCSVReport()" style="height: 38px; padding: 0 1rem; font-size: 0.82rem; font-weight: 700; border-radius: 6px; white-space: nowrap; color: var(--navy-primary); border-color: #cbd5e1;">
+            Export CSV
+          </button>
+          <button type="button" class="btn btn-navy" onclick="generatePDFReport()" style="height: 38px; padding: 0 1.25rem; font-size: 0.82rem; font-weight: 700; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0, 45, 86, 0.15);">
+            Generate PDF Report
+          </button>
+        </div>
       </div>
     </div>
 

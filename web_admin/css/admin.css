@@ -1734,3 +1734,42 @@ body {
   width: 4px;
   background: linear-gradient(180deg, var(--navy-primary) 0%, #0284c7 100%);
 }
+
+/* Institutional Compliance Filter & Export Controls */
+.report-filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr auto;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.report-filter-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@media (max-width: 1280px) {
+  .report-filter-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .report-filter-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .report-filter-grid {
+    grid-template-columns: 1fr;
+  }
+  .report-filter-actions {
+    display: flex;
+    flex-direction: column;
+  }
+  .report-filter-actions button {
+    width: 100%;
+  }
+}
