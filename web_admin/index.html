@@ -306,8 +306,8 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.85rem; align-items: flex-end;">
               <!-- 1. Academic Program -->
               <div>
-                <label for="courseSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
-                  <span>🎓</span> Academic Program:
+                <label for="courseSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                  Academic Program:
                 </label>
                 <select id="courseSelectFilter" class="form-control course-select-dropdown" onchange="handleStudentFilterChange()">
                   <option value="ALL">All Programs (0)</option>
@@ -319,21 +319,21 @@
 
               <!-- 2. OJT Progress Status -->
               <div>
-                <label for="studentStatusSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
-                  <span>📊</span> Progress Status:
+                <label for="studentStatusSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                  Progress Status:
                 </label>
                 <select id="studentStatusSelectFilter" class="form-control" onchange="handleStudentFilterChange()">
                   <option value="ALL" selected>All Statuses (Active &amp; Done)</option>
-                  <option value="In Progress">🟢 In Progress (Rendering)</option>
-                  <option value="Completed">🎓 Completed (480h Met)</option>
-                  <option value="Not Started">⏳ Not Started (0h)</option>
+                  <option value="In Progress">In Progress (Rendering)</option>
+                  <option value="Completed">Completed (480h Met)</option>
+                  <option value="Not Started">Not Started (0h)</option>
                 </select>
               </div>
 
               <!-- 3. Partner Training Facility -->
               <div>
-                <label for="studentSiteSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
-                  <span>🏢</span> Partner Facility:
+                <label for="studentSiteSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                  Partner Facility:
                 </label>
                 <select id="studentSiteSelectFilter" class="form-control" onchange="handleStudentFilterChange()">
                   <option value="ALL" selected>All Partner Facilities</option>
@@ -377,13 +377,12 @@
           <div class="logs-filter-toolbar card" style="padding: 1.1rem 1.35rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.65rem;">
               <div style="display: flex; align-items: center; gap: 0.55rem;">
-                <span style="font-size: 1.05rem;">🔍</span>
                 <span style="font-size: 0.88rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.5px;">Logs Filter &amp; Verification Criteria</span>
-                <span id="logsFilterCounterBadge" class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">📅 Showing Today's Logs</span>
+                <span id="logsFilterCounterBadge" class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">Showing Today's Logs</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
                 <button type="button" class="btn-filter-quick active" id="btnQuickToday" onclick="setLogsDateFilter('TODAY')" style="cursor: default;" title="Showing today's logs">
-                  📅 Today
+                  Today
                 </button>
               </div>
             </div>
@@ -392,15 +391,13 @@
             <div class="logs-filter-grid">
               <!-- 1. Date Filter Dropdown & Custom Picker -->
               <div class="filter-item">
-                <label for="logsDateSelectFilter" class="filter-label">
-                  <span>📅</span> Date Range:
-                </label>
+                <label for="logsDateSelectFilter" class="filter-label">Date Range:</label>
                 <div style="display: flex; gap: 0.35rem;">
                   <select id="logsDateSelectFilter" class="form-control" onchange="handleDateSelectChange(this.value)">
                     <option value="TODAY" selected>Today (Default)</option>
                     <option value="YESTERDAY">Yesterday</option>
                     <option value="THIS_WEEK">Past 7 Days</option>
-                    <option value="CUSTOM">Specific Date 🗓️</option>
+                    <option value="CUSTOM">Specific Date</option>
                     <option value="ALL">All Dates (Full History)</option>
                   </select>
                   <input type="date" id="logsCustomDateInput" class="form-control" style="display: none; max-width: 135px; font-size: 0.78rem;" onchange="handleCustomDateChange(this.value)">
@@ -409,33 +406,27 @@
 
               <!-- 2. Verification Status Filter -->
               <div class="filter-item">
-                <label for="logsStatusSelectFilter" class="filter-label">
-                  <span>📋</span> Verification Status:
-                </label>
+                <label for="logsStatusSelectFilter" class="filter-label">Verification Status:</label>
                 <select id="logsStatusSelectFilter" class="form-control" onchange="handleLogsStatusFilterChange(this.value)">
                   <option value="ALL" selected>All Statuses (Pending &amp; Evaluated)</option>
-                  <option value="Pending">⏳ Pending Review Only</option>
-                  <option value="Confirmed">✓ Confirmed Only</option>
-                  <option value="Rejected">✕ Rejected Only</option>
+                  <option value="Pending">Pending Review Only</option>
+                  <option value="Confirmed">Confirmed Only</option>
+                  <option value="Rejected">Rejected Only</option>
                 </select>
               </div>
 
               <!-- 3. Partner Training Facility Filter -->
               <div class="filter-item">
-                <label for="logsSiteSelectFilter" class="filter-label">
-                  <span>🏢</span> Partner Facility:
-                </label>
+                <label for="logsSiteSelectFilter" class="filter-label">Partner Facility:</label>
                 <select id="logsSiteSelectFilter" class="form-control" onchange="handleLogsSiteFilterChange(this.value)">
-                  <option value="ALL" selected>🏢 All Partner Facilities</option>
+                  <option value="ALL" selected>All Partner Facilities</option>
                   <!-- Dynamically populated -->
                 </select>
               </div>
 
               <!-- 4. Academic Program Filter -->
               <div class="filter-item">
-                <label for="logsCourseSelectFilter" class="filter-label">
-                  <span>🎓</span> Academic Program:
-                </label>
+                <label for="logsCourseSelectFilter" class="filter-label">Academic Program:</label>
                 <select id="logsCourseSelectFilter" class="form-control course-select-dropdown" onchange="handleLogsCourseFilterChange(this.value)">
                   <option value="ALL">All Programs (0)</option>
                   <option value="BSCS">BSCS - Computer Science (0)</option>
@@ -483,21 +474,21 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.85rem; align-items: flex-end;">
               <!-- 1. Review Status -->
               <div>
-                <label for="absenceStatusSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
-                  <span>📋</span> Evaluation Status:
+                <label for="absenceStatusSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                  Evaluation Status:
                 </label>
                 <select id="absenceStatusSelectFilter" class="form-control" onchange="applyAbsenceFilters()">
                   <option value="ALL" selected>All Requests (Pending &amp; Decided)</option>
-                  <option value="Pending">⏳ Pending Review Only</option>
-                  <option value="Approved">✓ Approved Only</option>
-                  <option value="Rejected">✕ Rejected Only</option>
+                  <option value="Pending">Pending Review Only</option>
+                  <option value="Approved">Approved Only</option>
+                  <option value="Rejected">Rejected Only</option>
                 </select>
               </div>
 
               <!-- 2. Academic Program -->
               <div>
-                <label for="absenceCourseSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem;">
-                  <span>🎓</span> Academic Program:
+                <label for="absenceCourseSelectFilter" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.3rem; display: block;">
+                  Academic Program:
                 </label>
                 <select id="absenceCourseSelectFilter" class="form-control course-select-dropdown" onchange="applyAbsenceFilters()">
                   <option value="ALL">All Programs (0)</option>
@@ -540,7 +531,7 @@
             </div>
             <div style="display: flex; gap: 0.5rem; align-items: center;">
               <button type="button" class="btn btn-danger" id="btnDeleteAllJournals" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="deleteAllFilteredJournals()">
-                🗑️ Delete All Filtered Journals
+                Delete All Filtered Journals
               </button>
             </div>
           </div>
@@ -549,14 +540,13 @@
           <div class="logs-filter-toolbar card" style="padding: 1.1rem 1.35rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: var(--radius-sm); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.65rem;">
               <div style="display: flex; align-items: center; gap: 0.55rem;">
-                <span style="font-size: 1.05rem;">📝</span>
                 <span style="font-size: 0.88rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.5px;">Journal Criteria &amp; Filters</span>
-                <span id="journalsFilterCounterBadge" class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">📅 Today's Submissions</span>
+                <span id="journalsFilterCounterBadge" class="badge" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; background: #0284c7; color: #fff; border-radius: 12px; font-weight: 700;">Today's Submissions</span>
               </div>
               <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
                 <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-right: 0.2rem;">Quick Date:</span>
                 <button type="button" class="btn-filter-quick active" id="btnJournalQuickToday" onclick="setJournalDateFilter('TODAY')">
-                  📅 Today
+                  Today
                 </button>
                 <button type="button" class="btn-filter-quick" id="btnJournalQuickYesterday" onclick="setJournalDateFilter('YESTERDAY')">
                   Yesterday
@@ -568,7 +558,7 @@
                   All Dates
                 </button>
                 <button type="button" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.25rem 0.65rem; color: var(--navy-primary); font-weight: 700; margin-left: 0.35rem;" onclick="resetJournalFilters()">
-                  ↺ Reset Filters
+                  Reset Filters
                 </button>
               </div>
             </div>
@@ -576,13 +566,13 @@
             <!-- Filter Controls Grid -->
             <div class="logs-filter-grid">
               <div class="filter-item">
-                <label for="journalDateSelectFilter" class="filter-label"><span>📅</span> Date Range:</label>
+                <label for="journalDateSelectFilter" class="filter-label">Date Range:</label>
                 <div style="display: flex; gap: 0.35rem;">
                   <select id="journalDateSelectFilter" class="form-control" onchange="handleJournalDateSelectChange(this.value)">
                     <option value="TODAY" selected>Today (Default)</option>
                     <option value="YESTERDAY">Yesterday</option>
                     <option value="THIS_WEEK">Past 7 Days</option>
-                    <option value="CUSTOM">Specific Date 🗓️</option>
+                    <option value="CUSTOM">Specific Date</option>
                     <option value="ALL">All Dates (Full History)</option>
                   </select>
                   <input type="date" id="journalCustomDateInput" class="form-control" style="display: none; max-width: 135px; font-size: 0.78rem;" onchange="handleJournalCustomDateChange(this.value)">
@@ -590,24 +580,24 @@
               </div>
 
               <div class="filter-item">
-                <label for="journalStatusSelectFilter" class="filter-label"><span>📋</span> Review Status:</label>
+                <label for="journalStatusSelectFilter" class="filter-label">Review Status:</label>
                 <select id="journalStatusSelectFilter" class="form-control" onchange="handleJournalStatusFilterChange(this.value)">
                   <option value="ALL" selected>All Statuses</option>
-                  <option value="Pending">⏳ Pending Evaluation Only</option>
-                  <option value="Reviewed">✓ Reviewed Only</option>
-                  <option value="Commended">⭐ Commended Only</option>
+                  <option value="Pending">Pending Evaluation Only</option>
+                  <option value="Reviewed">Reviewed Only</option>
+                  <option value="Commended">Commended Only</option>
                 </select>
               </div>
 
               <div class="filter-item">
-                <label for="journalSiteSelectFilter" class="filter-label"><span>🏢</span> Training Facility:</label>
+                <label for="journalSiteSelectFilter" class="filter-label">Training Facility:</label>
                 <select id="journalSiteSelectFilter" class="form-control" onchange="handleJournalSiteFilterChange(this.value)">
-                  <option value="ALL" selected>🏢 All Partner Facilities</option>
+                  <option value="ALL" selected>All Partner Facilities</option>
                 </select>
               </div>
 
               <div class="filter-item">
-                <label for="journalCourseSelectFilter" class="filter-label"><span>🎓</span> Academic Program:</label>
+                <label for="journalCourseSelectFilter" class="filter-label">Academic Program:</label>
                 <select id="journalCourseSelectFilter" class="form-control" onchange="handleJournalCourseFilterChange(this.value)">
                   <option value="ALL">All Programs (0)</option>
                 </select>
@@ -1072,7 +1062,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=4.5"></script>
+  <script src="js/admin.js?v=4.6"></script>
 </body>
 
 </html>

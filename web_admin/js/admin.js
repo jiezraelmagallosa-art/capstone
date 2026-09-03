@@ -514,7 +514,7 @@ function populateLogsSiteDropdown() {
   // 1. Logs Filter Dropdown
   const logsSiteSelect = document.getElementById('logsSiteSelectFilter');
   if (logsSiteSelect) {
-    let html = `<option value="ALL">🏢 All Partner Facilities (${sortedSites.length})</option>`;
+    let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
     sortedSites.forEach(name => {
       const isSelected = name === currentLogsSiteFilter ? 'selected' : '';
       html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
@@ -536,7 +536,7 @@ function populateLogsSiteDropdown() {
   // 3. Journal Filter Dropdown
   const journalSiteSelect = document.getElementById('journalSiteSelectFilter');
   if (journalSiteSelect) {
-    let html = `<option value="ALL">🏢 All Partner Facilities (${sortedSites.length})</option>`;
+    let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
     sortedSites.forEach(name => {
       const isSelected = name === currentJournalSiteFilter ? 'selected' : '';
       html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
@@ -668,19 +668,19 @@ function updateFilterStatusBadge(filteredCount, totalCount) {
 
   let label = '';
   if (currentLogsDateFilter === 'TODAY') {
-    label = `📅 Showing Today's Logs (${filteredCount})`;
+    label = `Showing Today's Logs (${filteredCount})`;
     badge.style.background = '#0284c7';
   } else if (currentLogsDateFilter === 'YESTERDAY') {
-    label = `📅 Showing Yesterday's Logs (${filteredCount})`;
+    label = `Showing Yesterday's Logs (${filteredCount})`;
     badge.style.background = '#0f766e';
   } else if (currentLogsDateFilter === 'THIS_WEEK') {
-    label = `📅 Past 7 Days (${filteredCount})`;
+    label = `Past 7 Days (${filteredCount})`;
     badge.style.background = '#4338ca';
   } else if (currentLogsDateFilter === 'CUSTOM') {
-    label = `🗓️ Date: ${currentLogsCustomDate} (${filteredCount})`;
+    label = `Date: ${currentLogsCustomDate} (${filteredCount})`;
     badge.style.background = '#7c3aed';
   } else {
-    label = `🗓️ All Historical Logs (${filteredCount} of ${totalCount})`;
+    label = `All Historical Logs (${filteredCount} of ${totalCount})`;
     badge.style.background = 'var(--navy-primary)';
   }
 
@@ -1141,19 +1141,19 @@ function updateJournalFilterStatusBadge(filteredCount, totalCount) {
 
   let label = '';
   if (currentJournalDateFilter === 'TODAY') {
-    label = `📅 Today's Submissions (${filteredCount})`;
+    label = `Today's Submissions (${filteredCount})`;
     badge.style.background = '#0284c7';
   } else if (currentJournalDateFilter === 'YESTERDAY') {
-    label = `📅 Yesterday's Submissions (${filteredCount})`;
+    label = `Yesterday's Submissions (${filteredCount})`;
     badge.style.background = '#d97706';
   } else if (currentJournalDateFilter === 'THIS_WEEK') {
-    label = `📅 Past 7 Days (${filteredCount})`;
+    label = `Past 7 Days (${filteredCount})`;
     badge.style.background = '#4338ca';
   } else if (currentJournalDateFilter === 'CUSTOM') {
-    label = `🗓️ Date: ${currentJournalCustomDate} (${filteredCount})`;
+    label = `Date: ${currentJournalCustomDate} (${filteredCount})`;
     badge.style.background = '#7c3aed';
   } else {
-    label = `🗓️ All Historical Entries (${filteredCount} of ${totalCount})`;
+    label = `All Historical Entries (${filteredCount} of ${totalCount})`;
     badge.style.background = 'var(--navy-primary)';
   }
 
@@ -1750,8 +1750,8 @@ function renderComplianceSummary() {
       <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
         <!-- Program -->
         <div style="display: flex; align-items: center; gap: 0.35rem;">
-          <label for="reportCourseFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); display: flex; align-items: center; gap: 0.25rem;">
-            <span>🎓</span> Program:
+          <label for="reportCourseFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary);">
+            Program:
           </label>
           <select id="reportCourseFilterSelect" class="form-control course-select-dropdown" style="max-width: 220px;" onchange="filterReportByCourse(this.value)">
             <option value="ALL" ${selectedReportCourse === 'ALL' ? 'selected' : ''}>All Academic Programs</option>
@@ -1763,21 +1763,21 @@ function renderComplianceSummary() {
 
         <!-- Status -->
         <div style="display: flex; align-items: center; gap: 0.35rem;">
-          <label for="reportStatusFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); display: flex; align-items: center; gap: 0.25rem;">
-            <span>📊</span> Status:
+          <label for="reportStatusFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary);">
+            Status:
           </label>
           <select id="reportStatusFilterSelect" class="form-control" style="max-width: 190px;" onchange="filterReportByStatus(this.value)">
             <option value="ALL" ${selectedReportStatus === 'ALL' ? 'selected' : ''}>All Statuses</option>
-            <option value="In Progress" ${selectedReportStatus === 'In Progress' ? 'selected' : ''}>🟢 In Progress</option>
-            <option value="Completed" ${selectedReportStatus === 'Completed' ? 'selected' : ''}>🎓 Completed (480h Met)</option>
-            <option value="Not Started" ${selectedReportStatus === 'Not Started' ? 'selected' : ''}>⏳ Not Started (0h)</option>
+            <option value="In Progress" ${selectedReportStatus === 'In Progress' ? 'selected' : ''}>In Progress</option>
+            <option value="Completed" ${selectedReportStatus === 'Completed' ? 'selected' : ''}>Completed (480h Met)</option>
+            <option value="Not Started" ${selectedReportStatus === 'Not Started' ? 'selected' : ''}>Not Started (0h)</option>
           </select>
         </div>
 
         <!-- Partner Facility -->
         <div style="display: flex; align-items: center; gap: 0.35rem;">
-          <label for="reportSiteFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary); display: flex; align-items: center; gap: 0.25rem;">
-            <span>🏢</span> Facility:
+          <label for="reportSiteFilterSelect" style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary);">
+            Facility:
           </label>
           <select id="reportSiteFilterSelect" class="form-control" style="max-width: 210px;" onchange="filterReportBySite(this.value)">
             <option value="ALL">All Partner Facilities</option>
