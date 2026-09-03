@@ -1822,6 +1822,9 @@ function renderComplianceSummary() {
           <button type="button" class="btn btn-outline" onclick="exportCSVReport()" style="height: 38px; padding: 0 1rem; font-size: 0.82rem; font-weight: 700; border-radius: 6px; white-space: nowrap; color: var(--navy-primary); border-color: #cbd5e1;">
             Export CSV
           </button>
+          <button type="button" class="btn btn-danger" onclick="openBatchResetModal()" style="height: 38px; padding: 0 1rem; font-size: 0.82rem; font-weight: 700; border-radius: 6px; white-space: nowrap;">
+            Reset Storage
+          </button>
           <button type="button" class="btn btn-navy" onclick="generatePDFReport()" style="height: 38px; padding: 0 1.25rem; font-size: 0.82rem; font-weight: 700; border-radius: 6px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0, 45, 86, 0.15);">
             Generate PDF Report
           </button>

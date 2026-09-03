@@ -670,39 +670,6 @@
             </div>
           </div>
 
-          <!-- Academic Year-End Batch Manager Card -->
-          <div class="card batch-manager-card"
-            style="padding: 1.15rem 1.4rem; margin-bottom: 1.25rem; background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid var(--navy-primary); border-radius: var(--radius-sm); box-shadow: 0 1px 4px rgba(0,0,0,0.03);">
-            <div
-              style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-              <div style="max-width: 620px;">
-                <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
-                  <h3
-                    style="margin: 0; font-size: 0.98rem; color: var(--navy-primary); font-weight: 800; letter-spacing: 0.2px;">
-                    Academic Year-End Batch Manager &amp; Storage Reset
-                  </h3>
-                  <span class="badge"
-                    style="background: #0284c7; color: #ffffff; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 4px; white-space: nowrap;">Annual
-                    Transition</span>
-                </div>
-                <p style="font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.45;">
-                  Download consolidated school records (Excel &amp; PDF) to permanent school storage, then purge
-                  graduated intern accounts to reclaim 100% hosting storage for the new incoming academic year.
-                </p>
-              </div>
-              <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
-                <button type="button" class="btn btn-navy" onclick="downloadBatchArchive()"
-                  style="font-size: 0.82rem; font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 6px; white-space: nowrap;">
-                  Download Batch Archive (CSV &amp; PDF)
-                </button>
-                <button type="button" class="btn btn-danger" onclick="openBatchResetModal()"
-                  style="font-size: 0.82rem; font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 6px; white-space: nowrap;">
-                  Purge Batch &amp; Reset Storage
-                </button>
-              </div>
-            </div>
-          </div>
-
           <div id="reportsContainer">
             <!-- Rendered dynamically -->
           </div>
@@ -910,10 +877,11 @@
   </div>
 
   <!-- Student Details Profile Modal -->
+  <!-- Student Details Drawer Modal -->
   <div id="studentDetailsModal" class="modal-overlay" onclick="if(event.target === this) closeStudentDetailsModal()">
     <div class="modal-card" style="max-width: 560px;">
       <div class="modal-header">
-        <h3>👨‍🎓 Student Profile & Internship Allocation</h3>
+        <h3>Student Profile &amp; Internship Allocation</h3>
         <button class="close-btn" onclick="closeStudentDetailsModal()">&times;</button>
       </div>
       <div id="studentDetailsContent"
@@ -923,7 +891,7 @@
       <div
         style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
         <button class="btn btn-outline" id="drawerDownloadDtrBtn"
-          style="color: var(--navy-primary); font-weight: 700;">📄 Download Student DTR (PDF)</button>
+          style="color: var(--navy-primary); font-weight: 700;">Download Student DTR (PDF)</button>
         <button class="btn btn-navy" onclick="closeStudentDetailsModal()">Close Details</button>
       </div>
     </div>
@@ -933,19 +901,19 @@
   <div id="helpModal" class="modal-overlay">
     <div class="modal-card" style="max-width: 600px;">
       <div class="modal-header">
-        <h3>❓ Dean Suite - Help & User Guide</h3>
+        <h3>Dean Suite - Help &amp; User Guide</h3>
         <button class="close-btn" onclick="closeHelpModal()">&times;</button>
       </div>
       <div style="font-size: 0.88rem; color: var(--text-main); line-height: 1.6;">
         <p style="margin-bottom: 1rem; color: var(--text-muted);">
-          Welcome to the <strong>InternLog Attendance & Verification System</strong> Dean's Suite. Below is a summary of
+          Welcome to the <strong>InternLog Attendance &amp; Verification System</strong> Dean's Suite. Below is a summary of
           available tools and shortcuts:
         </p>
 
         <div style="display: flex; flex-direction: column; gap: 0.8rem;">
           <div
             style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid var(--navy-primary); border-radius: var(--radius-sm);">
-            <strong>🔍 Global Search Bar:</strong>
+            <strong>Global Search Bar:</strong>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
               Type student names, ID numbers (e.g. 2026-0009), course codes (BSCS, BSIS, BLIS), or partner facilities to
               instantly filter table rows in real-time.
@@ -954,7 +922,7 @@
 
           <div
             style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid var(--amber-gold); border-radius: var(--radius-sm);">
-            <strong>🔔 System Notifications:</strong>
+            <strong>System Notifications:</strong>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
               The bell icon pulses when students submit new attendance logs or absence requests. Click it to open a live
               queue popover.
@@ -963,16 +931,16 @@
 
           <div
             style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid #1a7f4b; border-radius: var(--radius-sm);">
-            <strong>📸 Attendance Verification Logs:</strong>
+            <strong>Attendance Verification Logs:</strong>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-              Review live facial capture snapshots. Click <strong>Confirm</strong> (green) to approve & delete
+              Review live facial capture snapshots. Click <strong>Confirm</strong> (green) to approve &amp; delete
               verification photos from disk, or <strong>Reject</strong> (red) to require student follow-up.
             </p>
           </div>
 
           <div
             style="padding: 0.75rem 1rem; background-color: var(--bg-canvas); border-left: 4px solid #c0392b; border-radius: var(--radius-sm);">
-            <strong>📄 Absence Request Queue:</strong>
+            <strong>Absence Request Queue:</strong>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
               View student medical/official absence applications, supporting attachments, and provide administrative
               approval or rejection remarks.
@@ -991,12 +959,9 @@
     <div class="modal-card" style="max-width: 680px;">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.3rem;">📝</span>
           <div>
-            <h3 id="journalModalTitle" style="margin: 0; font-size: 1.15rem; color: var(--navy-primary);">Daily
-              Narrative Journal</h3>
-            <span id="journalModalSubtitle" style="font-size: 0.78rem; color: var(--text-muted);">Student Submission
-              Details</span>
+            <h3 id="journalModalTitle" style="margin: 0; font-size: 1.15rem; color: var(--navy-primary);">Daily Narrative Journal</h3>
+            <span id="journalModalSubtitle" style="font-size: 0.78rem; color: var(--text-muted);">Student Submission Details</span>
           </div>
         </div>
         <button class="close-btn" onclick="closeJournalModal()">&times;</button>
@@ -1008,30 +973,28 @@
       </div>
 
       <div
-        style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 0.5rem;">
         <button type="button" id="journalModalDeleteBtn" class="btn btn-danger" style="font-size: 0.8rem;"
           onclick="handleModalDeleteJournal()">
-          🗑️ Delete Entry
+          Delete Entry
         </button>
         <div style="display: flex; gap: 0.5rem; margin-left: auto;">
           <button type="button" class="btn btn-outline" onclick="closeJournalModal()">Close</button>
           <button type="button" id="journalModalSaveFeedbackBtn" class="btn btn-navy" onclick="saveJournalEvaluation()">
-            💾 Save Evaluation
+            Save Evaluation
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Academic Year-End Batch Purge & Storage Reset Modal -->
+  <!-- Academic Year-End Storage Reset Modal -->
   <div id="batchResetModal" class="modal-overlay" onclick="if(event.target === this) closeBatchResetModal()">
     <div class="modal-card" style="max-width: 620px;">
       <div class="modal-header" style="background: #fef2f2; border-bottom: 1px solid #fee2e2; padding: 1.1rem 1.4rem;">
         <div style="display: flex; align-items: center; gap: 0.6rem;">
-          <span style="font-size: 1.5rem;">⚠️</span>
           <div>
-            <h3 style="margin: 0; font-size: 1.15rem; color: #991b1b; font-weight: 800;">Academic Year-End Batch Reset
-            </h3>
+            <h3 style="margin: 0; font-size: 1.15rem; color: #991b1b; font-weight: 800;">Academic Year-End Storage Reset</h3>
             <span style="font-size: 0.78rem; color: #b91c1c;">Permanent Storage Cleanup &amp; Roster Purge</span>
           </div>
         </div>
@@ -1041,7 +1004,7 @@
       <div style="padding: 1.4rem; display: flex; flex-direction: column; gap: 1rem;">
         <div
           style="background: #fff7ed; border-left: 4px solid #f97316; padding: 0.85rem 1rem; border-radius: var(--radius-sm);">
-          <strong style="color: #9a3412; font-size: 0.88rem;">⚠️ Important Permanent Cleanup:</strong>
+          <strong style="color: #9a3412; font-size: 0.88rem;">Important Permanent Cleanup:</strong>
           <p style="font-size: 0.82rem; color: #7c2d12; margin: 0.35rem 0 0 0; line-height: 1.4;">
             This action will <strong>permanently delete</strong> all student accounts for this cohort, freeing up
             hosting storage for the new incoming school year. Ensure you have exported the Excel/PDF archive first!
@@ -1051,7 +1014,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.8rem;">
           <div
             style="background: #f8fafc; border: 1px solid var(--border-light); padding: 0.75rem; border-radius: 6px;">
-            <strong style="color: #dc2626; display: block; margin-bottom: 0.3rem;">❌ What will be deleted:</strong>
+            <strong style="color: #dc2626; display: block; margin-bottom: 0.3rem;">What will be deleted:</strong>
             <ul style="margin: 0; padding-left: 1.1rem; color: #475569; line-height: 1.4;">
               <li>Current student accounts</li>
               <li>Attendance logs &amp; DTR hours</li>
@@ -1061,7 +1024,7 @@
           </div>
           <div
             style="background: #f8fafc; border: 1px solid var(--border-light); padding: 0.75rem; border-radius: 6px;">
-            <strong style="color: #16a34a; display: block; margin-bottom: 0.3rem;">✓ What will STAY SAFE:</strong>
+            <strong style="color: #16a34a; display: block; margin-bottom: 0.3rem;">What will STAY SAFE:</strong>
             <ul style="margin: 0; padding-left: 1.1rem; color: #475569; line-height: 1.4;">
               <li>Academic Programs (BSCS, etc.)</li>
               <li>Partner Facilities &amp; Sites</li>
@@ -1106,7 +1069,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=6.9"></script>
+  <script src="js/admin.js?v=7.0"></script>
 </body>
 
 </html>
