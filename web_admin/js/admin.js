@@ -1947,25 +1947,27 @@ async function generatePDFReport() {
   const offscreenContainer = document.createElement('div');
   offscreenContainer.style.position = 'fixed';
   offscreenContainer.style.top = '0';
-  offscreenContainer.style.left = '-99999px';
+  offscreenContainer.style.left = '0';
   offscreenContainer.style.width = '695px';
-  offscreenContainer.style.overflow = 'visible';
+  offscreenContainer.style.opacity = '0';
+  offscreenContainer.style.pointerEvents = 'none';
   offscreenContainer.style.zIndex = '-9999';
+  offscreenContainer.style.overflow = 'visible';
 
   const reportWrapper = document.createElement('div');
   reportWrapper.style.boxSizing = 'border-box';
   reportWrapper.style.width = '695px';
-  reportWrapper.style.padding = '12px 14px';
+  reportWrapper.style.padding = '14px 16px';
   reportWrapper.style.backgroundColor = '#ffffff';
   reportWrapper.style.color = '#1e293b';
   reportWrapper.style.fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";
-  reportWrapper.style.fontSize = '10.5px';
+  reportWrapper.style.fontSize = '10px';
   reportWrapper.style.lineHeight = '1.35';
 
   reportWrapper.innerHTML = `
     <div style="display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 8px; margin-bottom: 10px;">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="${logoUrl}" style="width: 46px; height: 46px; border-radius: 50%; object-fit: contain; flex-shrink: 0;" alt="SBC Logo" onerror="this.style.display='none';">
+        <img src="${logoUrl}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: contain; flex-shrink: 0;" alt="SBC Logo" onerror="this.style.display='none';">
         <div>
           <div style="font-size: 14px; font-weight: 800; color: #002d56; text-transform: uppercase; letter-spacing: 0.3px; margin: 0;">Southern Baptist College</div>
           <div style="font-size: 9.5px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs &amp; Internship Coordination</div>
@@ -1996,7 +1998,7 @@ async function generatePDFReport() {
       </div>
       <div style="flex: 1; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; text-align: center;">
         <div style="font-size: 8.5px; font-weight: 700; color: #64748b; text-transform: uppercase;">Completed (Goal Hrs)</div>
-        <div style="font-size: 15px; font-weight: 800; color: #002d56; margin-top: 1px;">${completed}</div>
+        <div style="font-size: 15px; font-weight: 800; color: #15803d; margin-top: 1px;">${completed}</div>
       </div>
       <div style="flex: 1; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 5px; padding: 6px; text-align: center;">
         <div style="font-size: 8.5px; font-weight: 700; color: #64748b; text-transform: uppercase;">In-Progress</div>
@@ -2004,27 +2006,17 @@ async function generatePDFReport() {
       </div>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 8.5px; table-layout: fixed;">
-      <colgroup>
-        <col style="width: 22%;">
-        <col style="width: 12%;">
-        <col style="width: 8%;">
-        <col style="width: 20%;">
-        <col style="width: 13%;">
-        <col style="width: 11%;">
-        <col style="width: 7%;">
-        <col style="width: 7%;">
-      </colgroup>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 8.5px;">
       <thead>
         <tr style="background-color: #002d56; color: #ffffff;">
-          <th style="padding: 6px 4px; text-align: left; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Student Name</th>
-          <th style="padding: 6px 4px; text-align: left; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Student #</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Course</th>
-          <th style="padding: 6px 4px; text-align: left; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Facility Placement</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Hours Rendered</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Target Goal</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Progress</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Status</th>
+          <th style="width: 22%; padding: 6px 4px; text-align: left; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Student Name</th>
+          <th style="width: 12%; padding: 6px 4px; text-align: left; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Student #</th>
+          <th style="width: 8%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Course</th>
+          <th style="width: 20%; padding: 6px 4px; text-align: left; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Facility Placement</th>
+          <th style="width: 13%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Hours Rendered</th>
+          <th style="width: 11%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Target Goal</th>
+          <th style="width: 7%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Progress</th>
+          <th style="width: 7%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -2093,10 +2085,10 @@ async function generatePDFReport() {
       html2canvas: {
         scale: 2,
         useCORS: true,
-        logging: false,
-        windowHeight: 2500
+        logging: false
       },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: [] }
     };
 
     try {
@@ -2151,25 +2143,27 @@ async function downloadStudentDtrPdf(studentId) {
   const offscreenContainer = document.createElement('div');
   offscreenContainer.style.position = 'fixed';
   offscreenContainer.style.top = '0';
-  offscreenContainer.style.left = '-99999px';
+  offscreenContainer.style.left = '0';
   offscreenContainer.style.width = '695px';
-  offscreenContainer.style.overflow = 'visible';
+  offscreenContainer.style.opacity = '0';
+  offscreenContainer.style.pointerEvents = 'none';
   offscreenContainer.style.zIndex = '-9999';
+  offscreenContainer.style.overflow = 'visible';
 
   const dtrWrapper = document.createElement('div');
   dtrWrapper.style.boxSizing = 'border-box';
   dtrWrapper.style.width = '695px';
-  dtrWrapper.style.padding = '12px 14px';
+  dtrWrapper.style.padding = '14px 16px';
   dtrWrapper.style.backgroundColor = '#ffffff';
   dtrWrapper.style.color = '#1e293b';
   dtrWrapper.style.fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";
-  dtrWrapper.style.fontSize = '10.5px';
+  dtrWrapper.style.fontSize = '10px';
   dtrWrapper.style.lineHeight = '1.35';
 
   dtrWrapper.innerHTML = `
     <div style="display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 8px; margin-bottom: 10px;">
       <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="${logoUrl}" style="width: 46px; height: 46px; border-radius: 50%; object-fit: contain; flex-shrink: 0;" alt="SBC Logo" onerror="this.style.display='none';">
+        <img src="${logoUrl}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: contain; flex-shrink: 0;" alt="SBC Logo" onerror="this.style.display='none';">
         <div>
           <div style="font-size: 14px; font-weight: 800; color: #002d56; text-transform: uppercase; letter-spacing: 0.3px; margin: 0;">Southern Baptist College</div>
           <div style="font-size: 9.5px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs &amp; Internship Coordination</div>
@@ -2196,23 +2190,15 @@ async function downloadStudentDtrPdf(studentId) {
       </div>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 8.5px; table-layout: fixed;">
-      <colgroup>
-        <col style="width: 22%;">
-        <col style="width: 16%;">
-        <col style="width: 16%;">
-        <col style="width: 16%;">
-        <col style="width: 16%;">
-        <col style="width: 14%;">
-      </colgroup>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 8.5px;">
       <thead>
         <tr style="background-color: #002d56; color: #ffffff;">
-          <th style="padding: 6px 4px; text-align: left; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Date</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Morning In</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Morning Out</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Afternoon In</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Afternoon Out</th>
-          <th style="padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Status</th>
+          <th style="width: 22%; padding: 6px 4px; text-align: left; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Date</th>
+          <th style="width: 16%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Morning In</th>
+          <th style="width: 16%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Morning Out</th>
+          <th style="width: 16%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Afternoon In</th>
+          <th style="width: 16%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Afternoon Out</th>
+          <th style="width: 14%; padding: 6px 4px; text-align: center; font-weight: 700; font-size: 8px; text-transform: uppercase; border: 1px solid #002d56;">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -2274,10 +2260,10 @@ async function downloadStudentDtrPdf(studentId) {
         html2canvas: {
           scale: 2,
           useCORS: true,
-          logging: false,
-          windowHeight: 2500
+          logging: false
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: [] }
       };
       await html2pdf().set(opt).from(dtrWrapper).save();
     } else {
