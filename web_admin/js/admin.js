@@ -1906,6 +1906,23 @@ function renderComplianceSummary() {
   `;
 }
 
+function getLogoDataUrl() {
+  try {
+    const sidebarLogo = document.querySelector('.sidebar-logo img') || document.querySelector('.auth-hero-logo img');
+    if (sidebarLogo && sidebarLogo.complete && sidebarLogo.naturalWidth > 0) {
+      const c = document.createElement('canvas');
+      c.width = sidebarLogo.naturalWidth;
+      c.height = sidebarLogo.naturalHeight;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(sidebarLogo, 0, 0);
+      return c.toDataURL('image/png');
+    }
+  } catch (e) {
+    console.warn('Could not extract logo data URL:', e);
+  }
+  return 'assets/images/sbc_logo.png';
+}
+
 async function generatePDFReport() {
   const targetStudents = getReportStudents();
   if (targetStudents.length === 0) return alert('No student records found to generate PDF report.');
@@ -1925,25 +1942,30 @@ async function generatePDFReport() {
   const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   const dateTag = new Date().toISOString().slice(0, 10);
   const pdfFilename = `SBC_OJT_Compliance_Report_${selectedReportCourse}_${dateTag}.pdf`;
+  const logoUrl = getLogoDataUrl();
+
+  const offscreenContainer = document.createElement('div');
+  offscreenContainer.style.position = 'fixed';
+  offscreenContainer.style.top = '0';
+  offscreenContainer.style.left = '-99999px';
+  offscreenContainer.style.width = '750px';
+  offscreenContainer.style.overflow = 'visible';
+  offscreenContainer.style.zIndex = '-9999';
 
   const reportWrapper = document.createElement('div');
   reportWrapper.style.boxSizing = 'border-box';
-  reportWrapper.style.width = '700px';
+  reportWrapper.style.width = '750px';
   reportWrapper.style.padding = '16px 20px';
   reportWrapper.style.backgroundColor = '#ffffff';
   reportWrapper.style.color = '#1e293b';
   reportWrapper.style.fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";
   reportWrapper.style.fontSize = '11px';
   reportWrapper.style.lineHeight = '1.4';
-  reportWrapper.style.position = 'fixed';
-  reportWrapper.style.left = '-9999px';
-  reportWrapper.style.top = '0';
-  document.body.appendChild(reportWrapper);
 
   reportWrapper.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 10px; margin-bottom: 12px;">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="assets/images/sbc_logo.png" style="width: 50px; height: 50px; border-radius: 50%; object-fit: contain;" alt="SBC Logo" onerror="this.style.display='none';">
+        <img src="${logoUrl}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: contain;" alt="SBC Logo" onerror="this.style.display='none';">
         <div>
           <div style="font-size: 15px; font-weight: 800; color: #002d56; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Southern Baptist College</div>
           <div style="font-size: 10.5px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs &amp; Internship Coordination</div>
@@ -2042,6 +2064,19 @@ async function generatePDFReport() {
     </div>
   `;
 
+  offscreenContainer.appendChild(reportWrapper);
+  document.body.appendChild(offscreenContainer);
+
+  // Ensure all images in the document are fully loaded before converting
+  const reportImgs = Array.from(reportWrapper.querySelectorAll('img'));
+  await Promise.all(reportImgs.map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      img.onload = resolve;
+      img.onerror = resolve;
+    });
+  }));
+
   // Check if html2pdf is loaded and download automatically
   if (typeof html2pdf !== 'undefined') {
     const btn = document.querySelector('button[onclick="generatePDFReport()"]');
@@ -2055,10 +2090,7 @@ async function generatePDFReport() {
       html2canvas: {
         scale: 2,
         useCORS: true,
-        logging: false,
-        scrollY: 0,
-        scrollX: 0,
-        windowWidth: 1024
+        logging: false
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -2070,15 +2102,15 @@ async function generatePDFReport() {
       console.error('html2pdf direct export failed:', err);
       openPrintWindowFallback(reportWrapper.innerHTML, pdfFilename);
     } finally {
-      if (reportWrapper && reportWrapper.parentNode) {
-        reportWrapper.parentNode.removeChild(reportWrapper);
+      if (offscreenContainer && offscreenContainer.parentNode) {
+        offscreenContainer.parentNode.removeChild(offscreenContainer);
       }
       if (btn) btn.innerHTML = originalText;
     }
   } else {
     openPrintWindowFallback(reportWrapper.innerHTML, pdfFilename);
-    if (reportWrapper && reportWrapper.parentNode) {
-      reportWrapper.parentNode.removeChild(reportWrapper);
+    if (offscreenContainer && offscreenContainer.parentNode) {
+      offscreenContainer.parentNode.removeChild(offscreenContainer);
     }
   }
 }
@@ -2089,7 +2121,7 @@ async function downloadStudentDtrPdf(studentId) {
 
   const btn = document.getElementById('drawerDownloadDtrBtn');
   const originalText = btn ? btn.innerHTML : '';
-  if (btn) btn.innerHTML = '⏳ Downloading DTR PDF...';
+  if (btn) btn.innerHTML = 'Downloading DTR PDF...';
 
   // Retrieve attendance logs for this student
   let studentLogs = (cachedLogs || []).filter(l => String(l.student_id) === String(studentId));
@@ -2111,25 +2143,30 @@ async function downloadStudentDtrPdf(studentId) {
   const dateTag = new Date().toISOString().slice(0, 10);
   const cleanName = (s.full_name || 'Student').replace(/[^a-zA-Z0-9]/g, '_');
   const filename = `DTR_${cleanName}_${s.student_number || 'Record'}_${dateTag}.pdf`;
+  const logoUrl = getLogoDataUrl();
+
+  const offscreenContainer = document.createElement('div');
+  offscreenContainer.style.position = 'fixed';
+  offscreenContainer.style.top = '0';
+  offscreenContainer.style.left = '-99999px';
+  offscreenContainer.style.width = '750px';
+  offscreenContainer.style.overflow = 'visible';
+  offscreenContainer.style.zIndex = '-9999';
 
   const dtrWrapper = document.createElement('div');
   dtrWrapper.style.boxSizing = 'border-box';
-  dtrWrapper.style.width = '700px';
+  dtrWrapper.style.width = '750px';
   dtrWrapper.style.padding = '16px 20px';
   dtrWrapper.style.backgroundColor = '#ffffff';
   dtrWrapper.style.color = '#1e293b';
   dtrWrapper.style.fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";
   dtrWrapper.style.fontSize = '11px';
   dtrWrapper.style.lineHeight = '1.4';
-  dtrWrapper.style.position = 'fixed';
-  dtrWrapper.style.left = '-9999px';
-  dtrWrapper.style.top = '0';
-  document.body.appendChild(dtrWrapper);
 
   dtrWrapper.innerHTML = `
     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 10px; margin-bottom: 12px;">
       <div style="display: flex; align-items: center; gap: 12px;">
-        <img src="assets/images/sbc_logo.png" style="width: 50px; height: 50px; border-radius: 50%; object-fit: contain;" alt="SBC Logo" onerror="this.style.display='none';">
+        <img src="${logoUrl}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: contain;" alt="SBC Logo" onerror="this.style.display='none';">
         <div>
           <div style="font-size: 15px; font-weight: 800; color: #002d56; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Southern Baptist College</div>
           <div style="font-size: 10.5px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs &amp; Internship Coordination</div>
@@ -2212,6 +2249,18 @@ async function downloadStudentDtrPdf(studentId) {
     </div>
   `;
 
+  offscreenContainer.appendChild(dtrWrapper);
+  document.body.appendChild(offscreenContainer);
+
+  const dtrImgs = Array.from(dtrWrapper.querySelectorAll('img'));
+  await Promise.all(dtrImgs.map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      img.onload = resolve;
+      img.onerror = resolve;
+    });
+  }));
+
   try {
     if (typeof html2pdf !== 'undefined') {
       const opt = {
@@ -2221,10 +2270,7 @@ async function downloadStudentDtrPdf(studentId) {
         html2canvas: {
           scale: 2,
           useCORS: true,
-          logging: false,
-          scrollY: 0,
-          scrollX: 0,
-          windowWidth: 1024
+          logging: false
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -2237,8 +2283,8 @@ async function downloadStudentDtrPdf(studentId) {
     console.error('Error exporting student DTR PDF:', err);
     openPrintWindowFallback(dtrWrapper.innerHTML, filename);
   } finally {
-    if (dtrWrapper && dtrWrapper.parentNode) {
-      dtrWrapper.parentNode.removeChild(dtrWrapper);
+    if (offscreenContainer && offscreenContainer.parentNode) {
+      offscreenContainer.parentNode.removeChild(offscreenContainer);
     }
     if (btn) btn.innerHTML = originalText;
   }
