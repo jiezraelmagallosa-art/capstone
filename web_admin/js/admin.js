@@ -1963,76 +1963,95 @@ async function generatePDFReport() {
   const pdfFilename = `SBC_OJT_Compliance_Report_${selectedReportCourse}_${dateTag}.pdf`;
 
   const reportWrapper = document.createElement('div');
-  reportWrapper.style.padding = '25px 30px';
+  reportWrapper.style.boxSizing = 'border-box';
+  reportWrapper.style.width = '700px';
+  reportWrapper.style.padding = '16px 20px';
   reportWrapper.style.backgroundColor = '#ffffff';
   reportWrapper.style.color = '#1e293b';
   reportWrapper.style.fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";
-  reportWrapper.style.fontSize = '12px';
-  reportWrapper.style.width = '780px';
-  reportWrapper.style.margin = '0 auto';
+  reportWrapper.style.fontSize = '11px';
+  reportWrapper.style.lineHeight = '1.4';
+  reportWrapper.style.position = 'fixed';
+  reportWrapper.style.left = '-9999px';
+  reportWrapper.style.top = '0';
+  document.body.appendChild(reportWrapper);
 
   reportWrapper.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 12px; margin-bottom: 16px;">
-      <div style="display: flex; align-items: center; gap: 14px;">
-        <img src="assets/images/sbc_logo.png" style="width: 55px; height: 55px; border-radius: 50%;" alt="SBC Logo" onerror="this.style.display='none';">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 10px; margin-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="assets/images/sbc_logo.png" style="width: 50px; height: 50px; border-radius: 50%; object-fit: contain;" alt="SBC Logo" onerror="this.style.display='none';">
         <div>
-          <div style="font-size: 16px; font-weight: 800; color: #002d56; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Southern Baptist College</div>
-          <div style="font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs & Internship Coordination</div>
-          <div style="font-size: 12px; font-weight: 700; color: #d97706; text-transform: uppercase; margin-top: 3px;">Institutional OJT Compliance & Attendance Report</div>
+          <div style="font-size: 15px; font-weight: 800; color: #002d56; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Southern Baptist College</div>
+          <div style="font-size: 10.5px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs &amp; Internship Coordination</div>
+          <div style="font-size: 11.5px; font-weight: 700; color: #d97706; text-transform: uppercase; margin-top: 2px;">Institutional OJT Compliance &amp; Attendance Report</div>
         </div>
       </div>
-      <div style="text-align: right; font-size: 10px; color: #64748b;">
-        <strong>Date Generated:</strong><br>${dateStr}
+      <div style="text-align: right; font-size: 9.5px; color: #64748b; white-space: nowrap;">
+        <strong style="color: #1e293b;">Date Generated:</strong><br>${dateStr}
       </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px;">
-      <div style="font-size: 11px;"><strong>Target Program Scope:</strong> ${escapeHtml(programTitle)}</div>
-      <div style="font-size: 11px;"><strong>Issued By:</strong> ${escapeHtml(deanName)} (${escapeHtml(deanEmail)})</div>
-      <div style="font-size: 11px;"><strong>Required Target Goal:</strong> Per-course defined hours</div>
-      <div style="font-size: 11px;"><strong>Report Type:</strong> Official Institutional Verification Summary</div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
-      <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
-        <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Interns</div>
-        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 3px;">${total}</div>
+    <div style="display: flex; gap: 8px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+      <div style="flex: 1; font-size: 10px;">
+        <div><strong style="color: #002d56;">Target Program Scope:</strong> ${escapeHtml(programTitle)}</div>
+        <div style="margin-top: 3px;"><strong style="color: #002d56;">Required Target Goal:</strong> Per-course defined hours</div>
       </div>
-      <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
-        <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Completed (Goal Hrs)</div>
-        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 3px;">${completed}</div>
-      </div>
-      <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
-        <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">In-Progress</div>
-        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 3px;">${inProgress}</div>
+      <div style="flex: 1; font-size: 10px;">
+        <div><strong style="color: #002d56;">Issued By:</strong> ${escapeHtml(deanName)} (${escapeHtml(deanEmail)})</div>
+        <div style="margin-top: 3px;"><strong style="color: #002d56;">Report Type:</strong> Official Institutional Verification Summary</div>
       </div>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 10.5px;">
+    <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+      <div style="flex: 1; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
+        <div style="font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Interns</div>
+        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 2px;">${total}</div>
+      </div>
+      <div style="flex: 1; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
+        <div style="font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase;">Completed (Goal Hrs)</div>
+        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 2px;">${completed}</div>
+      </div>
+      <div style="flex: 1; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px; text-align: center;">
+        <div style="font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase;">In-Progress</div>
+        <div style="font-size: 16px; font-weight: 800; color: #002d56; margin-top: 2px;">${inProgress}</div>
+      </div>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9.5px; table-layout: fixed;">
+      <colgroup>
+        <col style="width: 20%;">
+        <col style="width: 12%;">
+        <col style="width: 8%;">
+        <col style="width: 22%;">
+        <col style="width: 13%;">
+        <col style="width: 9%;">
+        <col style="width: 7%;">
+        <col style="width: 9%;">
+      </colgroup>
       <thead>
         <tr style="background-color: #002d56; color: #ffffff;">
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Student Name</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Student #</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Course</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Partner Facility Placement</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Hours Rendered</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Target Goal</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Progress %</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Status</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Student Name</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Student #</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Course</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Facility Placement</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Hours Rendered</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Target Goal</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Progress</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Status</th>
         </tr>
       </thead>
       <tbody>
         ${targetStudents.map((s, idx) => `
-          <tr style="background-color: ${idx % 2 === 1 ? '#f8fafc' : '#ffffff'};">
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700; color: #1e293b;">${escapeHtml(s.full_name)}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${s.student_number}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700; color: #002d56;">${s.course_code}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${escapeHtml(s.site_name)}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700; color: #002d56;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${s.required_hours}h</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700;">${s.progress_percentage}%</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px;">
-              <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; background-color: ${s.status === 'Completed' ? '#dcfce7' : '#fef3c7'}; color: ${s.status === 'Completed' ? '#15803d' : '#b45309'}; border: 1px solid ${s.status === 'Completed' ? '#86efac' : '#fde047'};">
+          <tr style="background-color: ${idx % 2 === 1 ? '#f8fafc' : '#ffffff'}; page-break-inside: avoid; break-inside: avoid;">
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; font-weight: 700; color: #1e293b; word-break: break-word;">${escapeHtml(s.full_name)}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; color: #475569; word-break: break-word;">${s.student_number}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; font-weight: 700; color: #002d56;">${s.course_code}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; color: #475569; word-break: break-word;">${escapeHtml(s.site_name)}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; font-weight: 700; color: #002d56;">${s.rendered_hours}h ${s.rendered_minutes}m</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; color: #475569;">${s.required_hours}h</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; font-weight: 700;">${s.progress_percentage}%</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px;">
+              <span style="display: inline-block; padding: 2px 4px; border-radius: 3px; font-size: 8.5px; font-weight: 700; background-color: ${s.status === 'Completed' ? '#dcfce7' : '#fef3c7'}; color: ${s.status === 'Completed' ? '#15803d' : '#b45309'}; border: 1px solid ${s.status === 'Completed' ? '#86efac' : '#fde047'};">
                 ${s.status}
               </span>
             </td>
@@ -2041,20 +2060,20 @@ async function generatePDFReport() {
       </tbody>
     </table>
 
-    <div style="margin-top: 30px; display: flex; justify-content: space-between;">
-      <div style="width: 42%; text-align: center;">
-        <div style="border-bottom: 1.5px solid #002d56; height: 35px; margin-bottom: 5px;"></div>
-        <p style="font-weight: 700; font-size: 11px; color: #002d56; margin: 0;">${escapeHtml(deanName)}</p>
-        <p style="font-size: 9.5px; color: #64748b; margin: 2px 0 0 0;">Dean of Student Affairs / Department Head</p>
+    <div style="margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; break-inside: avoid;">
+      <div style="width: 44%; text-align: center;">
+        <div style="border-bottom: 1.5px solid #002d56; height: 30px; margin-bottom: 5px;"></div>
+        <p style="font-weight: 700; font-size: 10.5px; color: #002d56; margin: 0;">${escapeHtml(deanName)}</p>
+        <p style="font-size: 9px; color: #64748b; margin: 2px 0 0 0;">Dean of Student Affairs / Department Head</p>
       </div>
-      <div style="width: 42%; text-align: center;">
-        <div style="border-bottom: 1.5px solid #002d56; height: 35px; margin-bottom: 5px;"></div>
-        <p style="font-weight: 700; font-size: 11px; color: #002d56; margin: 0;">Institutional OJT Placement Coordinator</p>
-        <p style="font-size: 9.5px; color: #64748b; margin: 2px 0 0 0;">Office of Industrial Placement & Verification</p>
+      <div style="width: 44%; text-align: center;">
+        <div style="border-bottom: 1.5px solid #002d56; height: 30px; margin-bottom: 5px;"></div>
+        <p style="font-weight: 700; font-size: 10.5px; color: #002d56; margin: 0;">Institutional OJT Placement Coordinator</p>
+        <p style="font-size: 9px; color: #64748b; margin: 2px 0 0 0;">Office of Industrial Placement &amp; Verification</p>
       </div>
     </div>
 
-    <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 8px; text-align: center; font-size: 8.5px; color: #94a3b8;">
+    <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 6px; text-align: center; font-size: 8px; color: #94a3b8;">
       &copy; ${new Date().getFullYear()} Southern Baptist College &bull; Official Computer Generated OJT Compliance Document
     </div>
   `;
@@ -2063,14 +2082,22 @@ async function generatePDFReport() {
   if (typeof html2pdf !== 'undefined') {
     const btn = document.querySelector('button[onclick="generatePDFReport()"]');
     const originalText = btn ? btn.innerHTML : '';
-    if (btn) btn.innerHTML = '<span>⏳</span> Downloading PDF...';
+    if (btn) btn.innerHTML = 'Downloading PDF...';
 
     const opt = {
-      margin: [8, 8, 8, 8],
+      margin: [10, 8, 10, 8],
       filename: pdfFilename,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, logging: false },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        scrollY: 0,
+        scrollX: 0,
+        windowWidth: 1024
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     try {
@@ -2079,10 +2106,16 @@ async function generatePDFReport() {
       console.error('html2pdf direct export failed:', err);
       openPrintWindowFallback(reportWrapper.innerHTML, pdfFilename);
     } finally {
+      if (reportWrapper && reportWrapper.parentNode) {
+        reportWrapper.parentNode.removeChild(reportWrapper);
+      }
       if (btn) btn.innerHTML = originalText;
     }
   } else {
     openPrintWindowFallback(reportWrapper.innerHTML, pdfFilename);
+    if (reportWrapper && reportWrapper.parentNode) {
+      reportWrapper.parentNode.removeChild(reportWrapper);
+    }
   }
 }
 
@@ -2116,62 +2149,79 @@ async function downloadStudentDtrPdf(studentId) {
   const filename = `DTR_${cleanName}_${s.student_number || 'Record'}_${dateTag}.pdf`;
 
   const dtrWrapper = document.createElement('div');
-  dtrWrapper.style.padding = '25px 30px';
+  dtrWrapper.style.boxSizing = 'border-box';
+  dtrWrapper.style.width = '700px';
+  dtrWrapper.style.padding = '16px 20px';
   dtrWrapper.style.backgroundColor = '#ffffff';
   dtrWrapper.style.color = '#1e293b';
   dtrWrapper.style.fontFamily = "'Helvetica Neue', Helvetica, Arial, sans-serif";
-  dtrWrapper.style.fontSize = '12px';
-  dtrWrapper.style.width = '780px';
-  dtrWrapper.style.margin = '0 auto';
+  dtrWrapper.style.fontSize = '11px';
+  dtrWrapper.style.lineHeight = '1.4';
+  dtrWrapper.style.position = 'fixed';
+  dtrWrapper.style.left = '-9999px';
+  dtrWrapper.style.top = '0';
+  document.body.appendChild(dtrWrapper);
 
   dtrWrapper.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 12px; margin-bottom: 16px;">
-      <div style="display: flex; align-items: center; gap: 14px;">
-        <img src="assets/images/sbc_logo.png" style="width: 55px; height: 55px; border-radius: 50%;" alt="SBC Logo" onerror="this.style.display='none';">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #002d56; padding-bottom: 10px; margin-bottom: 12px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="assets/images/sbc_logo.png" style="width: 50px; height: 50px; border-radius: 50%; object-fit: contain;" alt="SBC Logo" onerror="this.style.display='none';">
         <div>
-          <div style="font-size: 16px; font-weight: 800; color: #002d56; text-transform: uppercase;">Southern Baptist College</div>
-          <div style="font-size: 11px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs & Internship Coordination</div>
-          <div style="font-size: 12px; font-weight: 700; color: #047857; text-transform: uppercase; margin-top: 3px;">Official Daily Time Record (DTR)</div>
+          <div style="font-size: 15px; font-weight: 800; color: #002d56; text-transform: uppercase; letter-spacing: 0.5px; margin: 0;">Southern Baptist College</div>
+          <div style="font-size: 10.5px; font-weight: 600; color: #475569; margin-top: 2px;">Office of Student Affairs &amp; Internship Coordination</div>
+          <div style="font-size: 11.5px; font-weight: 700; color: #047857; text-transform: uppercase; margin-top: 2px;">Official Daily Time Record (DTR)</div>
         </div>
       </div>
-      <div style="text-align: right; font-size: 10px; color: #64748b;">
-        <strong>Date Issued:</strong><br>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+      <div style="text-align: right; font-size: 9.5px; color: #64748b; white-space: nowrap;">
+        <strong style="color: #1e293b;">Date Issued:</strong><br>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
       </div>
     </div>
 
     <!-- Student Credentials Box -->
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 10px 14px; border-radius: 6px; margin-bottom: 16px;">
-      <div style="font-size: 11px;"><strong>Intern Name:</strong> ${escapeHtml(s.full_name)}</div>
-      <div style="font-size: 11px;"><strong>Student Number:</strong> ${escapeHtml(s.student_number)}</div>
-      <div style="font-size: 11px;"><strong>Academic Program:</strong> ${escapeHtml(s.course_code)} — ${escapeHtml(s.course_name)}</div>
-      <div style="font-size: 11px;"><strong>Active Facility:</strong> ${escapeHtml(s.site_name)} (${escapeHtml(s.site_location || '')})</div>
-      <div style="font-size: 11px;"><strong>Total Rendered:</strong> ${s.formatted_time}</div>
-      <div style="font-size: 11px;"><strong>Required Goal:</strong> ${s.required_hours} hours (${s.progress_percentage}%)</div>
+    <div style="display: flex; gap: 8px; background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px;">
+      <div style="flex: 1; font-size: 10px;">
+        <div><strong style="color: #002d56;">Intern Name:</strong> ${escapeHtml(s.full_name)}</div>
+        <div style="margin-top: 3px;"><strong style="color: #002d56;">Student Number:</strong> ${escapeHtml(s.student_number)}</div>
+        <div style="margin-top: 3px;"><strong style="color: #002d56;">Academic Program:</strong> ${escapeHtml(s.course_code)} — ${escapeHtml(s.course_name)}</div>
+      </div>
+      <div style="flex: 1; font-size: 10px;">
+        <div><strong style="color: #002d56;">Active Facility:</strong> ${escapeHtml(s.site_name)} (${escapeHtml(s.site_location || '')})</div>
+        <div style="margin-top: 3px;"><strong style="color: #002d56;">Total Rendered:</strong> ${s.formatted_time}</div>
+        <div style="margin-top: 3px;"><strong style="color: #002d56;">Required Goal:</strong> ${s.required_hours} hours (${s.progress_percentage}%)</div>
+      </div>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 10.5px;">
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9.5px; table-layout: fixed;">
+      <colgroup>
+        <col style="width: 22%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 16%;">
+        <col style="width: 14%;">
+      </colgroup>
       <thead>
         <tr style="background-color: #002d56; color: #ffffff;">
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Date</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Morning In</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Morning Out</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Afternoon In</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Afternoon Out</th>
-          <th style="padding: 7px 8px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 9.5px;">Status</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Date</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Morning In</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Morning Out</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Afternoon In</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Afternoon Out</th>
+          <th style="padding: 6px 5px; text-align: left; font-weight: 700; text-transform: uppercase; font-size: 8.5px;">Status</th>
         </tr>
       </thead>
       <tbody>
         ${studentLogs.length === 0 ? `
           <tr><td colspan="6" style="padding: 15px; text-align: center; color: #64748b;">No attendance logs recorded yet.</td></tr>
         ` : studentLogs.map((l, idx) => `
-          <tr style="background-color: ${idx % 2 === 1 ? '#f8fafc' : '#ffffff'};">
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; font-weight: 700; color: #1e293b;">${l.date}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${l.time_in_morning || '—'}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${l.time_out_morning || '—'}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${l.time_in_afternoon || '—'}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px; color: #475569;">${l.time_out_afternoon || '—'}</td>
-            <td style="border-bottom: 1px solid #e2e8f0; padding: 6px 8px;">
-              <span style="display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; background-color: #dcfce7; color: #15803d; border: 1px solid #86efac;">
+          <tr style="background-color: ${idx % 2 === 1 ? '#f8fafc' : '#ffffff'}; page-break-inside: avoid; break-inside: avoid;">
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; font-weight: 700; color: #1e293b;">${l.date}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; color: #475569;">${l.time_in_morning || '—'}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; color: #475569;">${l.time_out_morning || '—'}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; color: #475569;">${l.time_in_afternoon || '—'}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px; color: #475569;">${l.time_out_afternoon || '—'}</td>
+            <td style="border-bottom: 1px solid #e2e8f0; padding: 5px;">
+              <span style="display: inline-block; padding: 2px 4px; border-radius: 3px; font-size: 8.5px; font-weight: 700; background-color: #dcfce7; color: #15803d; border: 1px solid #86efac;">
                 ${l.attendance_status || 'Verified'}
               </span>
             </td>
@@ -2180,20 +2230,20 @@ async function downloadStudentDtrPdf(studentId) {
       </tbody>
     </table>
 
-    <div style="margin-top: 30px; display: flex; justify-content: space-between;">
-      <div style="width: 42%; text-align: center;">
-        <div style="border-bottom: 1.5px solid #002d56; height: 35px; margin-bottom: 5px;"></div>
-        <p style="font-weight: 700; font-size: 11px; color: #002d56; margin: 0;">${escapeHtml(s.full_name)}</p>
-        <p style="font-size: 9.5px; color: #64748b; margin: 2px 0 0 0;">Student Intern Signature</p>
+    <div style="margin-top: 25px; display: flex; justify-content: space-between; page-break-inside: avoid; break-inside: avoid;">
+      <div style="width: 44%; text-align: center;">
+        <div style="border-bottom: 1.5px solid #002d56; height: 30px; margin-bottom: 5px;"></div>
+        <p style="font-weight: 700; font-size: 10.5px; color: #002d56; margin: 0;">${escapeHtml(s.full_name)}</p>
+        <p style="font-size: 9px; color: #64748b; margin: 2px 0 0 0;">Student Intern Signature</p>
       </div>
-      <div style="width: 42%; text-align: center;">
-        <div style="border-bottom: 1.5px solid #002d56; height: 35px; margin-bottom: 5px;"></div>
-        <p style="font-weight: 700; font-size: 11px; color: #002d56; margin: 0;">${escapeHtml(deanName)}</p>
-        <p style="font-size: 9.5px; color: #64748b; margin: 2px 0 0 0;">Dean / OJT Coordinator</p>
+      <div style="width: 44%; text-align: center;">
+        <div style="border-bottom: 1.5px solid #002d56; height: 30px; margin-bottom: 5px;"></div>
+        <p style="font-weight: 700; font-size: 10.5px; color: #002d56; margin: 0;">${escapeHtml(deanName)}</p>
+        <p style="font-size: 9px; color: #64748b; margin: 2px 0 0 0;">Dean / OJT Coordinator</p>
       </div>
     </div>
 
-    <div style="margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 8px; text-align: center; font-size: 8.5px; color: #94a3b8;">
+    <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 6px; text-align: center; font-size: 8px; color: #94a3b8;">
       &copy; ${new Date().getFullYear()} Southern Baptist College &bull; Official Computer Generated Daily Time Record
     </div>
   `;
@@ -2201,11 +2251,19 @@ async function downloadStudentDtrPdf(studentId) {
   try {
     if (typeof html2pdf !== 'undefined') {
       const opt = {
-        margin: [8, 8, 8, 8],
+        margin: [10, 8, 10, 8],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          scrollY: 0,
+          scrollX: 0,
+          windowWidth: 1024
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
       await html2pdf().set(opt).from(dtrWrapper).save();
     } else {
@@ -2215,6 +2273,9 @@ async function downloadStudentDtrPdf(studentId) {
     console.error('Error exporting student DTR PDF:', err);
     openPrintWindowFallback(dtrWrapper.innerHTML, filename);
   } finally {
+    if (dtrWrapper && dtrWrapper.parentNode) {
+      dtrWrapper.parentNode.removeChild(dtrWrapper);
+    }
     if (btn) btn.innerHTML = originalText;
   }
 }
