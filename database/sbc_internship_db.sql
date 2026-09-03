@@ -155,6 +155,10 @@ VALUES ('SBC-IT', 'SBC IT Department', 'M\'lang, Cotabato');
 INSERT IGNORE INTO users (user_id, full_name, email, password, role)
 VALUES (1, 'Dean Admin', 'dean@sbc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.X2g14m.6C', 'Dean');
 
+-- Seed Demo Student Intern Account
+INSERT IGNORE INTO student (student_id, student_number, full_name, id_no, email, password, course_id, dean_id)
+VALUES (1, '2026-0001', 'Juan Dela Cruz', 'ID-101', 'student@sbc.edu.ph', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.X2g14m.6C', 1, 1);
+
 -- Seed Initial OJT Enrollment Record
 INSERT IGNORE INTO ojt (ojt_id, ojt_no, site_id, student_id, required_hours)
 VALUES (1, 'OJT-2026-01', 1, 1, 480);

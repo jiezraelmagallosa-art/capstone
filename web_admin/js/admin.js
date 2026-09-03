@@ -817,17 +817,21 @@ function renderLogsTable(logs) {
       </button>` : `<span style="color: var(--text-light); font-size: 0.8rem;">No Photo</span>`;
     const courseBadge = getCourseBadgeClass(l.course_code);
 
-    // Morning shift badge & remarks
+    // Morning shift badge & remarks (delete if confirmed, display only if rejected)
     let mBadge = 'badge-warning';
     if (l.morning_status === 'Confirmed') mBadge = 'badge-success';
     if (l.morning_status === 'Rejected')  mBadge = 'badge-danger';
-    const mRemarksHtml = l.morning_remarks ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">💬 ${escapeHtml(l.morning_remarks)}</div>` : '';
+    const mRemarksHtml = (l.morning_status === 'Rejected' && l.morning_remarks)
+      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(l.morning_remarks)}</div>`
+      : '';
 
-    // Afternoon shift badge & remarks
+    // Afternoon shift badge & remarks (delete if confirmed, display only if rejected)
     let aBadge = 'badge-warning';
     if (l.afternoon_status === 'Confirmed') aBadge = 'badge-success';
     if (l.afternoon_status === 'Rejected')  aBadge = 'badge-danger';
-    const aRemarksHtml = l.afternoon_remarks ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">💬 ${escapeHtml(l.afternoon_remarks)}</div>` : '';
+    const aRemarksHtml = (l.afternoon_status === 'Rejected' && l.afternoon_remarks)
+      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(l.afternoon_remarks)}</div>`
+      : '';
 
     // Overall status badge
     let overallBadge = 'badge-warning';
@@ -1467,7 +1471,7 @@ function openJournalModal(journalId) {
     <!-- Section 4: Dean Evaluation & Feedback Input -->
     <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-sm); padding: 1rem;">
       <div style="font-size: 0.84rem; font-weight: 800; color: #1e3a8a; margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.35rem;">
-        <span>🎓</span> Dean Evaluation &amp; Feedback Remarks
+        Dean Evaluation &amp; Feedback Remarks
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.75rem; margin-bottom: 0.65rem;">
