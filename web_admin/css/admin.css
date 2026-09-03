@@ -12,7 +12,7 @@
   --navy-light: #00407a;
   --amber-gold: #f59e0b;
   --amber-dark: #d97706;
-  --bg-canvas: #f7f9fb;
+  --bg-canvas: #ffffff;
   --card-bg: #ffffff;
   --border-light: #d8dadc;
   --border-hover: #b0b5ba;
@@ -38,8 +38,8 @@
   --radius-lg: 8px;
 
   --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --sidebar-width: 230px;
-  --topbar-height: 50px;
+  --sidebar-width: 200px;
+  --topbar-height: 48px;
 }
 
 * {
@@ -602,8 +602,9 @@ body {
 
 
 .content-area {
-  padding: 1.1rem 1.5rem;
+  padding: 0.85rem 1.1rem;
   flex: 1;
+  background-color: #ffffff;
 }
 
 .page-header {
@@ -630,9 +631,9 @@ body {
   background-color: var(--card-bg);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-sm);
-  padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-  margin-bottom: 1rem;
+  padding: 0.85rem;
+  box-shadow: none;
+  margin-bottom: 0.75rem;
 }
 
 .card-header {
@@ -813,6 +814,7 @@ body {
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  background-color: #ffffff;
 }
 
 /* Responsive Administrative Data Tables */
