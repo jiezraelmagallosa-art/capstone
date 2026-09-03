@@ -94,6 +94,16 @@ try {
                 $status = "Pending";
             }
 
+            $m_in = !empty($row['time_in_morning']) ? date("h:i A", strtotime($row['time_in_morning'])) : '--:--';
+            $m_out = (!empty($row['time_out_morning']) && (empty($row['time_in_morning']) || strtotime($row['time_out_morning']) > strtotime($row['time_in_morning'])))
+                ? date("h:i A", strtotime($row['time_out_morning']))
+                : '--:--';
+
+            $a_in = !empty($row['time_in_afternoon']) ? date("h:i A", strtotime($row['time_in_afternoon'])) : '--:--';
+            $a_out = (!empty($row['time_out_afternoon']) && (empty($row['time_in_afternoon']) || strtotime($row['time_out_afternoon']) > strtotime($row['time_in_afternoon'])))
+                ? date("h:i A", strtotime($row['time_out_afternoon']))
+                : '--:--';
+
             $logs[] = [
                 "attendance_id" => $att_id,
                 "date" => date("M d, Y", strtotime($row['date'])),
@@ -103,10 +113,10 @@ try {
                 "dean_name" => $row['dean_name'] ?? 'Unassigned Dean',
                 "course_code" => $row['course_code'] ?? 'BSIS',
                 "site_name" => $row['site_name'] ?? 'SBC IT Department',
-                "time_in_morning" => !empty($row['time_in_morning']) ? date("h:i A", strtotime($row['time_in_morning'])) : '--:--',
-                "time_out_morning" => !empty($row['time_out_morning']) ? date("h:i A", strtotime($row['time_out_morning'])) : '--:--',
-                "time_in_afternoon" => !empty($row['time_in_afternoon']) ? date("h:i A", strtotime($row['time_in_afternoon'])) : '--:--',
-                "time_out_afternoon" => !empty($row['time_out_afternoon']) ? date("h:i A", strtotime($row['time_out_afternoon'])) : '--:--',
+                "time_in_morning" => $m_in,
+                "time_out_morning" => $m_out,
+                "time_in_afternoon" => $a_in,
+                "time_out_afternoon" => $a_out,
                 "status" => $status,
                 "remarks" => $row['attendance_remarks'] ?? '',
                 "morning_status" => $row['morning_status'] ?? 'Pending',

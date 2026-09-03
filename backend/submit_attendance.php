@@ -113,6 +113,87 @@ try {
     }
 
 
+    // Fetch existing attendance record for today to enforce 1 time in/out per shift rule
+    $check_stmt = $conn->prepare("SELECT attendance_id, time_in_morning, time_out_morning, time_in_afternoon, time_out_afternoon FROM attendance WHERE ojt_id = ? AND date = ?");
+    $check_stmt->bind_param("is", $resolved_ojt_id, $current_date);
+    $check_stmt->execute();
+    $check_result = $check_stmt->get_result();
+
+    $attendance_id = 0;
+    $existing = null;
+    if ($check_result && $check_result->num_rows > 0) {
+        $existing = $check_result->fetch_assoc();
+        $attendance_id = intval($existing['attendance_id']);
+    }
+    $check_stmt->close();
+
+    $hasTime = function($val) {
+        return !empty($val) && $val !== '--:--' && $val !== '00:00:00';
+    };
+
+    // STRICT VALIDATION: Exactly 1 Time-In and 1 Time-Out only per shift
+    if ($column_to_update === 'time_in_morning') {
+        if ($existing && $hasTime($existing['time_in_morning'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Already recorded Morning Time-In today (" . date("h:i A", strtotime($existing['time_in_morning'])) . ")! Only 1 Time-In is allowed per shift."
+            ]);
+            exit();
+        }
+    } elseif ($column_to_update === 'time_out_morning') {
+        if (!$existing || !$hasTime($existing['time_in_morning'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Cannot record Morning Time-Out. No Morning Time-In record found for today."
+            ]);
+            exit();
+        }
+        if ($hasTime($existing['time_out_morning'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Already recorded Morning Time-Out today (" . date("h:i A", strtotime($existing['time_out_morning'])) . ")! Only 1 Time-Out is allowed per shift."
+            ]);
+            exit();
+        }
+        if (strtotime($current_time) <= strtotime($existing['time_in_morning'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Morning Time-Out must be after Morning Time-In (" . date("h:i A", strtotime($existing['time_in_morning'])) . ")."
+            ]);
+            exit();
+        }
+    } elseif ($column_to_update === 'time_in_afternoon') {
+        if ($existing && $hasTime($existing['time_in_afternoon'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Already recorded Afternoon Time-In today (" . date("h:i A", strtotime($existing['time_in_afternoon'])) . ")! Only 1 Time-In is allowed per shift."
+            ]);
+            exit();
+        }
+    } elseif ($column_to_update === 'time_out_afternoon') {
+        if (!$existing || !$hasTime($existing['time_in_afternoon'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Cannot record Afternoon Time-Out. No Afternoon Time-In record found for today."
+            ]);
+            exit();
+        }
+        if ($hasTime($existing['time_out_afternoon'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Already recorded Afternoon Time-Out today (" . date("h:i A", strtotime($existing['time_out_afternoon'])) . ")! Only 1 Time-Out is allowed per shift."
+            ]);
+            exit();
+        }
+        if (strtotime($current_time) <= strtotime($existing['time_in_afternoon'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Afternoon Time-Out must be after Afternoon Time-In (" . date("h:i A", strtotime($existing['time_in_afternoon'])) . ")."
+            ]);
+            exit();
+        }
+    }
+
     $db_image_path = "";
     if (!empty($image_base64) && strlen($image_base64) > 50) {
         try {
@@ -142,7 +223,6 @@ try {
         }
     }
 
-
     $photo_shift_map = [
         'time_in_morning' => 'Morning_In',
         'Morning_In' => 'Morning_In',
@@ -155,17 +235,7 @@ try {
     ];
     $enum_shift = isset($photo_shift_map[$raw_shift]) ? $photo_shift_map[$raw_shift] : 'Morning_In';
 
-
-    $check_stmt = $conn->prepare("SELECT attendance_id FROM attendance WHERE ojt_id = ? AND date = ?");
-    $check_stmt->bind_param("is", $resolved_ojt_id, $current_date);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
-
-    $attendance_id = 0;
-    if ($check_result && $check_result->num_rows > 0) {
-        $row = $check_result->fetch_assoc();
-        $attendance_id = intval($row['attendance_id']);
-
+    if ($existing) {
         $update_stmt = $conn->prepare("UPDATE attendance SET $column_to_update = ?, site_id = COALESCE(site_id, ?), status = 'Pending', remarks = NULL WHERE attendance_id = ?");
         $update_stmt->bind_param("sii", $current_time, $active_site_id, $attendance_id);
         $update_stmt->execute();
@@ -177,7 +247,6 @@ try {
         $attendance_id = $conn->insert_id;
         $insert_stmt->close();
     }
-    $check_stmt->close();
 
 
     if (!empty($db_image_path) && $attendance_id > 0) {

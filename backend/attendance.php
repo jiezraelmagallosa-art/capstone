@@ -90,7 +90,11 @@ try {
             exit();
         }
         if (!empty($existingRecord['time_out_morning'])) {
-            echo json_encode(["status" => "error", "message" => "Already recorded Morning Time-Out today!"]);
+            echo json_encode(["status" => "error", "message" => "Already recorded Morning Time-Out today! Only 1 Time-Out allowed per shift."]);
+            exit();
+        }
+        if (strtotime($current_time) <= strtotime($existingRecord['time_in_morning'])) {
+            echo json_encode(["status" => "error", "message" => "Morning Time-Out must be after Morning Time-In."]);
             exit();
         }
 
@@ -106,7 +110,7 @@ try {
 
     } elseif ($action === 'time_in_afternoon') {
         if ($existingRecord && !empty($existingRecord['time_in_afternoon'])) {
-            echo json_encode(["status" => "error", "message" => "Already recorded Time-In for Afternoon today!"]);
+            echo json_encode(["status" => "error", "message" => "Already recorded Time-In for Afternoon today! Only 1 Time-In allowed per shift."]);
             exit();
         }
 
@@ -131,7 +135,11 @@ try {
             exit();
         }
         if (!empty($existingRecord['time_out_afternoon'])) {
-            echo json_encode(["status" => "error", "message" => "Already recorded Afternoon Time-Out today!"]);
+            echo json_encode(["status" => "error", "message" => "Already recorded Afternoon Time-Out today! Only 1 Time-Out allowed per shift."]);
+            exit();
+        }
+        if (strtotime($current_time) <= strtotime($existingRecord['time_in_afternoon'])) {
+            echo json_encode(["status" => "error", "message" => "Afternoon Time-Out must be after Afternoon Time-In."]);
             exit();
         }
 
