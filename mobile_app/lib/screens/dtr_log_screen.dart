@@ -153,67 +153,156 @@ class DtrLogScreenState extends State<DtrLogScreen> {
                           ),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green.shade50,
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.green.shade300),
-                        ),
-                        child: Text(
-                          log['status'] ?? 'Present',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green.shade800,
-                          ),
-                        ),
-                      ),
+                      _buildOverallStatusBadge(log['status']),
                     ],
                   ),
-                  const Divider(height: 20, thickness: 1),
+                  const Divider(height: 18, thickness: 1),
 
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Morning Shift Section
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Morning Shift:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Morning Shift:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          _buildShiftBadge(log['morning_status']),
+                        ],
                       ),
+                      const SizedBox(height: 3),
                       Text(
                         'In: ${log['time_in_morning'] ?? '--:--'}  |  Out: ${log['time_out_morning'] ?? '--:--'}',
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 12.5,
                           color: Colors.black87,
                         ),
                       ),
+                      if (log['morning_remarks'] != null && log['morning_remarks'].toString().trim().isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: (log['morning_status'] == 'Rejected') ? Colors.red.shade50 : Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: (log['morning_status'] == 'Rejected') ? Colors.red.shade200 : Colors.blue.shade200),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                (log['morning_status'] == 'Rejected') ? Icons.error_outline : Icons.info_outline,
+                                size: 14,
+                                color: (log['morning_status'] == 'Rejected') ? Colors.red.shade700 : Colors.blue.shade700,
+                              ),
+                              const SizedBox(width: 5),
+                              Expanded(
+                                child: Text(
+                                  "Dean Remark: ${log['morning_remarks']}",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontStyle: FontStyle.italic,
+                                    color: (log['morning_status'] == 'Rejected') ? Colors.red.shade800 : Colors.blue.shade900,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
+                  // Afternoon Shift Section
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Afternoon Shift:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          _buildShiftBadge(log['afternoon_status']),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'In: ${log['time_in_afternoon'] ?? '--:--'}  |  Out: ${log['time_out_afternoon'] ?? '--:--'}',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      if (log['afternoon_remarks'] != null && log['afternoon_remarks'].toString().trim().isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: (log['afternoon_status'] == 'Rejected') ? Colors.red.shade50 : Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: (log['afternoon_status'] == 'Rejected') ? Colors.red.shade200 : Colors.blue.shade200),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                (log['afternoon_status'] == 'Rejected') ? Icons.error_outline : Icons.info_outline,
+                                size: 14,
+                                color: (log['afternoon_status'] == 'Rejected') ? Colors.red.shade700 : Colors.blue.shade700,
+                              ),
+                              const SizedBox(width: 5),
+                              Expanded(
+                                child: Text(
+                                  "Dean Remark: ${log['afternoon_remarks']}",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontStyle: FontStyle.italic,
+                                    color: (log['afternoon_status'] == 'Rejected') ? Colors.red.shade800 : Colors.blue.shade900,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const Divider(height: 12, thickness: 0.5),
 
+                  // Credited Hours Footer
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        'Afternoon Shift:',
+                        'Credited Time:',
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54,
                         ),
                       ),
                       Text(
-                        'In: ${log['time_in_afternoon'] ?? '--:--'}  |  Out: ${log['time_out_afternoon'] ?? '--:--'}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Colors.black87,
+                        log['formatted_credited_time'] ?? '0 hrs 0 mins',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: (log['status'] == 'Rejected')
+                              ? Colors.red.shade700
+                              : primaryNavy,
                         ),
                       ),
                     ],
@@ -223,6 +312,83 @@ class DtrLogScreenState extends State<DtrLogScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildOverallStatusBadge(String? status) {
+    Color bg = Colors.green.shade50;
+    Color border = Colors.green.shade300;
+    Color text = Colors.green.shade800;
+    String label = status ?? 'Present';
+
+    if (status == 'Rejected') {
+      bg = Colors.red.shade50;
+      border = Colors.red.shade300;
+      text = Colors.red.shade800;
+      label = 'Rejected';
+    } else if (status == 'Partial') {
+      bg = Colors.amber.shade50;
+      border = Colors.amber.shade300;
+      text = Colors.amber.shade900;
+      label = 'Partial Shift';
+    } else if (status == 'Confirmed') {
+      bg = Colors.green.shade50;
+      border = Colors.green.shade300;
+      text = Colors.green.shade800;
+      label = 'Confirmed';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: text,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShiftBadge(String? shiftStatus) {
+    Color bg = Colors.grey.shade100;
+    Color border = Colors.grey.shade300;
+    Color text = Colors.grey.shade700;
+    String label = shiftStatus ?? 'Pending';
+
+    if (shiftStatus == 'Confirmed') {
+      bg = Colors.green.shade50;
+      border = Colors.green.shade200;
+      text = Colors.green.shade800;
+      label = '✓ Confirmed';
+    } else if (shiftStatus == 'Rejected') {
+      bg = Colors.red.shade50;
+      border = Colors.red.shade200;
+      text = Colors.red.shade800;
+      label = '✕ Rejected';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: text,
+        ),
       ),
     );
   }

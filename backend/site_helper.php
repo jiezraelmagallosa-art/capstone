@@ -75,8 +75,8 @@ if (!function_exists('getStudentSiteBreakdown')) {
         $sites_output = [];
         $grand_total_minutes = 0;
 
-        $morning_calc = "CASE WHEN a.time_in_morning IS NOT NULL AND a.time_out_morning IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_morning, a.time_out_morning) ELSE 0 END";
-        $afternoon_calc = "CASE WHEN a.time_in_afternoon IS NOT NULL AND a.time_out_afternoon IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_afternoon, a.time_out_afternoon) ELSE 0 END";
+        $morning_calc = "CASE WHEN (a.status IS NULL OR a.status != 'Rejected') AND (a.morning_status IS NULL OR a.morning_status != 'Rejected') AND a.time_in_morning IS NOT NULL AND a.time_out_morning IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_morning, a.time_out_morning) ELSE 0 END";
+        $afternoon_calc = "CASE WHEN (a.status IS NULL OR a.status != 'Rejected') AND (a.afternoon_status IS NULL OR a.afternoon_status != 'Rejected') AND a.time_in_afternoon IS NOT NULL AND a.time_out_afternoon IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_afternoon, a.time_out_afternoon) ELSE 0 END";
 
         foreach ($all_site_ids as $sid) {
             $sid = intval($sid);
@@ -106,11 +106,10 @@ if (!function_exists('getStudentSiteBreakdown')) {
                 $s_stmt->close();
             }
 
-            // Calculate hours rendered at this specific site
-            // Matches attendance stamped with site_id, or if site_id is null and ojt matches
+            // Calculate hours rendered at this specific site excluding rejected shifts
             $calc_sql = "SELECT 
                             SUM($morning_calc + $afternoon_calc) as site_minutes,
-                            COUNT(DISTINCT a.date) as site_days
+                            COUNT(DISTINCT CASE WHEN (a.status IS NULL OR a.status != 'Rejected') AND (((a.morning_status IS NULL OR a.morning_status != 'Rejected') AND a.time_in_morning IS NOT NULL) OR ((a.afternoon_status IS NULL OR a.afternoon_status != 'Rejected') AND a.time_in_afternoon IS NOT NULL)) THEN a.date ELSE NULL END) as site_days
                          FROM attendance a
                          JOIN ojt o ON a.ojt_id = o.ojt_id
                          WHERE o.student_id = ? 

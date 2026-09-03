@@ -66,6 +66,15 @@ try {
         @$conn->query("UPDATE attendance a JOIN ojt o ON a.ojt_id = o.ojt_id SET a.site_id = o.site_id WHERE a.site_id IS NULL");
     }
 
+    // Add shift-level status and remarks to attendance table if not present
+    $col_m_status = @$conn->query("SHOW COLUMNS FROM attendance LIKE 'morning_status'");
+    if ($col_m_status && $col_m_status->num_rows == 0) {
+        @$conn->query("ALTER TABLE attendance ADD COLUMN morning_status VARCHAR(50) DEFAULT 'Pending' AFTER status");
+        @$conn->query("ALTER TABLE attendance ADD COLUMN morning_remarks TEXT NULL AFTER morning_status");
+        @$conn->query("ALTER TABLE attendance ADD COLUMN afternoon_status VARCHAR(50) DEFAULT 'Pending' AFTER morning_remarks");
+        @$conn->query("ALTER TABLE attendance ADD COLUMN afternoon_remarks TEXT NULL AFTER afternoon_status");
+    }
+
     // Create student_site_history table if not exists
     @$conn->query("CREATE TABLE IF NOT EXISTS student_site_history (
         history_id INT PRIMARY KEY AUTO_INCREMENT,

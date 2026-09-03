@@ -124,7 +124,7 @@ require_once 'db_connect.php';
 
             // Total days across all sites
             $total_days = 0;
-            $days_stmt = $conn->prepare("SELECT COUNT(DISTINCT a.date) as total_days FROM attendance a JOIN ojt o ON a.ojt_id = o.ojt_id WHERE o.student_id = ?");
+            $days_stmt = $conn->prepare("SELECT COUNT(DISTINCT a.date) as total_days FROM attendance a JOIN ojt o ON a.ojt_id = o.ojt_id WHERE o.student_id = ? AND (a.status IS NULL OR a.status != 'Rejected') AND (((a.morning_status IS NULL OR a.morning_status != 'Rejected') AND a.time_in_morning IS NOT NULL) OR ((a.afternoon_status IS NULL OR a.afternoon_status != 'Rejected') AND a.time_in_afternoon IS NOT NULL))");
             if ($days_stmt) {
                 $days_stmt->bind_param("i", $row['student_id']);
                 $days_stmt->execute();

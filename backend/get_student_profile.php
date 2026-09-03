@@ -80,7 +80,7 @@ $total_rendered_hours = $site_breakdown_data['total_hours'];
 $remaining_minutes = $site_breakdown_data['remaining_minutes'];
 
 // Count total unique attendance days across all sites
-$days_stmt = $conn->prepare("SELECT COUNT(DISTINCT a.date) as total_days FROM attendance a JOIN ojt o ON a.ojt_id = o.ojt_id WHERE o.student_id = ?");
+$days_stmt = $conn->prepare("SELECT COUNT(DISTINCT a.date) as total_days FROM attendance a JOIN ojt o ON a.ojt_id = o.ojt_id WHERE o.student_id = ? AND (a.status IS NULL OR a.status != 'Rejected') AND (((a.morning_status IS NULL OR a.morning_status != 'Rejected') AND a.time_in_morning IS NOT NULL) OR ((a.afternoon_status IS NULL OR a.afternoon_status != 'Rejected') AND a.time_in_afternoon IS NOT NULL))");
 $days_stmt->bind_param("i", $student_id);
 $days_stmt->execute();
 $total_days = intval($days_stmt->get_result()->fetch_assoc()['total_days'] ?? 0);

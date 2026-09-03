@@ -422,43 +422,78 @@ function renderLogsTable(logs) {
   if (!tbody) return;
 
   if (logs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No attendance verification logs recorded for this course category.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = logs.map(l => {
     const hasPhotos = l.photos && l.photos.length > 0;
     const photoBtn = hasPhotos ? `
-      <button class="btn btn-navy" onclick='openPhotoModal(${JSON.stringify(l.photos).replace(/'/g, "&apos;")}, ${l.attendance_id})'>
+      <button class="btn btn-navy" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;" onclick='openPhotoModal(${JSON.stringify(l.photos).replace(/'/g, "&apos;")}, ${l.attendance_id})'>
         📷 View (${l.photos.length})
       </button>` : `<span style="color: var(--text-light); font-size: 0.8rem;">No Photo</span>`;
     const courseBadge = getCourseBadgeClass(l.course_code);
 
-    // Match absence request badge pattern exactly
-    let badgeClass = 'badge-warning';
-    if (l.status === 'Confirmed') badgeClass = 'badge-success';
-    if (l.status === 'Rejected') badgeClass = 'badge-danger';
+    // Morning shift badge & remarks
+    let mBadge = 'badge-warning';
+    if (l.morning_status === 'Confirmed') mBadge = 'badge-success';
+    if (l.morning_status === 'Rejected')  mBadge = 'badge-danger';
+    const mRemarksHtml = l.morning_remarks ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">💬 ${escapeHtml(l.morning_remarks)}</div>` : '';
 
-    const isPending = l.status !== 'Confirmed' && l.status !== 'Rejected';
-    const evalControls = isPending
-      ? `<div style="display: flex; flex-direction: column; gap: 0.4rem; min-width: 90px;">
-           <button class="btn-action btn-action-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed')">Confirm</button>
-           <button class="btn-action btn-action-reject"  onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected')">Reject</button>
-         </div>`
-      : `<span style="font-size: 0.8rem; color: var(--text-muted);">Evaluated</span>`;
+    // Afternoon shift badge & remarks
+    let aBadge = 'badge-warning';
+    if (l.afternoon_status === 'Confirmed') aBadge = 'badge-success';
+    if (l.afternoon_status === 'Rejected')  aBadge = 'badge-danger';
+    const aRemarksHtml = l.afternoon_remarks ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">💬 ${escapeHtml(l.afternoon_remarks)}</div>` : '';
+
+    // Overall status badge
+    let overallBadge = 'badge-warning';
+    if (l.status === 'Confirmed') overallBadge = 'badge-success';
+    if (l.status === 'Rejected')  overallBadge = 'badge-danger';
+    if (l.status === 'Partial')   overallBadge = 'badge-warning';
+
+    const evalControls = `
+      <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
+        <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
+          <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Morning:</span>
+          <div style="display: flex; gap: 0.2rem;">
+            <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">✓</button>
+            <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">✕</button>
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
+          <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Afternoon:</span>
+          <div style="display: flex; gap: 0.2rem;">
+            <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">✓</button>
+            <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">✕</button>
+          </div>
+        </div>
+        <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.25rem; display: flex; gap: 0.25rem;">
+          <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1;" title="Confirm Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">✓ Both</button>
+          <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1; color: #dc2626;" title="Reject Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">✕ Both</button>
+        </div>
+      </div>
+    `;
 
     return `
       <tr>
-        <td style="font-weight: 700; color: var(--navy-primary);">${l.date}</td>
+        <td style="font-weight: 700; color: var(--navy-primary); white-space: nowrap;">${l.date}</td>
         <td>
           <div style="font-weight: 700;">${escapeHtml(l.full_name)}</div>
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">${l.student_number} &bull; <span class="badge ${courseBadge}">${l.course_code}</span></div>
+          <div style="font-size: 0.72rem; color: #64748b;">${escapeHtml(l.site_name || '')}</div>
         </td>
-        <td>${l.time_in_morning}</td>
-        <td>${l.time_out_morning}</td>
-        <td>${l.time_in_afternoon}</td>
-        <td>${l.time_out_afternoon}</td>
-        <td><span class="badge ${badgeClass}">${l.status}</span></td>
+        <td>
+          <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_morning} &ndash; ${l.time_out_morning}</div>
+          <div style="margin-top: 0.2rem;"><span class="badge ${mBadge}" style="font-size: 0.68rem;">${l.morning_status || 'Pending'}</span></div>
+          ${mRemarksHtml}
+        </td>
+        <td>
+          <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_afternoon} &ndash; ${l.time_out_afternoon}</div>
+          <div style="margin-top: 0.2rem;"><span class="badge ${aBadge}" style="font-size: 0.68rem;">${l.afternoon_status || 'Pending'}</span></div>
+          ${aRemarksHtml}
+        </td>
+        <td><span class="badge ${overallBadge}">${l.status}</span></td>
         <td>${photoBtn}</td>
         <td>${evalControls}</td>
       </tr>
@@ -961,7 +996,7 @@ async function downloadStudentDtrPdf(studentId) {
         cachedLogs = data.data;
         studentLogs = cachedLogs.filter(l => String(l.student_id) === String(studentId));
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
   // Sort logs by date descending
@@ -1143,15 +1178,33 @@ function openPhotoModal(photos, attendanceId = null) {
   }
 
   if (confirmContainer) {
-    if (attendanceId && photos && photos.length > 0) {
+    if (attendanceId) {
       confirmContainer.innerHTML = `
-        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-          <button class="btn btn-success" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed'); closePhotoModal();">
-            \u2713 Confirm Log
-          </button>
-          <button class="btn btn-danger" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected'); closePhotoModal();">
-            \u2715 Reject Log
-          </button>
+        <div style="display: flex; flex-direction: column; gap: 0.6rem; width: 100%;">
+          <div style="font-size: 0.82rem; font-weight: 700; color: var(--navy-primary);">Evaluate Shift Verification:</div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 170px; background: #f8fafc;">
+              <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Morning Shift</div>
+              <div style="display: flex; gap: 0.35rem;">
+                <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'morning'); closePhotoModal();">✓ Confirm</button>
+                <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'morning'); closePhotoModal();">✕ Reject</button>
+              </div>
+            </div>
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 170px; background: #f8fafc;">
+              <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Afternoon Shift</div>
+              <div style="display: flex; gap: 0.35rem;">
+                <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'afternoon'); closePhotoModal();">✓ Confirm</button>
+                <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'afternoon'); closePhotoModal();">✕ Reject</button>
+              </div>
+            </div>
+            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 170px; background: #f8fafc;">
+              <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Entire Day</div>
+              <div style="display: flex; gap: 0.35rem;">
+                <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'both'); closePhotoModal();">✓ All</button>
+                <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'both'); closePhotoModal();">✕ All</button>
+              </div>
+            </div>
+          </div>
         </div>`;
     } else {
       confirmContainer.innerHTML = '';
@@ -1165,12 +1218,17 @@ function closePhotoModal() {
   document.getElementById('photoModal').classList.remove('active');
 }
 
-async function reviewAttendanceLog(attendanceId, action) {
-  const defaultRemark = action === 'Confirmed'
-    ? 'Attendance log confirmed by Dean of Student Affairs'
-    : 'Attendance log requires follow-up verification';
-  const remarks = prompt(`Enter administrative remarks for ${action} decision:`, defaultRemark);
-  if (remarks === null) return;
+async function reviewAttendanceLog(attendanceId, action, shift = 'both') {
+  let shiftLabel = 'Entire Day';
+  if (shift === 'morning') shiftLabel = 'Morning Shift';
+  if (shift === 'afternoon') shiftLabel = 'Afternoon Shift';
+
+  const defaultPrompt = action === 'Rejected'
+    ? (shift === 'morning' ? 'Morning Time-Out taken off-site / in car' : (shift === 'afternoon' ? 'Afternoon photo invalid / off-site' : 'Selfie photo invalid / not on-site'))
+    : (shift === 'morning' ? 'Morning shift verified and confirmed' : (shift === 'afternoon' ? 'Afternoon shift verified and confirmed' : 'Attendance log confirmed by Dean of Student Affairs'));
+
+  const remarks = prompt(`[${shiftLabel}] Enter Dean Administrative Remarks (${action}):\n(Type the exact remark you want to record and show to the student intern)`, defaultPrompt);
+  if (remarks === null) return; // Dean clicked cancel
 
   try {
     const res = await fetch(API_BASE + 'admin_confirm_attendance.php', {
@@ -1180,7 +1238,8 @@ async function reviewAttendanceLog(attendanceId, action) {
         attendance_id: attendanceId,
         dean_id: currentUser ? currentUser.user_id : 0,
         action: action,
-        remarks: remarks
+        shift: shift,
+        remarks: remarks.trim()
       })
     });
     const data = await res.json();
@@ -1188,6 +1247,7 @@ async function reviewAttendanceLog(attendanceId, action) {
       alert(data.message);
       fetchLogs();
       fetchOverview();
+      fetchStudents();
     } else {
       alert(data.message || 'Operation failed.');
     }
@@ -1228,12 +1288,12 @@ async function openStudentDrawer(studentId) {
       if (dataSites.status === 'success' && dataSites.data) {
         cachedSites = dataSites.data;
       }
-    } catch (_) {}
+    } catch (_) { }
   }
   if (!cachedCourses || cachedCourses.length === 0) {
     try {
       await fetchCourses(false);
-    } catch (_) {}
+    } catch (_) { }
   }
 
   const container = document.getElementById('studentDetailsContent');
@@ -1306,13 +1366,13 @@ async function openStudentDrawer(studentId) {
       </div>
       <div style="display: flex; flex-direction: column; gap: 0.5rem;">
         ${(s.site_breakdown && s.site_breakdown.length > 0 ? s.site_breakdown : [{
-          site_name: s.site_name,
-          location: s.site_location,
-          is_current: true,
-          label: 'Current Location',
-          formatted_time: s.formatted_time,
-          total_days: s.total_days
-        }]).map(st => `
+      site_name: s.site_name,
+      location: s.site_location,
+      is_current: true,
+      label: 'Current Location',
+      formatted_time: s.formatted_time,
+      total_days: s.total_days
+    }]).map(st => `
           <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.8rem; border-radius: 6px; background: ${st.is_current ? '#f0fdf4' : '#f8fafc'}; border: 1px solid ${st.is_current ? '#86efac' : 'var(--border-light)'};">
             <div>
               <div style="display: flex; align-items: center; gap: 0.4rem;">
@@ -1358,7 +1418,7 @@ async function openStudentDrawer(studentId) {
     <div style="border: 1px solid var(--border-light); padding: 1rem; border-radius: var(--radius-sm); background: var(--bg-canvas);">
       <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.6rem;">⏱️ Override Required Internship Hours</div>
       <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem;">
-        ${[240,300,480,500,600].map(h => `<button class="btn-preset-chip ${s.required_hours == h ? 'active' : ''}" onclick="setDrawerPresetHours(${h})">${h}h</button>`).join('')}
+        ${[240, 300, 480, 500, 600].map(h => `<button class="btn-preset-chip ${s.required_hours == h ? 'active' : ''}" onclick="setDrawerPresetHours(${h})">${h}h</button>`).join('')}
       </div>
       <div style="display: flex; gap: 0.5rem; align-items: center;">
         <input type="number" id="drawerHoursInput" value="${s.required_hours}" min="1" max="9999" style="flex: 1; padding: 0.5rem 0.75rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 700; color: var(--navy-primary); background: #fff; max-width: 130px;">
@@ -1470,7 +1530,7 @@ function renderCoursesTable(courses) {
         </td>
         <td><span class="badge badge-success">${c.enrolled_students} Intern(s)</span></td>
         <td>
-          <button class="btn btn-outline" style="margin-right:0.4rem;" onclick='openEditCourseModal(${JSON.stringify(c).replace(/'/g,"&apos;")})'>Edit</button>
+          <button class="btn btn-outline" style="margin-right:0.4rem;" onclick='openEditCourseModal(${JSON.stringify(c).replace(/'/g, "&apos;")})'>Edit</button>
           <button class="btn btn-danger" style="padding:0.4rem 0.75rem;font-size:0.8rem;" onclick="deleteCourse(${c.course_id}, '${escapeHtml(c.course_code)}', ${c.enrolled_students})">Delete</button>
         </td>
       </tr>
@@ -1551,7 +1611,7 @@ async function deleteCourse(courseId, courseCode, enrolledCount) {
 
 async function saveCourse(e) {
   e.preventDefault();
-  const course_id   = document.getElementById('courseIdInput').value;
+  const course_id = document.getElementById('courseIdInput').value;
   const course_code = document.getElementById('courseCodeInput').value.trim().toUpperCase();
   const course_name = document.getElementById('courseNameInput').value.trim();
   const required_hours = parseInt(document.getElementById('courseRequiredHoursInput').value, 10);
@@ -1581,8 +1641,8 @@ async function saveCourse(e) {
 }
 
 function populateDynamicCourseDropdowns() {
-  const allCount  = cachedStudents.length;
-  const allLogs   = cachedLogs.length;
+  const allCount = cachedStudents.length;
+  const allLogs = cachedLogs.length;
 
   // Build options HTML for student and logs filters
   const studentOptions = `<option value="ALL">All Programs (${allCount})</option>` +
@@ -1601,13 +1661,13 @@ function populateDynamicCourseDropdowns() {
     cachedCourses.map(c => `<option value="${c.course_code}">${c.course_code} — ${c.course_name}</option>`).join('');
 
   const sf = document.getElementById('courseSelectFilter');
-  if (sf) { const cur = sf.value; sf.innerHTML = studentOptions; sf.value = cachedCourses.some(c=>c.course_code===cur) || cur==='ALL' ? cur : 'ALL'; }
+  if (sf) { const cur = sf.value; sf.innerHTML = studentOptions; sf.value = cachedCourses.some(c => c.course_code === cur) || cur === 'ALL' ? cur : 'ALL'; }
 
   const lf = document.getElementById('logsCourseSelectFilter');
-  if (lf) { const cur = lf.value; lf.innerHTML = logsOptions; lf.value = cachedCourses.some(c=>c.course_code===cur) || cur==='ALL' ? cur : 'ALL'; }
+  if (lf) { const cur = lf.value; lf.innerHTML = logsOptions; lf.value = cachedCourses.some(c => c.course_code === cur) || cur === 'ALL' ? cur : 'ALL'; }
 
   const rf = document.getElementById('reportCourseFilterSelect');
-  if (rf) { const cur = rf.value; rf.innerHTML = reportOptions; rf.value = cachedCourses.some(c=>c.course_code===cur) || cur==='ALL' ? cur : 'ALL'; }
+  if (rf) { const cur = rf.value; rf.innerHTML = reportOptions; rf.value = cachedCourses.some(c => c.course_code === cur) || cur === 'ALL' ? cur : 'ALL'; }
 }
 
 async function saveStudentAssignedCourse(studentId) {

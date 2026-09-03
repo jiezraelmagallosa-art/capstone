@@ -50,13 +50,13 @@ try {
     $pending_absences = intval($res_absences->fetch_assoc()['total'] ?? 0);
 
 
-    $m_min = "CASE WHEN time_in_morning IS NOT NULL AND time_out_morning IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, time_in_morning, time_out_morning) ELSE 0 END";
-    $a_min = "CASE WHEN time_in_afternoon IS NOT NULL AND time_out_afternoon IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, time_in_afternoon, time_out_afternoon) ELSE 0 END";
+    $m_min = "CASE WHEN (a.status IS NULL OR a.status != 'Rejected') AND (a.morning_status IS NULL OR a.morning_status != 'Rejected') AND a.time_in_morning IS NOT NULL AND a.time_out_morning IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_morning, a.time_out_morning) ELSE 0 END";
+    $a_min = "CASE WHEN (a.status IS NULL OR a.status != 'Rejected') AND (a.afternoon_status IS NULL OR a.afternoon_status != 'Rejected') AND a.time_in_afternoon IS NOT NULL AND a.time_out_afternoon IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_afternoon, a.time_out_afternoon) ELSE 0 END";
 
     if ($dean_id > 0) {
         $sql_hours = "SELECT SUM($m_min + $a_min) AS total_min FROM attendance a JOIN ojt o ON a.ojt_id = o.ojt_id JOIN student s ON o.student_id = s.student_id WHERE s.dean_id = $dean_id";
     } else {
-        $sql_hours = "SELECT SUM($m_min + $a_min) AS total_min FROM attendance";
+        $sql_hours = "SELECT SUM($m_min + $a_min) AS total_min FROM attendance a";
     }
     $res_hours = $conn->query($sql_hours);
     $total_minutes = intval($res_hours->fetch_assoc()['total_min'] ?? 0);

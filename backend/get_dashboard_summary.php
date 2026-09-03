@@ -50,12 +50,12 @@ if ($stmt_ojt) {
     $stmt_ojt->close();
 }
 
-$morning_min = "CASE WHEN a.time_in_morning IS NOT NULL AND a.time_out_morning IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_morning, a.time_out_morning) ELSE 0 END";
-$afternoon_min = "CASE WHEN a.time_in_afternoon IS NOT NULL AND a.time_out_afternoon IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_afternoon, a.time_out_afternoon) ELSE 0 END";
+$morning_min = "CASE WHEN (a.status IS NULL OR a.status != 'Rejected') AND (a.morning_status IS NULL OR a.morning_status != 'Rejected') AND a.time_in_morning IS NOT NULL AND a.time_out_morning IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_morning, a.time_out_morning) ELSE 0 END";
+$afternoon_min = "CASE WHEN (a.status IS NULL OR a.status != 'Rejected') AND (a.afternoon_status IS NULL OR a.afternoon_status != 'Rejected') AND a.time_in_afternoon IS NOT NULL AND a.time_out_afternoon IS NOT NULL THEN TIMESTAMPDIFF(MINUTE, a.time_in_afternoon, a.time_out_afternoon) ELSE 0 END";
 
 $query = "SELECT
             SUM($morning_min + $afternoon_min) as total_minutes,
-            COUNT(DISTINCT DATE(a.date)) as total_days
+            COUNT(DISTINCT CASE WHEN (a.status IS NULL OR a.status != 'Rejected') AND (((a.morning_status IS NULL OR a.morning_status != 'Rejected') AND a.time_in_morning IS NOT NULL) OR ((a.afternoon_status IS NULL OR a.afternoon_status != 'Rejected') AND a.time_in_afternoon IS NOT NULL)) THEN a.date ELSE NULL END) as total_days
           FROM attendance a
           LEFT JOIN ojt o ON a.ojt_id = o.ojt_id
           WHERE a.ojt_id = ? OR o.student_id = ? OR a.ojt_id IN (SELECT ojt_id FROM ojt WHERE student_id = ?)";
@@ -65,16 +65,18 @@ $stmt->bind_param("iii", $ojt_id, $student_id, $student_id);
 $stmt->execute();
 $result = $stmt->get_result()->fetch_assoc();
 
-$total_minutes = intval($result['total_minutes'] ?? 0);
-$total_hours = floor($total_minutes / 60);
-$consumed_mins = $total_minutes % 60;
+require_once 'site_helper.php';
+$site_breakdown_data = getStudentSiteBreakdown($conn, $student_id);
+
+$total_minutes = $site_breakdown_data['total_minutes'];
+$total_hours = $site_breakdown_data['total_hours'];
+$consumed_mins = $site_breakdown_data['remaining_minutes'];
 
 $target_total_minutes = $target_hours * 60;
 $remaining_total_minutes = max(0, $target_total_minutes - $total_minutes);
 $remaining_hours = floor($remaining_total_minutes / 60);
 $remaining_mins = $remaining_total_minutes % 60;
-
-$progress_percentage = min(100.0, round(($total_minutes / $target_total_minutes) * 100, 1));
+$progress_percentage = $target_total_minutes > 0 ? min(100.0, round(($total_minutes / $target_total_minutes) * 100, 1)) : 0;
 $is_completed = ($progress_percentage >= 100.0);
 $completion_message = $is_completed ? "🎉 Congratulations! You have successfully completed your {$target_hours} internship goal hours! SBC is proud of your hard work and dedication." : "";
 

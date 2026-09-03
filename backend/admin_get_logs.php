@@ -33,6 +33,10 @@ try {
                 a.time_out_afternoon,
                 a.status AS attendance_status,
                 a.remarks AS attendance_remarks,
+                a.morning_status,
+                a.morning_remarks,
+                a.afternoon_status,
+                a.afternoon_remarks,
                 s.student_id,
                 s.student_number,
                 s.full_name,
@@ -84,6 +88,8 @@ try {
                 $status = "Confirmed";
             } elseif ($raw_att_status === 'Rejected') {
                 $status = "Rejected";
+            } elseif ($raw_att_status === 'Partial') {
+                $status = "Partial";
             } else {
                 $status = "Pending";
             }
@@ -103,6 +109,10 @@ try {
                 "time_out_afternoon" => !empty($row['time_out_afternoon']) ? date("h:i A", strtotime($row['time_out_afternoon'])) : '--:--',
                 "status" => $status,
                 "remarks" => $row['attendance_remarks'] ?? '',
+                "morning_status" => $row['morning_status'] ?? 'Pending',
+                "morning_remarks" => $row['morning_remarks'] ?? '',
+                "afternoon_status" => $row['afternoon_status'] ?? 'Pending',
+                "afternoon_remarks" => $row['afternoon_remarks'] ?? '',
                 "is_confirmed" => ($raw_att_status === 'Confirmed'),
                 "is_rejected" => ($raw_att_status === 'Rejected'),
                 "photos" => $photos
