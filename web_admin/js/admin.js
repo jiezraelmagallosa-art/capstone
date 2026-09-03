@@ -1275,28 +1275,18 @@ function renderJournalsTable(journals) {
       emptyMsg = `
         <tr>
           <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
-            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📝</div>
             <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
               No Daily Journals Submitted for Today (${todayFormatted})
             </div>
-            <p style="font-size: 0.85rem; color: #64748b; max-width: 450px; margin: 0 auto 1.25rem auto;">
+            <p style="font-size: 0.85rem; color: #64748b; max-width: 450px; margin: 0 auto;">
               Students typically submit their narrative reports at the end of their shift.
             </p>
-            <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
-              <button type="button" class="btn btn-navy" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="setJournalDateFilter('ALL')">
-                🗓️ View All Historical Journals
-              </button>
-              <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="setJournalDateFilter('YESTERDAY')">
-                View Yesterday's Journals
-              </button>
-            </div>
           </td>
         </tr>`;
     } else {
       emptyMsg = `
         <tr>
           <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
-            <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🔍</div>
             <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
               No Daily Journals Match Filter Criteria
             </div>
@@ -1304,7 +1294,7 @@ function renderJournalsTable(journals) {
               Try adjusting your Date, Review Status, Partner Facility, or Program filters.
             </p>
             <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="resetJournalFilters()">
-              ↺ Reset All Filters
+              Reset All Filters
             </button>
           </td>
         </tr>`;
