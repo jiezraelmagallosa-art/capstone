@@ -1059,6 +1059,18 @@ body {
   box-shadow: 0 2px 5px rgba(185, 28, 28, 0.25);
 }
 
+/* Ensure html2pdf renders full document height and prevents clipping */
+.html2pdf__overlay {
+  height: auto !important;
+  min-height: 2500px !important;
+  bottom: auto !important;
+  overflow: visible !important;
+}
+
+.html2pdf__container {
+  height: auto !important;
+  overflow: visible !important;
+}
 
 /* Modal Dialog Overlays */
 .modal-overlay {
