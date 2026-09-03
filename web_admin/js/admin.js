@@ -848,82 +848,65 @@ function renderLogsTable(logs) {
     if (hasMorning && !hasAfternoon) {
       // 1. Student logged in/out for MORNING SHIFT ONLY -> Only see Morning action
       evalControls = `
-        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
-          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Morning:</span>
-            <div style="display: flex; gap: 0.2rem;">
-              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">✓</button>
-              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">✕</button>
-            </div>
+        <div class="dean-action-cell">
+          <div class="dean-shift-block">
+            <span class="dean-shift-label">Morning Shift</span>
+            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
+            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
           </div>
-          <div style="font-size: 0.68rem; color: var(--text-light); font-style: italic; text-align: center; padding-top: 1px;">
-            Awaiting afternoon log
-          </div>
+          <div class="dean-shift-note">Awaiting afternoon log</div>
         </div>
       `;
     } else if (hasMorning && hasAfternoon && isMorningPending) {
       // 2. Dean not confirmed morning yet, and student logged in/out for afternoon -> ENTIRE DAY DISPLAYS
       evalControls = `
-        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
-          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Morning:</span>
-            <div style="display: flex; gap: 0.2rem;">
-              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">✓</button>
-              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">✕</button>
-            </div>
+        <div class="dean-action-cell">
+          <div class="dean-shift-block">
+            <span class="dean-shift-label">Morning Shift</span>
+            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
+            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
           </div>
-          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Afternoon:</span>
-            <div style="display: flex; gap: 0.2rem;">
-              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">✓</button>
-              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">✕</button>
-            </div>
+          <div class="dean-shift-block">
+            <span class="dean-shift-label">Afternoon Shift</span>
+            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
+            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
           </div>
-          <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.25rem; display: flex; gap: 0.25rem;">
-            <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1;" title="Confirm Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">✓ Both</button>
-            <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1; color: #dc2626;" title="Reject Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">✕ Both</button>
+          <div class="dean-both-row">
+            <button class="dean-btn-confirm dean-both-btn" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">Confirm Both</button>
+            <button class="dean-btn-reject dean-both-btn" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">Reject Both</button>
           </div>
         </div>
       `;
     } else if (hasMorning && hasAfternoon && !isMorningPending) {
       // 3. Morning was already reviewed, student logged in for afternoon
       evalControls = `
-        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
-          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Morning:</span>
-            <div style="display: flex; gap: 0.2rem; align-items: center;">
-              <span class="badge ${mBadge}" style="font-size: 0.65rem; padding: 1px 5px;">${l.morning_status}</span>
-              <button class="btn-action btn-action-confirm" style="padding: 1px 5px; font-size: 0.62rem;" title="Re-evaluate Morning: Confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">✓</button>
-              <button class="btn-action btn-action-reject" style="padding: 1px 5px; font-size: 0.62rem;" title="Re-evaluate Morning: Reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">✕</button>
-            </div>
+        <div class="dean-action-cell">
+          <div class="dean-shift-block">
+            <span class="dean-shift-label">Morning Shift <span class="badge ${mBadge}" style="font-size:0.58rem;padding:1px 4px;vertical-align:middle;">${l.morning_status}</span></span>
+            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
+            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
           </div>
-          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Afternoon:</span>
-            <div style="display: flex; gap: 0.2rem;">
-              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">✓</button>
-              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">✕</button>
-            </div>
+          <div class="dean-shift-block">
+            <span class="dean-shift-label">Afternoon Shift</span>
+            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
+            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
           </div>
-          <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.25rem; display: flex; gap: 0.25rem;">
-            <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1;" title="Confirm Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">✓ Both</button>
-            <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1; color: #dc2626;" title="Reject Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">✕ Both</button>
+          <div class="dean-both-row">
+            <button class="dean-btn-confirm dean-both-btn" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">Confirm Both</button>
+            <button class="dean-btn-reject dean-both-btn" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">Reject Both</button>
           </div>
         </div>
       `;
     } else if (!hasMorning && hasAfternoon) {
       // 4. Afternoon shift only
       evalControls = `
-        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
-          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
-            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Afternoon:</span>
-            <div style="display: flex; gap: 0.2rem;">
-              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">✓</button>
-              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">✕</button>
-            </div>
+        <div class="dean-action-cell">
+          <div class="dean-shift-block">
+            <span class="dean-shift-label">Afternoon Shift</span>
+            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
+            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
           </div>
-          <div style="font-size: 0.68rem; color: var(--text-light); font-style: italic; text-align: center; padding-top: 1px;">
-            No morning log
-          </div>
+          <div class="dean-shift-note">No morning log</div>
         </div>
       `;
     } else {

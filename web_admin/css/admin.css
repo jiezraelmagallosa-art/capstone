@@ -990,6 +990,93 @@ body {
   color: #ffffff;
 }
 
+/* Dean Action Column Layout */
+.dean-action-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 120px;
+}
+
+.dean-shift-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.dean-shift-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 0.1rem;
+}
+
+.dean-btn-confirm {
+  display: block;
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  background-color: #1a7f4b;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: filter 0.15s ease;
+}
+
+.dean-btn-confirm:hover {
+  filter: brightness(1.1);
+}
+
+.dean-btn-reject {
+  display: block;
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  background-color: #c0392b;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: filter 0.15s ease;
+}
+
+.dean-btn-reject:hover {
+  filter: brightness(1.1);
+}
+
+.dean-shift-note {
+  font-size: 0.62rem;
+  color: var(--text-light);
+  font-style: italic;
+  text-align: center;
+}
+
+.dean-both-row {
+  display: flex;
+  gap: 0.2rem;
+  padding-top: 0.3rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.dean-both-btn {
+  flex: 1;
+  padding: 0.25rem 0.35rem !important;
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  border-radius: 5px !important;
+  display: block;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+}
 
 /* Modal Dialog Overlays */
 .modal-overlay {
