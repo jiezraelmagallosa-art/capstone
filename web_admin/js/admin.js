@@ -846,67 +846,35 @@ function renderLogsTable(logs) {
     let evalControls = '';
 
     if (hasMorning && !hasAfternoon) {
-      // 1. Student logged in/out for MORNING SHIFT ONLY -> Only see Morning action
+      // 1. Morning shift only
       evalControls = `
         <div class="dean-action-cell">
-          <div class="dean-shift-block">
-            <span class="dean-shift-label">Morning Shift</span>
-            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
-            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
-          </div>
-          <div class="dean-shift-note">Awaiting afternoon log</div>
+          <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
+          <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
         </div>
       `;
     } else if (hasMorning && hasAfternoon && isMorningPending) {
-      // 2. Dean not confirmed morning yet, and student logged in/out for afternoon -> ENTIRE DAY DISPLAYS
+      // 2. Both shifts, morning not yet reviewed
       evalControls = `
         <div class="dean-action-cell">
-          <div class="dean-shift-block">
-            <span class="dean-shift-label">Morning Shift</span>
-            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
-            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
-          </div>
-          <div class="dean-shift-block">
-            <span class="dean-shift-label">Afternoon Shift</span>
-            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
-            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
-          </div>
-          <div class="dean-both-row">
-            <button class="dean-btn-confirm dean-both-btn" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">Confirm Both</button>
-            <button class="dean-btn-reject dean-both-btn" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">Reject Both</button>
-          </div>
+          <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">Confirm</button>
+          <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">Reject</button>
         </div>
       `;
     } else if (hasMorning && hasAfternoon && !isMorningPending) {
-      // 3. Morning was already reviewed, student logged in for afternoon
+      // 3. Morning already reviewed, afternoon pending
       evalControls = `
         <div class="dean-action-cell">
-          <div class="dean-shift-block">
-            <span class="dean-shift-label">Morning Shift <span class="badge ${mBadge}" style="font-size:0.58rem;padding:1px 4px;vertical-align:middle;">${l.morning_status}</span></span>
-            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
-            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
-          </div>
-          <div class="dean-shift-block">
-            <span class="dean-shift-label">Afternoon Shift</span>
-            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
-            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
-          </div>
-          <div class="dean-both-row">
-            <button class="dean-btn-confirm dean-both-btn" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">Confirm Both</button>
-            <button class="dean-btn-reject dean-both-btn" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">Reject Both</button>
-          </div>
+          <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
+          <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
         </div>
       `;
     } else if (!hasMorning && hasAfternoon) {
       // 4. Afternoon shift only
       evalControls = `
         <div class="dean-action-cell">
-          <div class="dean-shift-block">
-            <span class="dean-shift-label">Afternoon Shift</span>
-            <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
-            <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
-          </div>
-          <div class="dean-shift-note">No morning log</div>
+          <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
+          <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
         </div>
       `;
     } else {
@@ -916,6 +884,7 @@ function renderLogsTable(logs) {
         </div>
       `;
     }
+
 
     const morningShiftHtml = hasMorning ? `
       <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_morning} &ndash; ${l.time_out_morning}</div>
@@ -2360,8 +2329,8 @@ function openPhotoModal(photos, attendanceId = null) {
           <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
             <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Morning Shift</div>
             <div style="display: flex; gap: 0.35rem;">
-              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'morning'); closePhotoModal();">✓ Confirm</button>
-              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'morning'); closePhotoModal();">✕ Reject</button>
+              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'morning'); closePhotoModal();">Confirm</button>
+              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'morning'); closePhotoModal();">Reject</button>
             </div>
           </div>
         `;
@@ -2371,8 +2340,8 @@ function openPhotoModal(photos, attendanceId = null) {
           <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
             <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Afternoon Shift</div>
             <div style="display: flex; gap: 0.35rem;">
-              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'afternoon'); closePhotoModal();">✓ Confirm</button>
-              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'afternoon'); closePhotoModal();">✕ Reject</button>
+              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'afternoon'); closePhotoModal();">Confirm</button>
+              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'afternoon'); closePhotoModal();">Reject</button>
             </div>
           </div>
         `;
@@ -2382,8 +2351,8 @@ function openPhotoModal(photos, attendanceId = null) {
           <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
             <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Entire Day</div>
             <div style="display: flex; gap: 0.35rem;">
-              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'both'); closePhotoModal();">✓ All</button>
-              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'both'); closePhotoModal();">✕ All</button>
+              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'both'); closePhotoModal();">Confirm Both</button>
+              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'both'); closePhotoModal();">Reject Both</button>
             </div>
           </div>
         `;
