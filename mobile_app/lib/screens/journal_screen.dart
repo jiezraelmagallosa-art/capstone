@@ -23,7 +23,6 @@ class JournalScreen extends StatefulWidget {
 
 class _JournalScreenState extends State<JournalScreen> {
   static const Color primaryNavy = AppColors.primaryNavy;
-  static const Color accentGold = AppColors.accentGold;
   static const Color bgLight = AppColors.backgroundLight;
 
   DateTime _selectedDate = DateTime.now();
