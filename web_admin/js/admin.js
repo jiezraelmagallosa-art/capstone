@@ -836,27 +836,117 @@ function renderLogsTable(logs) {
     if (l.status === 'Rejected')  overallBadge = 'badge-danger';
     if (l.status === 'Partial')   overallBadge = 'badge-warning';
 
-    const evalControls = `
-      <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
-        <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
-          <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Morning:</span>
-          <div style="display: flex; gap: 0.2rem;">
-            <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">✓</button>
-            <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">✕</button>
+    const hasMorning = (l.time_in_morning && l.time_in_morning !== '--:--') || (l.time_out_morning && l.time_out_morning !== '--:--');
+    const hasAfternoon = (l.time_in_afternoon && l.time_in_afternoon !== '--:--') || (l.time_out_afternoon && l.time_out_afternoon !== '--:--');
+    const isMorningPending = (!l.morning_status || l.morning_status === 'Pending');
+
+    let evalControls = '';
+
+    if (hasMorning && !hasAfternoon) {
+      // 1. Student logged in/out for MORNING SHIFT ONLY -> Only see Morning action
+      evalControls = `
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
+          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Morning:</span>
+            <div style="display: flex; gap: 0.2rem;">
+              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">✓</button>
+              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">✕</button>
+            </div>
+          </div>
+          <div style="font-size: 0.68rem; color: var(--text-light); font-style: italic; text-align: center; padding-top: 1px;">
+            Awaiting afternoon log
           </div>
         </div>
-        <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
-          <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Afternoon:</span>
-          <div style="display: flex; gap: 0.2rem;">
-            <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">✓</button>
-            <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">✕</button>
+      `;
+    } else if (hasMorning && hasAfternoon && isMorningPending) {
+      // 2. Dean not confirmed morning yet, and student logged in/out for afternoon -> ENTIRE DAY DISPLAYS
+      evalControls = `
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
+          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Morning:</span>
+            <div style="display: flex; gap: 0.2rem;">
+              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">✓</button>
+              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">✕</button>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Afternoon:</span>
+            <div style="display: flex; gap: 0.2rem;">
+              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">✓</button>
+              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">✕</button>
+            </div>
+          </div>
+          <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.25rem; display: flex; gap: 0.25rem;">
+            <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1;" title="Confirm Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">✓ Both</button>
+            <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1; color: #dc2626;" title="Reject Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">✕ Both</button>
           </div>
         </div>
-        <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.25rem; display: flex; gap: 0.25rem;">
-          <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1;" title="Confirm Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">✓ Both</button>
-          <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1; color: #dc2626;" title="Reject Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">✕ Both</button>
+      `;
+    } else if (hasMorning && hasAfternoon && !isMorningPending) {
+      // 3. Morning was already reviewed, student logged in for afternoon
+      evalControls = `
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
+          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Morning:</span>
+            <div style="display: flex; gap: 0.2rem; align-items: center;">
+              <span class="badge ${mBadge}" style="font-size: 0.65rem; padding: 1px 5px;">${l.morning_status}</span>
+              <button class="btn-action btn-action-confirm" style="padding: 1px 5px; font-size: 0.62rem;" title="Re-evaluate Morning: Confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">✓</button>
+              <button class="btn-action btn-action-reject" style="padding: 1px 5px; font-size: 0.62rem;" title="Re-evaluate Morning: Reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">✕</button>
+            </div>
+          </div>
+          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Afternoon:</span>
+            <div style="display: flex; gap: 0.2rem;">
+              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">✓</button>
+              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">✕</button>
+            </div>
+          </div>
+          <div style="border-top: 1px dashed #cbd5e1; padding-top: 0.25rem; display: flex; gap: 0.25rem;">
+            <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1;" title="Confirm Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">✓ Both</button>
+            <button class="btn btn-secondary" style="font-size: 0.68rem; padding: 2px 6px; flex: 1; color: #dc2626;" title="Reject Both Shifts" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">✕ Both</button>
+          </div>
         </div>
-      </div>
+      `;
+    } else if (!hasMorning && hasAfternoon) {
+      // 4. Afternoon shift only
+      evalControls = `
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; min-width: 130px;">
+          <div style="display: flex; gap: 0.25rem; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.72rem; font-weight: 700; color: #475569;">Afternoon:</span>
+            <div style="display: flex; gap: 0.2rem;">
+              <button class="btn-action btn-action-confirm" style="padding: 2px 7px; font-size: 0.68rem;" title="Confirm Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">✓</button>
+              <button class="btn-action btn-action-reject" style="padding: 2px 7px; font-size: 0.68rem;" title="Reject Afternoon Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">✕</button>
+            </div>
+          </div>
+          <div style="font-size: 0.68rem; color: var(--text-light); font-style: italic; text-align: center; padding-top: 1px;">
+            No morning log
+          </div>
+        </div>
+      `;
+    } else {
+      evalControls = `
+        <div style="font-size: 0.75rem; color: var(--text-light); text-align: center;">
+          No logs recorded
+        </div>
+      `;
+    }
+
+    const morningShiftHtml = hasMorning ? `
+      <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_morning} &ndash; ${l.time_out_morning}</div>
+      <div style="margin-top: 0.2rem;"><span class="badge ${mBadge}" style="font-size: 0.68rem;">${l.morning_status || 'Pending'}</span></div>
+      ${mRemarksHtml}
+    ` : `
+      <div style="font-size: 0.82rem; color: var(--text-light);">--:-- &ndash; --:--</div>
+      <div style="margin-top: 0.2rem;"><span class="badge" style="font-size: 0.68rem; background: #f1f5f9; color: #94a3b8;">Not Logged In</span></div>
+    `;
+
+    const afternoonShiftHtml = hasAfternoon ? `
+      <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_afternoon} &ndash; ${l.time_out_afternoon}</div>
+      <div style="margin-top: 0.2rem;"><span class="badge ${aBadge}" style="font-size: 0.68rem;">${l.afternoon_status || 'Pending'}</span></div>
+      ${aRemarksHtml}
+    ` : `
+      <div style="font-size: 0.82rem; color: var(--text-light);">--:-- &ndash; --:--</div>
+      <div style="margin-top: 0.2rem;"><span class="badge" style="font-size: 0.68rem; background: #f1f5f9; color: #94a3b8;">Not Logged In</span></div>
     `;
 
     return `
@@ -867,16 +957,8 @@ function renderLogsTable(logs) {
           <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">${l.student_number} &bull; <span class="badge ${courseBadge}">${l.course_code}</span></div>
           <div style="font-size: 0.72rem; color: #64748b;">${escapeHtml(l.site_name || '')}</div>
         </td>
-        <td>
-          <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_morning} &ndash; ${l.time_out_morning}</div>
-          <div style="margin-top: 0.2rem;"><span class="badge ${mBadge}" style="font-size: 0.68rem;">${l.morning_status || 'Pending'}</span></div>
-          ${mRemarksHtml}
-        </td>
-        <td>
-          <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_afternoon} &ndash; ${l.time_out_afternoon}</div>
-          <div style="margin-top: 0.2rem;"><span class="badge ${aBadge}" style="font-size: 0.68rem;">${l.afternoon_status || 'Pending'}</span></div>
-          ${aRemarksHtml}
-        </td>
+        <td>${morningShiftHtml}</td>
+        <td>${afternoonShiftHtml}</td>
         <td><span class="badge ${overallBadge}">${l.status}</span></td>
         <td>${photoBtn}</td>
         <td>${evalControls}</td>
@@ -2226,31 +2308,50 @@ function openPhotoModal(photos, attendanceId = null) {
 
   if (confirmContainer) {
     if (attendanceId) {
+      const logRecord = (cachedLogs || []).find(x => x.attendance_id == attendanceId);
+      const hasM = logRecord ? ((logRecord.time_in_morning && logRecord.time_in_morning !== '--:--') || (logRecord.time_out_morning && logRecord.time_out_morning !== '--:--')) : true;
+      const hasA = logRecord ? ((logRecord.time_in_afternoon && logRecord.time_in_afternoon !== '--:--') || (logRecord.time_out_afternoon && logRecord.time_out_afternoon !== '--:--')) : true;
+
+      let modalActionsHtml = '';
+      if (hasM) {
+        modalActionsHtml += `
+          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
+            <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Morning Shift</div>
+            <div style="display: flex; gap: 0.35rem;">
+              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'morning'); closePhotoModal();">✓ Confirm</button>
+              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'morning'); closePhotoModal();">✕ Reject</button>
+            </div>
+          </div>
+        `;
+      }
+      if (hasA) {
+        modalActionsHtml += `
+          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
+            <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Afternoon Shift</div>
+            <div style="display: flex; gap: 0.35rem;">
+              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'afternoon'); closePhotoModal();">✓ Confirm</button>
+              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'afternoon'); closePhotoModal();">✕ Reject</button>
+            </div>
+          </div>
+        `;
+      }
+      if (hasM && hasA) {
+        modalActionsHtml += `
+          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
+            <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Entire Day</div>
+            <div style="display: flex; gap: 0.35rem;">
+              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'both'); closePhotoModal();">✓ All</button>
+              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'both'); closePhotoModal();">✕ All</button>
+            </div>
+          </div>
+        `;
+      }
+
       confirmContainer.innerHTML = `
         <div style="display: flex; flex-direction: column; gap: 0.6rem; width: 100%;">
           <div style="font-size: 0.82rem; font-weight: 700; color: var(--navy-primary);">Evaluate Shift Verification:</div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 170px; background: #f8fafc;">
-              <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Morning Shift</div>
-              <div style="display: flex; gap: 0.35rem;">
-                <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'morning'); closePhotoModal();">✓ Confirm</button>
-                <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'morning'); closePhotoModal();">✕ Reject</button>
-              </div>
-            </div>
-            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 170px; background: #f8fafc;">
-              <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Afternoon Shift</div>
-              <div style="display: flex; gap: 0.35rem;">
-                <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'afternoon'); closePhotoModal();">✓ Confirm</button>
-                <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'afternoon'); closePhotoModal();">✕ Reject</button>
-              </div>
-            </div>
-            <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 170px; background: #f8fafc;">
-              <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Entire Day</div>
-              <div style="display: flex; gap: 0.35rem;">
-                <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'both'); closePhotoModal();">✓ All</button>
-                <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'both'); closePhotoModal();">✕ All</button>
-              </div>
-            </div>
+            ${modalActionsHtml}
           </div>
         </div>`;
     } else {
