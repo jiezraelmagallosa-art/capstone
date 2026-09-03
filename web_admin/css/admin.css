@@ -1753,6 +1753,7 @@ body {
   .report-filter-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+
   .report-filter-actions {
     grid-column: 1 / -1;
     display: flex;
@@ -1765,10 +1766,12 @@ body {
   .report-filter-grid {
     grid-template-columns: 1fr;
   }
+
   .report-filter-actions {
     display: flex;
     flex-direction: column;
   }
+
   .report-filter-actions button {
     width: 100%;
   }
