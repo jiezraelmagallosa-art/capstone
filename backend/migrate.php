@@ -130,6 +130,18 @@ $tables = [
         FOREIGN KEY (ojt_id) REFERENCES ojt(ojt_id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
+    "student_site_history" => "CREATE TABLE IF NOT EXISTS student_site_history (
+        history_id INT PRIMARY KEY AUTO_INCREMENT,
+        student_id INT NOT NULL,
+        site_id INT NOT NULL,
+        assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        pulled_out_at TIMESTAMP NULL,
+        is_current TINYINT(1) DEFAULT 1,
+        remarks VARCHAR(255) NULL,
+        INDEX idx_ssh_student (student_id),
+        INDEX idx_ssh_site (site_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
     "photo" => "CREATE TABLE IF NOT EXISTS photo (
         photo_id INT PRIMARY KEY AUTO_INCREMENT,
         attendance_id INT NOT NULL,
