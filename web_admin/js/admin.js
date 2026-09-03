@@ -813,22 +813,30 @@ function renderLogsTable(logs) {
     const hasPhotos = l.photos && l.photos.length > 0;
     const photoBtn = hasPhotos ? `
       <button class="btn btn-navy" style="font-size: 0.78rem; padding: 0.35rem 0.65rem;" onclick='openPhotoModal(${JSON.stringify(l.photos).replace(/'/g, "&apos;")}, ${l.attendance_id})'>
-        📷 View (${l.photos.length})
+        View (${l.photos.length})
       </button>` : `<span style="color: var(--text-light); font-size: 0.8rem;">No Photo</span>`;
     const courseBadge = getCourseBadgeClass(l.course_code);
 
-    // Morning shift badge & remarks (delete if confirmed, display only if rejected)
-    let mBadge = 'badge-warning';
-    if (l.morning_status === 'Confirmed') mBadge = 'badge-success';
-    if (l.morning_status === 'Rejected')  mBadge = 'badge-danger';
+    // Morning shift badge & remarks: remove 'Confirmed' badge if confirmed; display badge only if Rejected or Pending
+    let mBadgeHtml = '';
+    if (l.morning_status === 'Rejected') {
+      mBadgeHtml = `<div style="margin-top: 0.2rem;"><span class="badge badge-danger" style="font-size: 0.68rem;">Rejected</span></div>`;
+    } else if (l.morning_status === 'Pending' || (!l.morning_status && hasMorning)) {
+      mBadgeHtml = `<div style="margin-top: 0.2rem;"><span class="badge badge-warning" style="font-size: 0.68rem;">Pending</span></div>`;
+    }
+
     const mRemarksHtml = (l.morning_status === 'Rejected' && l.morning_remarks)
       ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(l.morning_remarks)}</div>`
       : '';
 
-    // Afternoon shift badge & remarks (delete if confirmed, display only if rejected)
-    let aBadge = 'badge-warning';
-    if (l.afternoon_status === 'Confirmed') aBadge = 'badge-success';
-    if (l.afternoon_status === 'Rejected')  aBadge = 'badge-danger';
+    // Afternoon shift badge & remarks: remove 'Confirmed' badge if confirmed; display badge only if Rejected or Pending
+    let aBadgeHtml = '';
+    if (l.afternoon_status === 'Rejected') {
+      aBadgeHtml = `<div style="margin-top: 0.2rem;"><span class="badge badge-danger" style="font-size: 0.68rem;">Rejected</span></div>`;
+    } else if (l.afternoon_status === 'Pending' || (!l.afternoon_status && hasAfternoon)) {
+      aBadgeHtml = `<div style="margin-top: 0.2rem;"><span class="badge badge-warning" style="font-size: 0.68rem;">Pending</span></div>`;
+    }
+
     const aRemarksHtml = (l.afternoon_status === 'Rejected' && l.afternoon_remarks)
       ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(l.afternoon_remarks)}</div>`
       : '';
@@ -888,7 +896,7 @@ function renderLogsTable(logs) {
 
     const morningShiftHtml = hasMorning ? `
       <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_morning} &ndash; ${l.time_out_morning}</div>
-      <div style="margin-top: 0.2rem;"><span class="badge ${mBadge}" style="font-size: 0.68rem;">${l.morning_status || 'Pending'}</span></div>
+      ${mBadgeHtml}
       ${mRemarksHtml}
     ` : `
       <div style="font-size: 0.82rem; color: var(--text-light);">--:-- &ndash; --:--</div>
@@ -897,7 +905,7 @@ function renderLogsTable(logs) {
 
     const afternoonShiftHtml = hasAfternoon ? `
       <div style="font-size: 0.82rem; font-weight: 600;">${l.time_in_afternoon} &ndash; ${l.time_out_afternoon}</div>
-      <div style="margin-top: 0.2rem;"><span class="badge ${aBadge}" style="font-size: 0.68rem;">${l.afternoon_status || 'Pending'}</span></div>
+      ${aBadgeHtml}
       ${aRemarksHtml}
     ` : `
       <div style="font-size: 0.82rem; color: var(--text-light);">--:-- &ndash; --:--</div>
