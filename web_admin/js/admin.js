@@ -825,8 +825,10 @@ function renderLogsTable(logs) {
       mBadgeHtml = `<div style="margin-top: 0.2rem;"><span class="badge badge-warning" style="font-size: 0.68rem;">Pending</span></div>`;
     }
 
+    const cleanRemarkText = (txt) => (txt || '').replace(/\s*\/\s*in car/gi, '').trim();
+
     const mRemarksHtml = (l.morning_status === 'Rejected' && l.morning_remarks)
-      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(l.morning_remarks)}</div>`
+      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(cleanRemarkText(l.morning_remarks))}</div>`
       : '';
 
     // Afternoon shift badge & remarks: remove 'Confirmed' badge if confirmed; display badge only if Rejected or Pending
@@ -838,7 +840,7 @@ function renderLogsTable(logs) {
     }
 
     const aRemarksHtml = (l.afternoon_status === 'Rejected' && l.afternoon_remarks)
-      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(l.afternoon_remarks)}</div>`
+      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(cleanRemarkText(l.afternoon_remarks))}</div>`
       : '';
 
     // Overall status badge
@@ -2484,7 +2486,7 @@ async function reviewAttendanceLog(attendanceId, action, shift = 'both') {
   if (shift === 'afternoon') shiftLabel = 'Afternoon Shift';
 
   const defaultPrompt = action === 'Rejected'
-    ? (shift === 'morning' ? 'Morning Time-Out taken off-site / in car' : (shift === 'afternoon' ? 'Afternoon photo invalid / off-site' : 'Selfie photo invalid / not on-site'))
+    ? (shift === 'morning' ? 'Morning Time-Out taken off-site' : (shift === 'afternoon' ? 'Afternoon photo invalid / off-site' : 'Selfie photo invalid / not on-site'))
     : (shift === 'morning' ? 'Morning shift verified and confirmed' : (shift === 'afternoon' ? 'Afternoon shift verified and confirmed' : 'Attendance log confirmed by Dean of Student Affairs'));
 
   const remarks = prompt(`[${shiftLabel}] Enter Dean Administrative Remarks (${action}):\n(Type the exact remark you want to record and show to the student intern)`, defaultPrompt);
