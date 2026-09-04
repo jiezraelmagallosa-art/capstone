@@ -890,9 +890,13 @@
       </div>
       <div
         style="margin-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-        <button class="btn btn-outline" id="drawerDownloadDtrBtn"
-          style="color: var(--navy-primary); font-weight: 700;">Download Student DTR (PDF)</button>
-        <button class="btn btn-navy" onclick="closeStudentDetailsModal()">Close Details</button>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-outline" id="drawerDownloadDtrBtn"
+            style="color: var(--navy-primary); font-weight: 700;">Download Student DTR (PDF)</button>
+          <button type="button" class="btn btn-danger" id="drawerDeleteStudentBtn"
+            style="padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 700;">Delete Account</button>
+        </div>
+        <button type="button" class="btn btn-navy" onclick="closeStudentDetailsModal()">Close Details</button>
       </div>
     </div>
   </div>
@@ -1073,7 +1077,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=7.2"></script>
+  <script src="js/admin.js?v=7.3"></script>
 </body>
 
 </html>

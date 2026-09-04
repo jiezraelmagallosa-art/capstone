@@ -2688,6 +2688,17 @@ async function openStudentDrawer(studentId) {
         <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.82rem; white-space: nowrap;" onclick="saveStudentCustomHours(${s.student_id})">Save Hours</button>
       </div>
     </div>
+
+    <!-- Dean Controls: Delete Student Account -->
+    <div style="border: 1px solid #fee2e2; padding: 1rem; border-radius: var(--radius-sm); background: #fef2f2; margin-top: 1.25rem;">
+      <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #b91c1c; margin-bottom: 0.35rem;">⚠️ Danger Zone: Delete Student Account</div>
+      <p style="font-size: 0.78rem; color: #7f1d1d; margin: 0 0 0.75rem 0; line-height: 1.4;">
+        Permanently delete this student's account and remove all attendance records, facial verification photos, daily journals, and OJT hours from the database.
+      </p>
+      <button type="button" class="btn btn-danger" style="padding: 0.45rem 0.95rem; font-size: 0.82rem; font-weight: 700;" onclick="deleteStudentAccount(${s.student_id}, '${escapeHtml(s.full_name).replace(/'/g, "\\'")}')">
+        Delete Student Account
+      </button>
+    </div>
   `;
 
   const modal = document.getElementById('studentDetailsModal');
@@ -2698,6 +2709,11 @@ async function openStudentDrawer(studentId) {
   const dtrBtn = document.getElementById('drawerDownloadDtrBtn');
   if (dtrBtn) {
     dtrBtn.onclick = () => downloadStudentDtrPdf(s.student_id);
+  }
+
+  const delBtn = document.getElementById('drawerDeleteStudentBtn');
+  if (delBtn) {
+    delBtn.onclick = () => deleteStudentAccount(s.student_id, s.full_name);
   }
 }
 
@@ -3022,6 +3038,39 @@ async function saveStudentAssignedSite(studentId) {
   }
 }
 
+async function deleteStudentAccount(studentId, studentName) {
+  const nameDisplay = studentName ? `"${studentName}"` : 'this student';
+  if (!confirm(`Are you sure you want to permanently delete the account of ${nameDisplay}?\n\nThis will permanently remove the student's profile, attendance records, facial verification photos, daily journals, and OJT records from the database.\n\nThis action CANNOT be undone.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(API_BASE + 'admin_student_manage.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'delete_student',
+        student_id: parseInt(studentId, 10)
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(data.message || 'Student account deleted successfully.');
+      closeStudentDetailsModal();
+      await fetchStudents();
+      fetchOverview();
+      fetchSites();
+      fetchCourses();
+      fetchLogs();
+    } else {
+      alert(data.message || 'Failed to delete student account.');
+    }
+  } catch (err) {
+    console.error('Delete student account error:', err);
+    alert('Server error executing student deletion.');
+  }
+}
+
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -3226,5 +3275,6 @@ window.applyAbsenceFilters = applyAbsenceFilters;
 window.filterReportByCourse = filterReportByCourse;
 window.filterReportByStatus = filterReportByStatus;
 window.filterReportBySite = filterReportBySite;
+window.deleteStudentAccount = deleteStudentAccount;
 
 

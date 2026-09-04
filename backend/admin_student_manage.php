@@ -130,6 +130,112 @@ try {
         exit();
     }
 
+    // ACTION 3: DELETE STUDENT ACCOUNT AND ALL LINKED RECORDS
+    if ($action === 'delete_student' || $action === 'delete') {
+        // 1. Verify student exists and retrieve full name
+        $stmt_check = $conn->prepare("SELECT student_id, full_name FROM student WHERE student_id = ? LIMIT 1");
+        $stmt_check->bind_param("i", $student_id);
+        $stmt_check->execute();
+        $res_check = $stmt_check->get_result();
+
+        if (!$res_check || $res_check->num_rows === 0) {
+            echo json_encode(["status" => "error", "message" => "Student record not found."]);
+            $stmt_check->close();
+            exit();
+        }
+
+        $student_info = $res_check->fetch_assoc();
+        $student_name = $student_info['full_name'] ?? 'Student';
+        $stmt_check->close();
+
+        // 2. Locate and remove physical image captures and absence files from disk
+        $project_root = dirname(__DIR__) . DIRECTORY_SEPARATOR;
+
+        // Unlink facial verification photos
+        $photo_stmt = $conn->prepare("
+            SELECT p.image_path 
+            FROM photo p
+            JOIN attendance a ON p.attendance_id = a.attendance_id
+            JOIN ojt o ON a.ojt_id = o.ojt_id
+            WHERE o.student_id = ?
+        ");
+        if ($photo_stmt) {
+            $photo_stmt->bind_param("i", $student_id);
+            $photo_stmt->execute();
+            $p_res = $photo_stmt->get_result();
+            while ($p_row = $p_res->fetch_assoc()) {
+                if (!empty($p_row['image_path'])) {
+                    $rel_path = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $p_row['image_path']);
+                    $full_path = $project_root . ltrim($rel_path, DIRECTORY_SEPARATOR);
+                    if (file_exists($full_path) && is_file($full_path)) {
+                        @unlink($full_path);
+                    }
+                }
+            }
+            $photo_stmt->close();
+        }
+
+        // Unlink absence supporting documents
+        $doc_stmt = $conn->prepare("SELECT supporting_document FROM absence_requests WHERE student_id = ? AND supporting_document IS NOT NULL");
+        if ($doc_stmt) {
+            $doc_stmt->bind_param("i", $student_id);
+            $doc_stmt->execute();
+            $d_res = $doc_stmt->get_result();
+            while ($d_row = $d_res->fetch_assoc()) {
+                if (!empty($d_row['supporting_document'])) {
+                    $rel_doc = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $d_row['supporting_document']);
+                    $full_doc = $project_root . ltrim($rel_doc, DIRECTORY_SEPARATOR);
+                    if (file_exists($full_doc) && is_file($full_doc)) {
+                        @unlink($full_doc);
+                    }
+                }
+            }
+            $doc_stmt->close();
+        }
+
+        // 3. Clean up database records across all child tables
+        // Photos
+        $conn->query("DELETE p FROM photo p 
+                      JOIN attendance a ON p.attendance_id = a.attendance_id 
+                      JOIN ojt o ON a.ojt_id = o.ojt_id 
+                      WHERE o.student_id = " . intval($student_id));
+
+        // Attendance
+        $conn->query("DELETE a FROM attendance a 
+                      JOIN ojt o ON a.ojt_id = o.ojt_id 
+                      WHERE o.student_id = " . intval($student_id));
+
+        // Daily Journals
+        $conn->query("DELETE FROM daily_journal WHERE student_id = " . intval($student_id));
+
+        // Absence Requests
+        $conn->query("DELETE FROM absence_requests WHERE student_id = " . intval($student_id));
+
+        // Site History
+        $conn->query("DELETE FROM student_site_history WHERE student_id = " . intval($student_id));
+
+        // OJT
+        $conn->query("DELETE FROM ojt WHERE student_id = " . intval($student_id));
+
+        // Finally, delete the student account
+        $del_stmt = $conn->prepare("DELETE FROM student WHERE student_id = ?");
+        $del_stmt->bind_param("i", $student_id);
+
+        if ($del_stmt->execute()) {
+            echo json_encode([
+                "status" => "success",
+                "message" => "Student account for {$student_name} has been permanently deleted from the database."
+            ]);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Database operation failed: " . $del_stmt->error
+            ]);
+        }
+        $del_stmt->close();
+        exit();
+    }
+
     echo json_encode(["status" => "error", "message" => "Invalid or unspecified action."]);
     $conn->close();
 
