@@ -1070,7 +1070,7 @@ function populateJournalSiteDropdown() {
   (cachedJournals || []).forEach(j => { if (j.site_name) sitesSet.add(j.site_name); });
 
   const sortedSites = Array.from(sitesSet).sort();
-  let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
+  let html = `<option value="ALL">All Partner Facilities</option>`;
   sortedSites.forEach(name => {
     html += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
   });
@@ -1092,7 +1092,9 @@ function populateJournalCourseDropdown() {
   const sorted = Array.from(coursesSet).sort();
   let html = `<option value="ALL">All Programs</option>`;
   sorted.forEach(code => {
-    html += `<option value="${code}">${code}</option>`;
+    const matched = (cachedCourses || []).find(c => (c.course_code || '').toUpperCase() === code);
+    const label = matched ? `${matched.course_code} — ${matched.course_name}` : code;
+    html += `<option value="${code}">${escapeHtml(label)}</option>`;
   });
   select.innerHTML = html;
   if (currentVal && (currentVal === 'ALL' || coursesSet.has(currentVal.toUpperCase()))) {
@@ -2946,10 +2948,9 @@ function populateDynamicCourseDropdowns() {
       return `<option value="${c.course_code}">${c.course_code} — ${c.course_name} (${cnt})</option>`;
     }).join('');
 
-  const logsOptions = `<option value="ALL">All Programs (${allLogs})</option>` +
+  const logsOptions = `<option value="ALL">All Programs</option>` +
     cachedCourses.map(c => {
-      const cnt = cachedLogs.filter(l => (l.course_code || '').toUpperCase() === c.course_code.toUpperCase()).length;
-      return `<option value="${c.course_code}">${c.course_code} — ${c.course_name} (${cnt})</option>`;
+      return `<option value="${c.course_code}">${c.course_code} — ${c.course_name}</option>`;
     }).join('');
 
   const reportOptions = `<option value="ALL">All Programs</option>` +
@@ -2963,6 +2964,12 @@ function populateDynamicCourseDropdowns() {
 
   const rf = document.getElementById('reportCourseFilterSelect');
   if (rf) { const cur = rf.value; rf.innerHTML = reportOptions; rf.value = cachedCourses.some(c => c.course_code === cur) || cur === 'ALL' ? cur : 'ALL'; }
+
+  const af = document.getElementById('absenceCourseSelectFilter');
+  if (af) { const cur = af.value; af.innerHTML = reportOptions; af.value = cachedCourses.some(c => c.course_code === cur) || cur === 'ALL' ? cur : 'ALL'; }
+
+  const jf = document.getElementById('journalCourseSelectFilter');
+  if (jf) { const cur = jf.value; jf.innerHTML = reportOptions; jf.value = cachedCourses.some(c => c.course_code === cur) || cur === 'ALL' ? cur : 'ALL'; }
 }
 
 async function saveStudentAssignedCourse(studentId) {
