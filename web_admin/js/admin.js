@@ -243,6 +243,8 @@ function showAppShell() {
   fetchLogs();
   fetchAbsences();
   fetchJournals();
+  fetchSites();
+  fetchCourses(false);
 }
 
 function switchTab(tabId) {
@@ -358,12 +360,17 @@ async function fetchStudents() {
     const data = await res.json();
     if (data.status === 'success') {
       cachedStudents = data.data || [];
-      updateCourseCounts(data.course_counts || {});
+      populateDynamicCourseDropdowns();
+      populateLogsSiteDropdown();
       filterByCourse(currentCourseFilter, false);
     }
   } catch (err) {
     console.error('Fetch students error:', err);
   }
+}
+
+function updateCourseCounts(counts) {
+  populateDynamicCourseDropdowns();
 }
 
 function handleStudentFilterChange() {
@@ -1595,6 +1602,7 @@ async function fetchSites() {
     if (data.status === 'success') {
       cachedSites = data.data || [];
       renderSitesTable(cachedSites);
+      populateLogsSiteDropdown();
     }
   } catch (err) {
     console.error('Fetch sites error:', err);
