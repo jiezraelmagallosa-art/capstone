@@ -525,7 +525,7 @@ function populateLogsSiteDropdown() {
   // 1. Logs Filter Dropdown
   const logsSiteSelect = document.getElementById('logsSiteSelectFilter');
   if (logsSiteSelect) {
-    let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
+    let html = `<option value="ALL">All Partner Facilities</option>`;
     sortedSites.forEach(name => {
       const isSelected = name === currentLogsSiteFilter ? 'selected' : '';
       html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
@@ -536,7 +536,7 @@ function populateLogsSiteDropdown() {
   // 2. Student Tracking Filter Dropdown
   const studentSiteSelect = document.getElementById('studentSiteSelectFilter');
   if (studentSiteSelect) {
-    let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
+    let html = `<option value="ALL">All Partner Facilities</option>`;
     sortedSites.forEach(name => {
       const isSelected = name === currentStudentSiteFilter ? 'selected' : '';
       html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
@@ -547,7 +547,7 @@ function populateLogsSiteDropdown() {
   // 3. Journal Filter Dropdown
   const journalSiteSelect = document.getElementById('journalSiteSelectFilter');
   if (journalSiteSelect) {
-    let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
+    let html = `<option value="ALL">All Partner Facilities</option>`;
     sortedSites.forEach(name => {
       const isSelected = name === currentJournalSiteFilter ? 'selected' : '';
       html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
@@ -558,7 +558,7 @@ function populateLogsSiteDropdown() {
   // 4. Report Filter Dropdown
   const reportSiteSelect = document.getElementById('reportSiteFilterSelect');
   if (reportSiteSelect) {
-    let html = `<option value="ALL">All Partner Facilities (${sortedSites.length})</option>`;
+    let html = `<option value="ALL">All Partner Facilities</option>`;
     sortedSites.forEach(name => {
       const isSelected = name === selectedReportSite ? 'selected' : '';
       html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
@@ -573,6 +573,9 @@ function setLogsDateFilter(filterKey) {
   const customInput = document.getElementById('logsCustomDateInput');
   if (filterKey === 'TODAY') {
     if (customInput) customInput.value = getLocalDateISO();
+  } else if (filterKey === 'ALL') {
+    if (customInput) customInput.value = '';
+    currentLogsCustomDate = '';
   }
   applyLogsFilters();
 }
@@ -627,7 +630,7 @@ function resetLogsFilters() {
   const dateSelect = document.getElementById('logsDateSelectFilter');
   if (dateSelect) dateSelect.value = 'TODAY';
   const customDate = document.getElementById('logsCustomDateInput');
-  if (customDate) { customDate.value = ''; customDate.style.display = 'none'; }
+  if (customDate) { customDate.value = getLocalDateISO(); customDate.style.display = ''; }
 
   const statusSelect = document.getElementById('logsStatusSelectFilter');
   if (statusSelect) statusSelect.value = 'ALL';
@@ -782,17 +785,9 @@ function renderLogsTable(logs) {
             <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
               No Attendance Logs Recorded for Today (${todayFormatted})
             </div>
-            <p style="font-size: 0.85rem; color: #64748b; max-width: 450px; margin: 0 auto 1.25rem auto;">
+            <p style="font-size: 0.85rem; color: #64748b; max-width: 450px; margin: 0 auto;">
               Interns may not have clocked in yet today, or may be assigned to afternoon shifts.
             </p>
-            <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
-              <button type="button" class="btn btn-navy" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="setLogsDateFilter('ALL')">
-                🗓️ View All Historical Logs
-              </button>
-              <button type="button" class="btn btn-outline" style="font-size: 0.82rem; padding: 0.45rem 1rem;" onclick="setLogsDateFilter('YESTERDAY')">
-                View Yesterday's Logs
-              </button>
-            </div>
           </td>
         </tr>`;
     } else {
@@ -1095,7 +1090,7 @@ function populateJournalCourseDropdown() {
   (cachedJournals || []).forEach(j => { if (j.course_code) coursesSet.add(j.course_code.toUpperCase()); });
 
   const sorted = Array.from(coursesSet).sort();
-  let html = `<option value="ALL">All Programs (${sorted.length})</option>`;
+  let html = `<option value="ALL">All Programs</option>`;
   sorted.forEach(code => {
     html += `<option value="${code}">${code}</option>`;
   });
@@ -1110,6 +1105,9 @@ function setJournalDateFilter(type) {
   const customInput = document.getElementById('journalCustomDateInput');
   if (type === 'TODAY') {
     if (customInput) customInput.value = getLocalDateISO();
+  } else if (type === 'ALL') {
+    if (customInput) customInput.value = '';
+    currentJournalCustomDate = '';
   }
   applyJournalFilters();
 }

@@ -394,8 +394,12 @@
               </div>
               <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
                 <button type="button" class="btn-filter-quick active" id="btnQuickToday"
-                  onclick="setLogsDateFilter('TODAY')" style="cursor: default;" title="Showing today's logs">
+                  onclick="setLogsDateFilter('TODAY')" title="Showing today's logs">
                   Today
+                </button>
+                <button type="button" class="btn-filter-quick" id="btnQuickAll"
+                  onclick="setLogsDateFilter('ALL')" title="Show all historical logs">
+                  All
                 </button>
               </div>
             </div>
@@ -565,8 +569,12 @@
               </div>
               <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
                 <button type="button" class="btn-filter-quick active" id="btnJournalQuickToday"
-                  onclick="setJournalDateFilter('TODAY')" style="cursor: default;" title="Showing today's submissions">
+                  onclick="setJournalDateFilter('TODAY')" title="Showing today's submissions">
                   Today
+                </button>
+                <button type="button" class="btn-filter-quick" id="btnJournalQuickAll"
+                  onclick="setJournalDateFilter('ALL')" title="Show all historical journal submissions">
+                  All
                 </button>
               </div>
             </div>
@@ -1077,7 +1085,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=7.4"></script>
+  <script src="js/admin.js?v=7.5"></script>
 </body>
 
 </html>
