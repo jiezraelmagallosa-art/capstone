@@ -1590,7 +1590,7 @@ async function deleteAllFilteredJournals() {
 
 async function fetchSites() {
   try {
-    const res = await fetch(API_BASE + 'admin_sites.php');
+    const res = await fetch(API_BASE + 'admin_sites.php' + getDeanQueryParam());
     const data = await res.json();
     if (data.status === 'success') {
       cachedSites = data.data || [];

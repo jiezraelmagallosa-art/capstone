@@ -120,6 +120,8 @@ try {
                 GROUP BY o.student_id, o.site_id");
         }
     }
+    // Clean up orphaned OJT records whose student no longer exists
+    @$conn->query("DELETE FROM ojt WHERE student_id NOT IN (SELECT student_id FROM student)");
 } catch (Throwable $e) {
     // Database tables not created yet or query suppressed
 }

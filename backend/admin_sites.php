@@ -30,8 +30,8 @@ try {
                 exit();
             }
 
-            // Check if active interns assigned
-            $check_stmt = $conn->prepare("SELECT COUNT(*) AS total FROM ojt WHERE site_id = ?");
+            // Check if active interns assigned (only count real existing students)
+            $check_stmt = $conn->prepare("SELECT COUNT(DISTINCT s.student_id) AS total FROM ojt o INNER JOIN student s ON o.student_id = s.student_id WHERE o.site_id = ?");
             $check_stmt->bind_param("i", $site_id);
             $check_stmt->execute();
             $assigned_count = intval($check_stmt->get_result()->fetch_assoc()['total'] ?? 0);
@@ -84,16 +84,34 @@ try {
 
     } else {
 
-        $sql = "SELECT
-                    ts.site_id,
-                    ts.site_code,
-                    ts.site_name,
-                    ts.location,
-                    COUNT(o.ojt_id) AS assigned_interns
-                FROM training_site ts
-                LEFT JOIN ojt o ON ts.site_id = o.site_id
-                GROUP BY ts.site_id
-                ORDER BY ts.site_name ASC";
+        $dean_id = isset($_GET['dean_id']) ? intval($_GET['dean_id']) : (isset($_POST['dean_id']) ? intval($_POST['dean_id']) : 0);
+
+        if ($dean_id > 0) {
+            // Count existing students assigned under this specific Dean
+            $sql = "SELECT
+                        ts.site_id,
+                        ts.site_code,
+                        ts.site_name,
+                        ts.location,
+                        COUNT(DISTINCT s.student_id) AS assigned_interns
+                    FROM training_site ts
+                    LEFT JOIN ojt o ON ts.site_id = o.site_id
+                    LEFT JOIN student s ON o.student_id = s.student_id AND s.dean_id = " . intval($dean_id) . "
+                    GROUP BY ts.site_id
+                    ORDER BY ts.site_name ASC";
+        } else {
+            $sql = "SELECT
+                        ts.site_id,
+                        ts.site_code,
+                        ts.site_name,
+                        ts.location,
+                        COUNT(DISTINCT s.student_id) AS assigned_interns
+                    FROM training_site ts
+                    LEFT JOIN ojt o ON ts.site_id = o.site_id
+                    LEFT JOIN student s ON o.student_id = s.student_id
+                    GROUP BY ts.site_id
+                    ORDER BY ts.site_name ASC";
+        }
 
         $result = $conn->query($sql);
         $sites = [];
