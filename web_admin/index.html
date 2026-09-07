@@ -724,7 +724,8 @@
 
   <!-- Live Photo Verification Preview Modal -->
   <div id="photoModal" class="modal-overlay" onclick="if(event.target === this) closePhotoModal()">
-    <div class="modal-card" style="max-width: 580px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
+    <div class="modal-card"
+      style="max-width: 580px; width: 95%; max-height: 90vh; display: flex; flex-direction: column;">
       <div class="modal-header" style="margin-bottom: 0.85rem;">
         <h3>Captured Live Facial Verification Photos</h3>
         <button class="close-btn" onclick="closePhotoModal()">&times;</button>
@@ -736,7 +737,8 @@
         style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); display: flex; flex-direction: column; gap: 0.6rem;">
         <div id="photoModalConfirmContainer" style="width: 100%;"></div>
         <div style="display: flex; justify-content: flex-end; width: 100%;">
-          <button type="button" class="btn btn-outline" onclick="closePhotoModal()" style="font-size: 0.82rem; padding: 0.4rem 1.15rem; font-weight: 600;">Close Verification</button>
+          <button type="button" class="btn btn-outline" onclick="closePhotoModal()"
+            style="font-size: 0.82rem; padding: 0.4rem 1.15rem; font-weight: 600;">Close Verification</button>
         </div>
       </div>
     </div>
@@ -744,10 +746,13 @@
 
   <!-- Tag Students in Group Photo Modal -->
   <div id="tagGroupModal" class="modal-overlay" onclick="if(event.target === this) closeTagGroupModal()">
-    <div class="modal-card" style="max-width: 680px; width: 95%; max-height: 92vh; display: flex; flex-direction: column;">
-      <div class="modal-header" style="margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.65rem;">
+    <div class="modal-card"
+      style="max-width: 680px; width: 95%; max-height: 92vh; display: flex; flex-direction: column;">
+      <div class="modal-header"
+        style="margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.65rem;">
         <div>
-          <h3 style="margin: 0; font-size: 1.15rem; color: var(--navy-primary); font-weight: 800;">Tag Students in Group Photo</h3>
+          <h3 style="margin: 0; font-size: 1.15rem; color: var(--navy-primary); font-weight: 800;">Tag Students in Group
+            Photo</h3>
           <p id="tagModalSubtitle" style="margin: 0.2rem 0 0 0; font-size: 0.78rem; color: var(--text-muted);">
             Credit attendance to all student interns identified in this group snapshot.
           </p>
@@ -757,7 +762,8 @@
 
       <div style="overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 0.85rem;">
         <!-- Shift to Credit Selector Bar -->
-        <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.75rem 0.9rem;">
+        <div
+          style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.75rem 0.9rem;">
           <div style="font-size: 0.78rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.45rem;">
             Select Shift to Credit:
           </div>
@@ -767,43 +773,55 @@
         </div>
 
         <!-- Photo Snapshot Preview Card -->
-        <div id="tagModalPhotoCard" style="border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden; background: #ffffff;">
-          <div style="padding: 0.5rem 0.85rem; background: var(--bg-canvas); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+        <div id="tagModalPhotoCard"
+          style="border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden; background: #ffffff;">
+          <div
+            style="padding: 0.5rem 0.85rem; background: var(--bg-canvas); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
             <div style="font-size: 0.78rem; font-weight: 700; color: var(--navy-primary);" id="tagPhotoShiftLabel">
               Group Snapshot Reference
             </div>
-            <div id="tagModalShiftTimeBadge" class="badge badge-info" style="font-size: 0.72rem; padding: 0.2rem 0.6rem; font-weight: 700;">
+            <div id="tagModalShiftTimeBadge" class="badge badge-info"
+              style="font-size: 0.72rem; padding: 0.2rem 0.6rem; font-weight: 700;">
               05:44 AM - 12:21 PM
             </div>
           </div>
-          <div style="max-height: 220px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #0f172a;">
-            <img id="tagModalPreviewImg" src="" alt="Group Snapshot" style="max-height: 220px; width: auto; max-width: 100%; object-fit: contain; cursor: pointer;" onclick="viewTagPhotoFull()">
+          <div
+            style="max-height: 220px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #0f172a;">
+            <img id="tagModalPreviewImg" src="" alt="Group Snapshot"
+              style="max-height: 220px; width: auto; max-width: 100%; object-fit: contain; cursor: pointer;"
+              onclick="viewTagPhotoFull()">
           </div>
         </div>
 
         <!-- Search & Filter Bar -->
         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
           <div style="flex: 1; min-width: 200px;">
-            <input type="text" id="tagStudentSearchInput" class="form-control" placeholder="Search student by name, student ID, or course..." oninput="filterTagStudentList()" style="font-size: 0.82rem; padding: 0.45rem 0.75rem;">
+            <input type="text" id="tagStudentSearchInput" class="form-control"
+              placeholder="Search student by name, student ID, or course..." oninput="filterTagStudentList()"
+              style="font-size: 0.82rem; padding: 0.45rem 0.75rem;">
           </div>
           <div style="width: 160px;">
-            <select id="tagCourseFilterSelect" class="form-control" onchange="filterTagStudentList()" style="font-size: 0.82rem; padding: 0.45rem 0.5rem;">
+            <select id="tagCourseFilterSelect" class="form-control" onchange="filterTagStudentList()"
+              style="font-size: 0.82rem; padding: 0.45rem 0.5rem;">
               <option value="ALL">All Programs</option>
               <option value="BSCS">BSCS</option>
               <option value="BSIS">BSIS</option>
               <option value="BLIS">BLIS</option>
             </select>
           </div>
-          <button type="button" class="btn btn-outline" onclick="selectAllFilteredStudents(true)" style="font-size: 0.75rem; padding: 0.42rem 0.65rem;" title="Select all currently visible students">
+          <button type="button" class="btn btn-outline" onclick="selectAllFilteredStudents(true)"
+            style="font-size: 0.75rem; padding: 0.42rem 0.65rem;" title="Select all currently visible students">
             Select All
           </button>
-          <button type="button" class="btn btn-outline" onclick="selectAllFilteredStudents(false)" style="font-size: 0.75rem; padding: 0.42rem 0.65rem;" title="Uncheck all students except submitter">
+          <button type="button" class="btn btn-outline" onclick="selectAllFilteredStudents(false)"
+            style="font-size: 0.75rem; padding: 0.42rem 0.65rem;" title="Uncheck all students except submitter">
             Clear
           </button>
         </div>
 
         <!-- Student Checklist Roster Container -->
-        <div style="border: 1px solid var(--border-light); border-radius: var(--radius-sm); max-height: 240px; overflow-y: auto; background: #ffffff;">
+        <div
+          style="border: 1px solid var(--border-light); border-radius: var(--radius-sm); max-height: 240px; overflow-y: auto; background: #ffffff;">
           <table class="data-table" style="margin: 0; width: 100%;">
             <thead>
               <tr style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
@@ -822,9 +840,11 @@
       </div>
 
       <!-- Modal Footer -->
-      <div style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+      <div
+        style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <span id="tagSelectedCountBadge" class="badge badge-success" style="font-size: 0.75rem; padding: 0.3rem 0.65rem; font-weight: 700;">
+          <span id="tagSelectedCountBadge" class="badge badge-success"
+            style="font-size: 0.75rem; padding: 0.3rem 0.65rem; font-weight: 700;">
             1 Student Selected
           </span>
           <span style="font-size: 0.75rem; color: var(--text-muted);">
@@ -832,8 +852,10 @@
           </span>
         </div>
         <div style="display: flex; gap: 0.5rem;">
-          <button type="button" class="btn btn-outline" onclick="closeTagGroupModal()" style="font-size: 0.82rem; padding: 0.4rem 1rem;">Cancel</button>
-          <button type="button" id="btnSubmitTagAttendance" class="btn btn-navy" onclick="submitTagGroupAttendance()" style="font-size: 0.82rem; padding: 0.4rem 1.15rem; font-weight: 700;">
+          <button type="button" class="btn btn-outline" onclick="closeTagGroupModal()"
+            style="font-size: 0.82rem; padding: 0.4rem 1rem;">Cancel</button>
+          <button type="button" id="btnSubmitTagAttendance" class="btn btn-navy" onclick="submitTagGroupAttendance()"
+            style="font-size: 0.82rem; padding: 0.4rem 1.15rem; font-weight: 700;">
             Confirm &amp; Credit Attendance
           </button>
         </div>
