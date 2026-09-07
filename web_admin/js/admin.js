@@ -42,6 +42,10 @@ let currentModalPhotos = [];
 let currentModalPhotoIndex = 0;
 let currentLightboxGallery = null;
 let currentLightboxIndex = -1;
+let currentTagAttendanceId = null;
+let currentTagShift = 'morning';
+let taggedStudentIds = new Set();
+let tagModalActivePhotos = [];
 
 // UI Initialization & Main Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -136,6 +140,10 @@ function setupEventListeners() {
       const photoModal = document.getElementById('photoModal');
       if (photoModal && photoModal.classList.contains('active')) {
         closePhotoModal();
+      }
+      const tagModal = document.getElementById('tagGroupModal');
+      if (tagModal && tagModal.classList.contains('active')) {
+        closeTagGroupModal();
       }
     }
   });
@@ -862,6 +870,7 @@ function renderLogsTable(logs) {
       evalControls = `
         <div class="dean-action-cell">
           <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
+          <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'morning')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
         </div>
       `;
@@ -869,8 +878,9 @@ function renderLogsTable(logs) {
       // 2. Both shifts, morning not yet reviewed
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'both')">Confirm</button>
-          <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'both')">Reject</button>
+          <button class="dean-btn-confirm" title="Confirm Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm (AM)</button>
+          <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id})">Tag</button>
+          <button class="dean-btn-reject" title="Reject Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject (AM)</button>
         </div>
       `;
     } else if (hasMorning && hasAfternoon && !isMorningPending) {
@@ -878,6 +888,7 @@ function renderLogsTable(logs) {
       evalControls = `
         <div class="dean-action-cell">
           <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
+          <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'afternoon')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
         </div>
       `;
@@ -886,6 +897,7 @@ function renderLogsTable(logs) {
       evalControls = `
         <div class="dean-action-cell">
           <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
+          <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'afternoon')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
         </div>
       `;
@@ -2327,29 +2339,85 @@ function openPhotoModal(photos, attendanceId = null) {
   currentModalPhotos = Array.isArray(photos) ? photos : [];
   currentModalPhotoIndex = 0;
 
+  const logRecord = attendanceId ? (cachedLogs || []).find(x => x.attendance_id == attendanceId) : null;
+
   if (currentModalPhotos.length === 0) {
-    container.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-muted);">No facial verification photos recorded for this log.</div>`;
+    container.innerHTML = `
+      <div style="padding: 2.5rem 1.5rem; text-align: center; color: var(--text-muted); background: #f8fafc; border-radius: var(--radius-sm); border: 1px dashed var(--border-light);">
+        <div style="font-size: 1.8rem; margin-bottom: 0.5rem;">📷</div>
+        <div style="font-weight: 700; color: var(--navy-primary); font-size: 0.95rem; margin-bottom: 0.25rem;">No Photos Recorded</div>
+        <p style="font-size: 0.8rem; margin: 0; color: #64748b;">No facial verification photos recorded for this attendance log.</p>
+      </div>`;
   } else {
-    container.innerHTML = currentModalPhotos.map((p, idx) => `
-      <div style="margin-bottom: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
-        <div style="padding: 0.55rem 0.85rem; background-color: var(--bg-canvas); font-weight: 700; font-size: 0.8rem; color: var(--navy-primary); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light);">
-          <span>Shift: ${escapeHtml(p.shift_type)} &bull; Captured at ${escapeHtml(p.captured_at)}</span>
-          <button type="button" class="btn-view-full-pill" onclick="openModalPhotoByIndex(${idx})" title="Click to view whole picture">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-            View Whole Picture
-          </button>
-        </div>
-        <div class="photo-preview-wrapper" onclick="openModalPhotoByIndex(${idx})" title="Click to view whole picture (Full Size)">
-          <img src="${p.full_url}" class="verification-preview-img" alt="Shift: ${escapeHtml(p.shift_type)}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';">
-          <div class="photo-hover-overlay">
-            <span class="photo-hover-badge">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-              Click to view whole picture
+    container.innerHTML = currentModalPhotos.map((p, idx) => {
+      const isMorning = (p.shift_type || '').toLowerCase().includes('morning');
+      const shiftKey = isMorning ? 'morning' : 'afternoon';
+      const shiftName = isMorning ? 'Morning Shift' : 'Afternoon Shift';
+
+      let shiftStatus = 'Pending';
+      let badgeClass = 'badge-warning';
+      if (logRecord) {
+        const s = isMorning ? logRecord.morning_status : logRecord.afternoon_status;
+        if (s === 'Confirmed') {
+          shiftStatus = 'Confirmed';
+          badgeClass = 'badge-success';
+        } else if (s === 'Rejected') {
+          shiftStatus = 'Rejected';
+          badgeClass = 'badge-danger';
+        } else {
+          shiftStatus = 'Pending';
+          badgeClass = 'badge-warning';
+        }
+      }
+
+      const evalHtml = attendanceId ? `
+        <div style="padding: 0.65rem 0.85rem; background: #f8fafc; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.45rem;">
+            <span style="font-weight: 700; font-size: 0.8rem; color: var(--navy-primary); display: flex; align-items: center; gap: 0.25rem;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              Evaluate Verification:
             </span>
+            <span style="font-weight: 700; font-size: 0.78rem; color: #334155;">${shiftName}</span>
+            <span class="badge ${badgeClass}" style="font-size: 0.68rem; padding: 0.15rem 0.45rem;">${shiftStatus}</span>
+          </div>
+          <div style="display: flex; gap: 0.35rem;">
+            <button type="button" class="btn btn-success" style="font-size: 0.75rem; padding: 0.32rem 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', '${shiftKey}'); closePhotoModal();">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Confirm
+            </button>
+            <button type="button" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.32rem 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', '${shiftKey}'); closePhotoModal();">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              Reject
+            </button>
           </div>
         </div>
-      </div>
-    `).join('');
+      ` : '';
+
+      return `
+        <div style="margin-bottom: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+          <div style="padding: 0.55rem 0.85rem; background-color: var(--bg-canvas); font-weight: 700; font-size: 0.8rem; color: var(--navy-primary); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-light);">
+            <div style="display: flex; align-items: center; gap: 0.45rem;">
+              <span class="badge" style="font-size: 0.72rem; font-weight: 700; background: ${isMorning ? '#e0f2fe' : '#fef3c7'}; color: ${isMorning ? '#0369a1' : '#b45309'}; border: 1px solid ${isMorning ? '#bae6fd' : '#fde68a'}; padding: 0.2rem 0.5rem; border-radius: 4px;">Shift: ${escapeHtml(p.shift_type)}</span>
+              <span style="color: var(--text-muted); font-size: 0.76rem;">Captured at ${escapeHtml(p.captured_at)}</span>
+            </div>
+            <button type="button" class="btn-view-full-pill" onclick="openModalPhotoByIndex(${idx})" title="Click to view whole picture">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+              View Whole Picture
+            </button>
+          </div>
+          <div class="photo-preview-wrapper" onclick="openModalPhotoByIndex(${idx})" title="Click to view whole picture (Full Size)">
+            <img src="${p.full_url}" class="verification-preview-img" alt="Shift: ${escapeHtml(p.shift_type)}" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80';">
+            <div class="photo-hover-overlay">
+              <span class="photo-hover-badge">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
+                Click to view whole picture
+              </span>
+            </div>
+          </div>
+          ${evalHtml}
+        </div>
+      `;
+    }).join('');
   }
 
   if (confirmContainer) {
@@ -2360,46 +2428,46 @@ function openPhotoModal(photos, attendanceId = null) {
 
       let modalActionsHtml = '';
       if (hasM) {
+        const mStatus = logRecord ? (logRecord.morning_status || 'Pending') : 'Pending';
+        const mBadge = mStatus === 'Confirmed' ? 'badge-success' : (mStatus === 'Rejected' ? 'badge-danger' : 'badge-warning');
         modalActionsHtml += `
-          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
-            <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Morning Shift</div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.45rem 0.65rem; flex: 1; min-width: 140px; background: #f8fafc;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span style="font-weight: 700; font-size: 0.78rem; color: #1e293b;">Morning Shift</span>
+              <span class="badge ${mBadge}" style="font-size: 0.65rem;">${mStatus}</span>
+            </div>
             <div style="display: flex; gap: 0.35rem;">
-              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'morning'); closePhotoModal();">Confirm</button>
-              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'morning'); closePhotoModal();">Reject</button>
+              <button type="button" class="btn btn-success" style="font-size: 0.75rem; padding: 0.28rem 0.65rem; font-weight: 700; flex: 1;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'morning'); closePhotoModal();">Confirm</button>
+              <button type="button" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.28rem 0.65rem; font-weight: 700; flex: 1;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'morning'); closePhotoModal();">Reject</button>
             </div>
           </div>
         `;
       }
       if (hasA) {
+        const aStatus = logRecord ? (logRecord.afternoon_status || 'Pending') : 'Pending';
+        const aBadge = aStatus === 'Confirmed' ? 'badge-success' : (aStatus === 'Rejected' ? 'badge-danger' : 'badge-warning');
         modalActionsHtml += `
-          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
-            <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Afternoon Shift</div>
+          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.45rem 0.65rem; flex: 1; min-width: 140px; background: #f8fafc;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+              <span style="font-weight: 700; font-size: 0.78rem; color: #1e293b;">Afternoon Shift</span>
+              <span class="badge ${aBadge}" style="font-size: 0.65rem;">${aStatus}</span>
+            </div>
             <div style="display: flex; gap: 0.35rem;">
-              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'afternoon'); closePhotoModal();">Confirm</button>
-              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'afternoon'); closePhotoModal();">Reject</button>
+              <button type="button" class="btn btn-success" style="font-size: 0.75rem; padding: 0.28rem 0.65rem; font-weight: 700; flex: 1;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'afternoon'); closePhotoModal();">Confirm</button>
+              <button type="button" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.28rem 0.65rem; font-weight: 700; flex: 1;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'afternoon'); closePhotoModal();">Reject</button>
             </div>
           </div>
         `;
       }
-      if (hasM && hasA) {
-        modalActionsHtml += `
-          <div style="border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.5rem; flex: 1; min-width: 160px; background: #f8fafc;">
-            <div style="font-weight: 700; font-size: 0.78rem; margin-bottom: 0.35rem; color: #1e293b;">Entire Day</div>
-            <div style="display: flex; gap: 0.35rem;">
-              <button class="btn btn-success" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Confirmed', 'both'); closePhotoModal();">Confirm Both</button>
-              <button class="btn btn-danger" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 700;" onclick="reviewAttendanceLog(${attendanceId}, 'Rejected', 'both'); closePhotoModal();">Reject Both</button>
-            </div>
-          </div>
-        `;
-      }
+      // Note: "Entire Day" button has been completely removed. Only Morning and Afternoon shift evaluations are supported.
 
-      confirmContainer.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 0.6rem; width: 100%;">
-          <div style="font-size: 0.82rem; font-weight: 700; color: var(--navy-primary);">Evaluate Shift Verification:</div>
+      confirmContainer.innerHTML = modalActionsHtml ? `
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; width: 100%;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--navy-primary);">Shift Actions Summary:</div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
             ${modalActionsHtml}
           </div>
-        </div>`;
+        </div>` : '';
     } else {
       confirmContainer.innerHTML = '';
     }
@@ -2488,10 +2556,10 @@ function handleLightboxBackdropClick(event) {
   }
 }
 
-async function reviewAttendanceLog(attendanceId, action, shift = 'both') {
-  let shiftLabel = 'Entire Day';
-  if (shift === 'morning') shiftLabel = 'Morning Shift';
+async function reviewAttendanceLog(attendanceId, action, shift = 'morning') {
+  let shiftLabel = 'Morning Shift';
   if (shift === 'afternoon') shiftLabel = 'Afternoon Shift';
+  if (shift === 'both') shiftLabel = 'Entire Day';
 
   const defaultPrompt = action === 'Rejected'
     ? (shift === 'morning' ? 'Morning Time-Out taken off-site' : (shift === 'afternoon' ? 'Afternoon photo invalid / off-site' : 'Selfie photo invalid / not on-site'))
@@ -2524,6 +2592,362 @@ async function reviewAttendanceLog(attendanceId, action, shift = 'both') {
   } catch (err) {
     console.error('Review attendance log error:', err);
     alert('Server error processing request.');
+  }
+}
+
+// ==================== TAG GROUP ATTENDANCE MODAL LOGIC ====================
+function openTagGroupModal(attendanceId, preferredShift = null) {
+  const log = (cachedLogs || []).find(x => x.attendance_id == attendanceId);
+  if (!log) {
+    alert('Attendance log record not found.');
+    return;
+  }
+
+  currentTagAttendanceId = attendanceId;
+  tagModalActivePhotos = log.photos || [];
+
+  const hasMorning = (log.time_in_morning && log.time_in_morning !== '--:--') || (log.time_out_morning && log.time_out_morning !== '--:--');
+  const hasAfternoon = (log.time_in_afternoon && log.time_in_afternoon !== '--:--') || (log.time_out_afternoon && log.time_out_afternoon !== '--:--');
+
+  // Determine initial shift
+  if (preferredShift && ['morning', 'afternoon', 'both'].includes(preferredShift)) {
+    currentTagShift = preferredShift;
+  } else if (hasMorning && !hasAfternoon) {
+    currentTagShift = 'morning';
+  } else if (!hasMorning && hasAfternoon) {
+    currentTagShift = 'afternoon';
+  } else if (hasMorning && hasAfternoon) {
+    if (log.morning_status === 'Pending' && log.afternoon_status === 'Pending') {
+      currentTagShift = 'both';
+    } else if (log.morning_status === 'Pending') {
+      currentTagShift = 'morning';
+    } else {
+      currentTagShift = 'afternoon';
+    }
+  } else {
+    currentTagShift = 'morning';
+  }
+
+  // Pre-select the submitter
+  taggedStudentIds = new Set();
+  if (log.student_id) {
+    taggedStudentIds.add(Number(log.student_id));
+  }
+
+  // Set Subtitle
+  const subEl = document.getElementById('tagModalSubtitle');
+  if (subEl) {
+    subEl.textContent = `Submitted by ${log.full_name} (${log.course_code || 'Intern'}) • Date: ${log.date}`;
+  }
+
+  // Render Shift Selector Bar
+  renderTagShiftSelector(log, hasMorning, hasAfternoon);
+
+  // Update Photo & Timestamps for selected shift
+  updateTagModalPhotoDisplay(log);
+
+  // Reset search and filter
+  const searchInput = document.getElementById('tagStudentSearchInput');
+  if (searchInput) searchInput.value = '';
+  const courseFilter = document.getElementById('tagCourseFilterSelect');
+  if (courseFilter) courseFilter.value = 'ALL';
+
+  // Render Student Roster
+  renderTagStudentList();
+
+  // Show Modal
+  const modal = document.getElementById('tagGroupModal');
+  if (modal) modal.classList.add('active');
+}
+
+function renderTagShiftSelector(log, hasMorning, hasAfternoon) {
+  const container = document.getElementById('tagShiftSelectorContainer');
+  if (!container) return;
+
+  let optionsHtml = '';
+
+  if (hasMorning) {
+    const isChecked = currentTagShift === 'morning' ? 'checked' : '';
+    optionsHtml += `
+      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+        <input type="radio" name="tagShiftRadio" value="morning" ${isChecked} onchange="onTagShiftChange('morning')">
+        <span>Morning Shift (${log.time_in_morning} - ${log.time_out_morning})</span>
+      </label>
+    `;
+  }
+
+  if (hasAfternoon) {
+    const isChecked = currentTagShift === 'afternoon' ? 'checked' : '';
+    optionsHtml += `
+      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+        <input type="radio" name="tagShiftRadio" value="afternoon" ${isChecked} onchange="onTagShiftChange('afternoon')">
+        <span>Afternoon Shift (${log.time_in_afternoon} - ${log.time_out_afternoon})</span>
+      </label>
+    `;
+  }
+
+  if (hasMorning && hasAfternoon) {
+    const isChecked = currentTagShift === 'both' ? 'checked' : '';
+    optionsHtml += `
+      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+        <input type="radio" name="tagShiftRadio" value="both" ${isChecked} onchange="onTagShiftChange('both')">
+        <span>Both Shifts / Full Day</span>
+      </label>
+    `;
+  }
+
+  container.innerHTML = optionsHtml;
+}
+
+function onTagShiftChange(newShift) {
+  currentTagShift = newShift;
+  const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
+  if (log) {
+    updateTagModalPhotoDisplay(log);
+  }
+}
+
+function updateTagModalPhotoDisplay(log) {
+  const photoImg = document.getElementById('tagModalPreviewImg');
+  const shiftBadge = document.getElementById('tagModalShiftTimeBadge');
+  const shiftLabel = document.getElementById('tagPhotoShiftLabel');
+
+  let timeText = '';
+  if (currentTagShift === 'morning') {
+    timeText = `${log.time_in_morning} - ${log.time_out_morning} (Morning)`;
+    if (shiftLabel) shiftLabel.textContent = 'Morning Shift Group Snapshot';
+  } else if (currentTagShift === 'afternoon') {
+    timeText = `${log.time_in_afternoon} - ${log.time_out_afternoon} (Afternoon)`;
+    if (shiftLabel) shiftLabel.textContent = 'Afternoon Shift Group Snapshot';
+  } else {
+    timeText = `${log.time_in_morning} - ${log.time_out_afternoon} (Full Day)`;
+    if (shiftLabel) shiftLabel.textContent = 'Full Day Group Snapshot Reference';
+  }
+
+  if (shiftBadge) shiftBadge.textContent = timeText;
+
+  // Pick relevant photo
+  let targetPhoto = null;
+  if (tagModalActivePhotos && tagModalActivePhotos.length > 0) {
+    if (currentTagShift === 'morning') {
+      targetPhoto = tagModalActivePhotos.find(p => (p.shift_type || '').toLowerCase().includes('morning')) || tagModalActivePhotos[0];
+    } else if (currentTagShift === 'afternoon') {
+      targetPhoto = tagModalActivePhotos.find(p => (p.shift_type || '').toLowerCase().includes('afternoon')) || tagModalActivePhotos[tagModalActivePhotos.length - 1];
+    } else {
+      targetPhoto = tagModalActivePhotos[0];
+    }
+  }
+
+  if (photoImg) {
+    if (targetPhoto && targetPhoto.full_url) {
+      photoImg.src = targetPhoto.full_url;
+      photoImg.style.display = 'block';
+    } else {
+      photoImg.src = '';
+      photoImg.style.display = 'none';
+    }
+  }
+}
+
+function renderTagStudentList() {
+  const tbody = document.getElementById('tagStudentListTbody');
+  if (!tbody) return;
+
+  const searchInput = document.getElementById('tagStudentSearchInput');
+  const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  const courseFilter = document.getElementById('tagCourseFilterSelect');
+  const courseQ = courseFilter ? courseFilter.value : 'ALL';
+
+  const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
+  const submitterId = log ? Number(log.student_id) : 0;
+
+  // Sort students: submitter first, then by full_name
+  const sortedStudents = [...(cachedStudents || [])].sort((a, b) => {
+    if (Number(a.student_id) === submitterId) return -1;
+    if (Number(b.student_id) === submitterId) return 1;
+    return (a.full_name || '').localeCompare(b.full_name || '');
+  });
+
+  const filtered = sortedStudents.filter(s => {
+    if (courseQ !== 'ALL' && s.course_code !== courseQ) return false;
+    if (q) {
+      const match = (s.full_name && s.full_name.toLowerCase().includes(q)) ||
+                    (s.student_number && s.student_number.toLowerCase().includes(q)) ||
+                    (s.course_code && s.course_code.toLowerCase().includes(q)) ||
+                    (s.site_name && s.site_name.toLowerCase().includes(q));
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem;">
+          No student interns match current search/filter criteria.
+        </td>
+      </tr>
+    `;
+    updateTagSelectedCounter();
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(s => {
+    const isSubmitter = Number(s.student_id) === submitterId;
+    const isChecked = taggedStudentIds.has(Number(s.student_id));
+    const courseBadge = getCourseBadgeClass(s.course_code);
+    const rowBg = isChecked ? (isSubmitter ? '#f0fdf4' : '#f8fafc') : '#ffffff';
+
+    return `
+      <tr style="background: ${rowBg}; transition: background 0.15s ease;">
+        <td style="text-align: center; vertical-align: middle; padding: 0.45rem 0.5rem;">
+          <input type="checkbox" 
+                 id="chkStudent_${s.student_id}" 
+                 value="${s.student_id}" 
+                 ${isChecked ? 'checked' : ''} 
+                 ${isSubmitter ? 'disabled title="Submitter is automatically included"' : `onchange="toggleTaggedStudent(${s.student_id}, this.checked)"`}
+                 style="cursor: pointer; width: 16px; height: 16px; accent-color: #1e3a8a;">
+        </td>
+        <td style="vertical-align: middle; padding: 0.45rem 0.75rem;">
+          <div style="font-weight: 700; color: var(--navy-primary); font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+            ${escapeHtml(s.full_name)}
+            ${isSubmitter ? '<span class="badge badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.4rem;">Submitter</span>' : ''}
+          </div>
+        </td>
+        <td style="vertical-align: middle; padding: 0.45rem 0.75rem; font-size: 0.8rem; color: var(--text-muted);">
+          ${s.student_number || '--'}
+        </td>
+        <td style="vertical-align: middle; padding: 0.45rem 0.75rem;">
+          <span class="badge ${courseBadge}" style="font-size: 0.7rem;">${s.course_code || 'N/A'}</span>
+        </td>
+        <td style="vertical-align: middle; padding: 0.45rem 0.75rem; font-size: 0.78rem; color: #64748b;">
+          ${escapeHtml(s.site_name || 'Unassigned')}
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  updateTagSelectedCounter();
+}
+
+function toggleTaggedStudent(studentId, isChecked) {
+  const sid = Number(studentId);
+  if (isChecked) {
+    taggedStudentIds.add(sid);
+  } else {
+    taggedStudentIds.delete(sid);
+  }
+  updateTagSelectedCounter();
+}
+
+function selectAllFilteredStudents(selectAll) {
+  const searchInput = document.getElementById('tagStudentSearchInput');
+  const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  const courseFilter = document.getElementById('tagCourseFilterSelect');
+  const courseQ = courseFilter ? courseFilter.value : 'ALL';
+
+  const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
+  const submitterId = log ? Number(log.student_id) : 0;
+
+  const filtered = (cachedStudents || []).filter(s => {
+    if (courseQ !== 'ALL' && s.course_code !== courseQ) return false;
+    if (q) {
+      const match = (s.full_name && s.full_name.toLowerCase().includes(q)) ||
+                    (s.student_number && s.student_number.toLowerCase().includes(q)) ||
+                    (s.course_code && s.course_code.toLowerCase().includes(q)) ||
+                    (s.site_name && s.site_name.toLowerCase().includes(q));
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  filtered.forEach(s => {
+    const sid = Number(s.student_id);
+    if (selectAll) {
+      taggedStudentIds.add(sid);
+    } else {
+      if (sid !== submitterId) {
+        taggedStudentIds.delete(sid);
+      }
+    }
+  });
+
+  renderTagStudentList();
+}
+
+function updateTagSelectedCounter() {
+  const badge = document.getElementById('tagSelectedCountBadge');
+  if (badge) {
+    const count = taggedStudentIds.size;
+    badge.textContent = `${count} Student${count === 1 ? '' : 's'} Selected`;
+  }
+}
+
+function filterTagStudentList() {
+  renderTagStudentList();
+}
+
+function closeTagGroupModal() {
+  const modal = document.getElementById('tagGroupModal');
+  if (modal) modal.classList.remove('active');
+  currentTagAttendanceId = null;
+  taggedStudentIds.clear();
+}
+
+function viewTagPhotoFull() {
+  const photoImg = document.getElementById('tagModalPreviewImg');
+  if (photoImg && photoImg.src) {
+    openImageLightbox(photoImg.src, 'Group Verification Photo', 'Group Snapshot');
+  }
+}
+
+async function submitTagGroupAttendance() {
+  if (!currentTagAttendanceId) {
+    alert('No reference attendance log selected.');
+    return;
+  }
+
+  if (taggedStudentIds.size === 0) {
+    alert('Please select at least one student intern present in the photo.');
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmitTagAttendance');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Crediting Attendance...';
+  }
+
+  try {
+    const res = await fetch(API_BASE + 'admin_tag_group_attendance.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        attendance_id: currentTagAttendanceId,
+        shift: currentTagShift,
+        tagged_student_ids: Array.from(taggedStudentIds),
+        dean_id: currentUser ? currentUser.user_id : 0
+      })
+    });
+
+    const data = await res.json();
+    if (data.status === 'success') {
+      alert(data.message);
+      closeTagGroupModal();
+      fetchLogs();
+      fetchOverview();
+      fetchStudents();
+    } else {
+      alert(data.message || 'Error crediting attendance.');
+    }
+  } catch (err) {
+    console.error('Error submitting tag group attendance:', err);
+    alert('Server communication error. Please try again.');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = 'Confirm & Credit Attendance';
+    }
   }
 }
 

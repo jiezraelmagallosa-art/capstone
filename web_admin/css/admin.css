@@ -1059,6 +1059,29 @@ body {
   box-shadow: 0 2px 5px rgba(185, 28, 28, 0.25);
 }
 
+.dean-btn-tag {
+  display: block;
+  width: 100%;
+  padding: 0.38rem 0.6rem;
+  background-color: #1e3a8a;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.dean-btn-tag:hover {
+  background-color: #172554;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(30, 58, 138, 0.25);
+}
+
 /* Ensure html2pdf renders full document height without artificial padding */
 .html2pdf__overlay {
   height: auto !important;
