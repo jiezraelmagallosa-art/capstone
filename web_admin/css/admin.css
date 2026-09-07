@@ -1082,6 +1082,27 @@ body {
   box-shadow: 0 2px 5px rgba(30, 58, 138, 0.25);
 }
 
+.tag-photo-slot {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.4rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tag-photo-slot:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.tag-photo-slot.active {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+}
+
 /* Ensure html2pdf renders full document height without artificial padding */
 .html2pdf__overlay {
   height: auto !important;

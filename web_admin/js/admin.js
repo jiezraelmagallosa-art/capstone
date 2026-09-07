@@ -46,6 +46,8 @@ let currentTagAttendanceId = null;
 let currentTagShift = 'morning';
 let taggedStudentIds = new Set();
 let tagModalActivePhotos = [];
+let currentTagPhotoSlotIndex = 0;
+let tagPhotoSlots = [];
 
 // UI Initialization & Main Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -869,7 +871,6 @@ function renderLogsTable(logs) {
       // 1. Morning shift only
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm</button>
           <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'morning')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
         </div>
@@ -878,16 +879,14 @@ function renderLogsTable(logs) {
       // 2. Both shifts, morning not yet reviewed
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-confirm" title="Confirm Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'morning')">Confirm (AM)</button>
           <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id})">Tag</button>
-          <button class="dean-btn-reject" title="Reject Morning Shift" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject (AM)</button>
+          <button class="dean-btn-reject" title="Reject Attendance Log" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
         </div>
       `;
     } else if (hasMorning && hasAfternoon && !isMorningPending) {
       // 3. Morning already reviewed, afternoon pending
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
           <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'afternoon')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
         </div>
@@ -896,7 +895,6 @@ function renderLogsTable(logs) {
       // 4. Afternoon shift only
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-confirm" onclick="reviewAttendanceLog(${l.attendance_id}, 'Confirmed', 'afternoon')">Confirm</button>
           <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'afternoon')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
         </div>
@@ -2596,7 +2594,7 @@ async function reviewAttendanceLog(attendanceId, action, shift = 'morning') {
 }
 
 // ==================== TAG GROUP ATTENDANCE MODAL LOGIC ====================
-function openTagGroupModal(attendanceId, preferredShift = null) {
+async function openTagGroupModal(attendanceId, preferredShift = null) {
   const log = (cachedLogs || []).find(x => x.attendance_id == attendanceId);
   if (!log) {
     alert('Attendance log record not found.');
@@ -2605,6 +2603,19 @@ function openTagGroupModal(attendanceId, preferredShift = null) {
 
   currentTagAttendanceId = attendanceId;
   tagModalActivePhotos = log.photos || [];
+
+  // 1. Ensure cachedStudents is fully loaded so student names always appear!
+  if (!cachedStudents || cachedStudents.length === 0) {
+    try {
+      const res = await fetch(API_BASE + 'admin_get_students.php' + getDeanQueryParam());
+      const data = await res.json();
+      if (data.status === 'success' && data.data) {
+        cachedStudents = data.data;
+      }
+    } catch (e) {
+      console.error('Error fetching students for tag modal:', e);
+    }
+  }
 
   const hasMorning = (log.time_in_morning && log.time_in_morning !== '--:--') || (log.time_out_morning && log.time_out_morning !== '--:--');
   const hasAfternoon = (log.time_in_afternoon && log.time_in_afternoon !== '--:--') || (log.time_out_afternoon && log.time_out_afternoon !== '--:--');
@@ -2640,24 +2651,155 @@ function openTagGroupModal(attendanceId, preferredShift = null) {
     subEl.textContent = `Submitted by ${log.full_name} (${log.course_code || 'Intern'}) • Date: ${log.date}`;
   }
 
-  // Render Shift Selector Bar
+  // 2. Build 4 photo slots (Morning In, Morning Out, Afternoon In, Afternoon Out)
+  buildTagPhotoSlots(log);
+
+  // 3. Render Shift Selector Bar
   renderTagShiftSelector(log, hasMorning, hasAfternoon);
 
-  // Update Photo & Timestamps for selected shift
-  updateTagModalPhotoDisplay(log);
+  // 4. Select initial photo slot
+  let initialSlot = 0;
+  if (currentTagShift === 'afternoon') {
+    initialSlot = tagPhotoSlots[2].photo ? 2 : (tagPhotoSlots[3].photo ? 3 : 2);
+  } else {
+    initialSlot = tagPhotoSlots[0].photo ? 0 : (tagPhotoSlots[1].photo ? 1 : 0);
+  }
+  selectTagPhotoSlot(initialSlot, false);
 
-  // Reset search and filter
+  // 5. Reset search and filter
   const searchInput = document.getElementById('tagStudentSearchInput');
   if (searchInput) searchInput.value = '';
   const courseFilter = document.getElementById('tagCourseFilterSelect');
   if (courseFilter) courseFilter.value = 'ALL';
 
-  // Render Student Roster
+  // 6. Render Student Roster with student names
   renderTagStudentList();
 
   // Show Modal
   const modal = document.getElementById('tagGroupModal');
   if (modal) modal.classList.add('active');
+}
+
+function buildTagPhotoSlots(log) {
+  const photos = log.photos || [];
+
+  const findPhoto = (keywords) => {
+    return photos.find(p => {
+      const st = (p.shift_type || '').toLowerCase();
+      return keywords.some(k => st.includes(k));
+    }) || null;
+  };
+
+  const mInPhoto = findPhoto(['morning in', 'morning_in']) || (photos[0] && (photos[0].shift_type || '').toLowerCase().includes('morning') ? photos[0] : null);
+  const mOutPhoto = findPhoto(['morning out', 'morning_out']) || (photos[1] && (photos[1].shift_type || '').toLowerCase().includes('morning') ? photos[1] : null);
+  const aInPhoto = findPhoto(['afternoon in', 'afternoon_in']) || (photos[2] && (photos[2].shift_type || '').toLowerCase().includes('afternoon') ? photos[2] : null);
+  const aOutPhoto = findPhoto(['afternoon out', 'afternoon_out']) || (photos[3] && (photos[3].shift_type || '').toLowerCase().includes('afternoon') ? photos[3] : null);
+
+  tagPhotoSlots = [
+    {
+      index: 0,
+      label: 'Morning In',
+      shift: 'morning',
+      time: log.time_in_morning && log.time_in_morning !== '--:--' ? log.time_in_morning : '--:--',
+      photo: mInPhoto || photos[0] || null
+    },
+    {
+      index: 1,
+      label: 'Morning Out',
+      shift: 'morning',
+      time: log.time_out_morning && log.time_out_morning !== '--:--' ? log.time_out_morning : '--:--',
+      photo: mOutPhoto || (photos.length > 1 ? photos[1] : null)
+    },
+    {
+      index: 2,
+      label: 'Afternoon In',
+      shift: 'afternoon',
+      time: log.time_in_afternoon && log.time_in_afternoon !== '--:--' ? log.time_in_afternoon : '--:--',
+      photo: aInPhoto || (photos.length > 2 ? photos[2] : null)
+    },
+    {
+      index: 3,
+      label: 'Afternoon Out',
+      shift: 'afternoon',
+      time: log.time_out_afternoon && log.time_out_afternoon !== '--:--' ? log.time_out_afternoon : '--:--',
+      photo: aOutPhoto || (photos.length > 3 ? photos[3] : null)
+    }
+  ];
+
+  renderTagPhoto4Tabs();
+}
+
+function renderTagPhoto4Tabs() {
+  const container = document.getElementById('tagPhoto4TabsContainer');
+  if (!container) return;
+
+  container.innerHTML = tagPhotoSlots.map((slot, idx) => {
+    const isActive = idx === currentTagPhotoSlotIndex;
+    const photoImg = slot.photo && slot.photo.full_url 
+      ? `<img src="${slot.photo.full_url}" style="width: 100%; height: 46px; object-fit: cover; border-radius: 4px; margin-top: 3px; display: block;" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';">`
+      : `<div style="height: 46px; background: #e2e8f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; color: #94a3b8; margin-top: 3px; font-weight: 600;">No Photo</div>`;
+
+    return `
+      <div class="tag-photo-slot ${isActive ? 'active' : ''}" onclick="selectTagPhotoSlot(${idx}, true)" title="View ${slot.label}">
+        <div style="font-weight: 700; font-size: 0.72rem; color: var(--navy-primary); display: flex; justify-content: space-between; align-items: center;">
+          <span>${slot.label}</span>
+          <span style="font-weight: 600; color: #64748b; font-size: 0.68rem;">${slot.time}</span>
+        </div>
+        ${photoImg}
+      </div>
+    `;
+  }).join('');
+}
+
+function selectTagPhotoSlot(idx, userInitiated = true) {
+  if (idx < 0 || idx >= tagPhotoSlots.length) return;
+  currentTagPhotoSlotIndex = idx;
+  const slot = tagPhotoSlots[idx];
+
+  // Update tabs highlight
+  const tabs = document.querySelectorAll('.tag-photo-slot');
+  tabs.forEach((tab, tIdx) => {
+    if (tIdx === idx) tab.classList.add('active');
+    else tab.classList.remove('active');
+  });
+
+  // Update Preview Image
+  const previewImg = document.getElementById('tagModalPreviewImg');
+  const slideLabel = document.getElementById('tagPhotoSlideLabel');
+  const slideCounter = document.getElementById('tagPhotoSlideCounter');
+
+  if (slideLabel) {
+    slideLabel.textContent = `${slot.label} — ${slot.time}`;
+  }
+  if (slideCounter) {
+    slideCounter.textContent = `Photo ${idx + 1} of 4`;
+  }
+
+  if (previewImg) {
+    if (slot.photo && slot.photo.full_url) {
+      previewImg.src = slot.photo.full_url;
+      previewImg.style.display = 'block';
+    } else {
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+    }
+  }
+
+  // If user clicked this slot, align the Shift to Credit radio button
+  if (userInitiated && currentTagShift !== 'both') {
+    if (slot.shift !== currentTagShift) {
+      currentTagShift = slot.shift;
+      const radio = document.querySelector(`input[name="tagShiftRadio"][value="${slot.shift}"]`);
+      if (radio) radio.checked = true;
+    }
+  }
+}
+
+function navigateTagPhotoSlide(delta) {
+  let nextIdx = currentTagPhotoSlotIndex + delta;
+  if (nextIdx < 0) nextIdx = tagPhotoSlots.length - 1;
+  if (nextIdx >= tagPhotoSlots.length) nextIdx = 0;
+  selectTagPhotoSlot(nextIdx, true);
 }
 
 function renderTagShiftSelector(log, hasMorning, hasAfternoon) {
@@ -2669,7 +2811,7 @@ function renderTagShiftSelector(log, hasMorning, hasAfternoon) {
   if (hasMorning) {
     const isChecked = currentTagShift === 'morning' ? 'checked' : '';
     optionsHtml += `
-      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
         <input type="radio" name="tagShiftRadio" value="morning" ${isChecked} onchange="onTagShiftChange('morning')">
         <span>Morning Shift (${log.time_in_morning} - ${log.time_out_morning})</span>
       </label>
@@ -2679,7 +2821,7 @@ function renderTagShiftSelector(log, hasMorning, hasAfternoon) {
   if (hasAfternoon) {
     const isChecked = currentTagShift === 'afternoon' ? 'checked' : '';
     optionsHtml += `
-      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
         <input type="radio" name="tagShiftRadio" value="afternoon" ${isChecked} onchange="onTagShiftChange('afternoon')">
         <span>Afternoon Shift (${log.time_in_afternoon} - ${log.time_out_afternoon})</span>
       </label>
@@ -2689,7 +2831,7 @@ function renderTagShiftSelector(log, hasMorning, hasAfternoon) {
   if (hasMorning && hasAfternoon) {
     const isChecked = currentTagShift === 'both' ? 'checked' : '';
     optionsHtml += `
-      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.35rem 0.75rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600;">
+      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
         <input type="radio" name="tagShiftRadio" value="both" ${isChecked} onchange="onTagShiftChange('both')">
         <span>Both Shifts / Full Day</span>
       </label>
@@ -2701,51 +2843,10 @@ function renderTagShiftSelector(log, hasMorning, hasAfternoon) {
 
 function onTagShiftChange(newShift) {
   currentTagShift = newShift;
-  const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
-  if (log) {
-    updateTagModalPhotoDisplay(log);
-  }
-}
-
-function updateTagModalPhotoDisplay(log) {
-  const photoImg = document.getElementById('tagModalPreviewImg');
-  const shiftBadge = document.getElementById('tagModalShiftTimeBadge');
-  const shiftLabel = document.getElementById('tagPhotoShiftLabel');
-
-  let timeText = '';
-  if (currentTagShift === 'morning') {
-    timeText = `${log.time_in_morning} - ${log.time_out_morning} (Morning)`;
-    if (shiftLabel) shiftLabel.textContent = 'Morning Shift Group Snapshot';
-  } else if (currentTagShift === 'afternoon') {
-    timeText = `${log.time_in_afternoon} - ${log.time_out_afternoon} (Afternoon)`;
-    if (shiftLabel) shiftLabel.textContent = 'Afternoon Shift Group Snapshot';
-  } else {
-    timeText = `${log.time_in_morning} - ${log.time_out_afternoon} (Full Day)`;
-    if (shiftLabel) shiftLabel.textContent = 'Full Day Group Snapshot Reference';
-  }
-
-  if (shiftBadge) shiftBadge.textContent = timeText;
-
-  // Pick relevant photo
-  let targetPhoto = null;
-  if (tagModalActivePhotos && tagModalActivePhotos.length > 0) {
-    if (currentTagShift === 'morning') {
-      targetPhoto = tagModalActivePhotos.find(p => (p.shift_type || '').toLowerCase().includes('morning')) || tagModalActivePhotos[0];
-    } else if (currentTagShift === 'afternoon') {
-      targetPhoto = tagModalActivePhotos.find(p => (p.shift_type || '').toLowerCase().includes('afternoon')) || tagModalActivePhotos[tagModalActivePhotos.length - 1];
-    } else {
-      targetPhoto = tagModalActivePhotos[0];
-    }
-  }
-
-  if (photoImg) {
-    if (targetPhoto && targetPhoto.full_url) {
-      photoImg.src = targetPhoto.full_url;
-      photoImg.style.display = 'block';
-    } else {
-      photoImg.src = '';
-      photoImg.style.display = 'none';
-    }
+  if (newShift === 'morning') {
+    selectTagPhotoSlot(tagPhotoSlots[0].photo ? 0 : 1, false);
+  } else if (newShift === 'afternoon') {
+    selectTagPhotoSlot(tagPhotoSlots[2].photo ? 2 : 3, false);
   }
 }
 
@@ -2761,7 +2862,12 @@ function renderTagStudentList() {
   const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
   const submitterId = log ? Number(log.student_id) : 0;
 
-  // Sort students: submitter first, then by full_name
+  // Make sure submitter is auto-checked
+  if (submitterId > 0) {
+    taggedStudentIds.add(submitterId);
+  }
+
+  // Sort students: submitter first, then alphabetically by full_name
   const sortedStudents = [...(cachedStudents || [])].sort((a, b) => {
     if (Number(a.student_id) === submitterId) return -1;
     if (Number(b.student_id) === submitterId) return 1;
@@ -2783,8 +2889,8 @@ function renderTagStudentList() {
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem;">
-          No student interns match current search/filter criteria.
+        <td colspan="5" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-muted); font-size: 0.85rem;">
+          ${q ? `No student interns match "${escapeHtml(q)}"` : 'No student interns enrolled.'}
         </td>
       </tr>
     `;
@@ -2796,31 +2902,31 @@ function renderTagStudentList() {
     const isSubmitter = Number(s.student_id) === submitterId;
     const isChecked = taggedStudentIds.has(Number(s.student_id));
     const courseBadge = getCourseBadgeClass(s.course_code);
-    const rowBg = isChecked ? (isSubmitter ? '#f0fdf4' : '#f8fafc') : '#ffffff';
+    const rowBg = isChecked ? (isSubmitter ? '#f0fdf4' : '#f0f9ff') : '#ffffff';
 
     return `
       <tr style="background: ${rowBg}; transition: background 0.15s ease;">
-        <td style="text-align: center; vertical-align: middle; padding: 0.45rem 0.5rem;">
+        <td style="text-align: center; vertical-align: middle; padding: 0.5rem 0.5rem;">
           <input type="checkbox" 
                  id="chkStudent_${s.student_id}" 
                  value="${s.student_id}" 
                  ${isChecked ? 'checked' : ''} 
                  ${isSubmitter ? 'disabled title="Submitter is automatically included"' : `onchange="toggleTaggedStudent(${s.student_id}, this.checked)"`}
-                 style="cursor: pointer; width: 16px; height: 16px; accent-color: #1e3a8a;">
+                 style="cursor: pointer; width: 17px; height: 17px; accent-color: #1e3a8a;">
         </td>
-        <td style="vertical-align: middle; padding: 0.45rem 0.75rem;">
-          <div style="font-weight: 700; color: var(--navy-primary); font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+        <td style="vertical-align: middle; padding: 0.5rem 0.75rem;">
+          <div style="font-weight: 700; color: var(--navy-primary); font-size: 0.86rem; display: flex; align-items: center; gap: 0.4rem;">
             ${escapeHtml(s.full_name)}
-            ${isSubmitter ? '<span class="badge badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.4rem;">Submitter</span>' : ''}
+            ${isSubmitter ? '<span class="badge badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;">Submitter</span>' : ''}
           </div>
         </td>
-        <td style="vertical-align: middle; padding: 0.45rem 0.75rem; font-size: 0.8rem; color: var(--text-muted);">
-          ${s.student_number || '--'}
+        <td style="vertical-align: middle; padding: 0.5rem 0.75rem; font-size: 0.82rem; color: var(--text-muted); font-family: monospace; font-weight: 600;">
+          ${escapeHtml(s.student_number || '--')}
         </td>
-        <td style="vertical-align: middle; padding: 0.45rem 0.75rem;">
-          <span class="badge ${courseBadge}" style="font-size: 0.7rem;">${s.course_code || 'N/A'}</span>
+        <td style="vertical-align: middle; padding: 0.5rem 0.75rem;">
+          <span class="badge ${courseBadge}" style="font-size: 0.72rem;">${s.course_code || 'N/A'}</span>
         </td>
-        <td style="vertical-align: middle; padding: 0.45rem 0.75rem; font-size: 0.78rem; color: #64748b;">
+        <td style="vertical-align: middle; padding: 0.5rem 0.75rem; font-size: 0.8rem; color: #64748b;">
           ${escapeHtml(s.site_name || 'Unassigned')}
         </td>
       </tr>
@@ -2892,12 +2998,13 @@ function closeTagGroupModal() {
   if (modal) modal.classList.remove('active');
   currentTagAttendanceId = null;
   taggedStudentIds.clear();
+  tagPhotoSlots = [];
 }
 
 function viewTagPhotoFull() {
-  const photoImg = document.getElementById('tagModalPreviewImg');
-  if (photoImg && photoImg.src) {
-    openImageLightbox(photoImg.src, 'Group Verification Photo', 'Group Snapshot');
+  if (tagPhotoSlots[currentTagPhotoSlotIndex] && tagPhotoSlots[currentTagPhotoSlotIndex].photo) {
+    const p = tagPhotoSlots[currentTagPhotoSlotIndex].photo;
+    openImageLightbox(p.full_url, `Verification Photo (${tagPhotoSlots[currentTagPhotoSlotIndex].label})`, `Captured at ${tagPhotoSlots[currentTagPhotoSlotIndex].time}`);
   }
 }
 

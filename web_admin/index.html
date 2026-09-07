@@ -747,12 +747,11 @@
   <!-- Tag Students in Group Photo Modal -->
   <div id="tagGroupModal" class="modal-overlay" onclick="if(event.target === this) closeTagGroupModal()">
     <div class="modal-card"
-      style="max-width: 680px; width: 95%; max-height: 92vh; display: flex; flex-direction: column;">
+      style="max-width: 880px; width: 95%; max-height: 94vh; display: flex; flex-direction: column;">
       <div class="modal-header"
-        style="margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.65rem;">
+        style="margin-bottom: 0.65rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.6rem;">
         <div>
-          <h3 style="margin: 0; font-size: 1.15rem; color: var(--navy-primary); font-weight: 800;">Tag Students in Group
-            Photo</h3>
+          <h3 style="margin: 0; font-size: 1.15rem; color: var(--navy-primary); font-weight: 800;">Tag Students in Group Photo</h3>
           <p id="tagModalSubtitle" style="margin: 0.2rem 0 0 0; font-size: 0.78rem; color: var(--text-muted);">
             Credit attendance to all student interns identified in this group snapshot.
           </p>
@@ -760,47 +759,57 @@
         <button class="close-btn" onclick="closeTagGroupModal()">&times;</button>
       </div>
 
-      <div style="overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 0.85rem;">
-        <!-- Shift to Credit Selector Bar -->
-        <div
-          style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.75rem 0.9rem;">
-          <div style="font-size: 0.78rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.45rem;">
-            Select Shift to Credit:
+      <div style="overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 0.75rem;">
+        <!-- 4-Photo Slide & Shift/Time Inspection Bar -->
+        <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.65rem;">
+          
+          <!-- Shift to Credit Radios Header -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary);">
+              Shift to Credit:
+            </span>
+            <div id="tagShiftSelectorContainer" style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              <!-- Dynamically populated shift radio buttons -->
+            </div>
           </div>
-          <div id="tagShiftSelectorContainer" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <!-- Dynamically populated shift radio buttons -->
-          </div>
-        </div>
 
-        <!-- Photo Snapshot Preview Card -->
-        <div id="tagModalPhotoCard"
-          style="border: 1px solid var(--border-light); border-radius: var(--radius-sm); overflow: hidden; background: #ffffff;">
-          <div
-            style="padding: 0.5rem 0.85rem; background: var(--bg-canvas); border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-            <div style="font-size: 0.78rem; font-weight: 700; color: var(--navy-primary);" id="tagPhotoShiftLabel">
-              Group Snapshot Reference
-            </div>
-            <div id="tagModalShiftTimeBadge" class="badge badge-info"
-              style="font-size: 0.72rem; padding: 0.2rem 0.6rem; font-weight: 700;">
-              05:44 AM - 12:21 PM
-            </div>
+          <!-- 4-Photo Mini Tabs / Thumbnails (Separate shifts and timed in/out) -->
+          <div id="tagPhoto4TabsContainer" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+            <!-- 4 slots: Morning In, Morning Out, Afternoon In, Afternoon Out -->
           </div>
-          <div
-            style="max-height: 220px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #0f172a;">
-            <img id="tagModalPreviewImg" src="" alt="Group Snapshot"
-              style="max-height: 220px; width: auto; max-width: 100%; object-fit: contain; cursor: pointer;"
-              onclick="viewTagPhotoFull()">
+
+          <!-- Main Active Photo Display Slide with Prev/Next Navigation -->
+          <div style="position: relative; background: #0f172a; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 240px; max-height: 250px;">
+            <img id="tagModalPreviewImg" src="" alt="Group Snapshot" style="max-height: 240px; max-width: 100%; width: auto; object-fit: contain; cursor: pointer; display: block;" onclick="viewTagPhotoFull()" title="Click to view full high-resolution image">
+            
+            <!-- Prev / Next Slide Controls -->
+            <button type="button" id="btnTagPhotoPrev" onclick="navigateTagPhotoSlide(-1)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.75); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 34px; height: 34px; font-size: 1.1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;" title="Previous Photo">
+              &#10094;
+            </button>
+            <button type="button" id="btnTagPhotoNext" onclick="navigateTagPhotoSlide(1)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.75); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 34px; height: 34px; font-size: 1.1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;" title="Next Photo">
+              &#10095;
+            </button>
+
+            <!-- Floating Top-Left Status Badge -->
+            <div style="position: absolute; top: 10px; left: 12px; background: rgba(15,23,42,0.88); color: #f8fafc; border: 1px solid rgba(255,255,255,0.25); padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700;" id="tagPhotoSlideLabel">
+              Morning In - 05:44 AM
+            </div>
+
+            <!-- Floating Top-Right Slide Indicator -->
+            <div style="position: absolute; top: 10px; right: 12px; background: rgba(15,23,42,0.88); color: #38bdf8; border: 1px solid rgba(56,189,248,0.35); padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700;" id="tagPhotoSlideCounter">
+              Photo 1 of 4
+            </div>
           </div>
         </div>
 
         <!-- Search & Filter Bar -->
         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 200px;">
+          <div style="flex: 1; min-width: 220px;">
             <input type="text" id="tagStudentSearchInput" class="form-control"
               placeholder="Search student by name, student ID, or course..." oninput="filterTagStudentList()"
               style="font-size: 0.82rem; padding: 0.45rem 0.75rem;">
           </div>
-          <div style="width: 160px;">
+          <div style="width: 150px;">
             <select id="tagCourseFilterSelect" class="form-control" onchange="filterTagStudentList()"
               style="font-size: 0.82rem; padding: 0.45rem 0.5rem;">
               <option value="ALL">All Programs</option>
@@ -822,14 +831,14 @@
         <!-- Student Checklist Roster Container -->
         <div
           style="border: 1px solid var(--border-light); border-radius: var(--radius-sm); max-height: 240px; overflow-y: auto; background: #ffffff;">
-          <table class="data-table" style="margin: 0; width: 100%;">
-            <thead>
-              <tr style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
-                <th style="width: 45px; text-align: center; padding: 0.5rem;">Mark</th>
-                <th style="padding: 0.5rem 0.75rem;">Student Intern</th>
-                <th style="padding: 0.5rem 0.75rem;">ID Number</th>
-                <th style="padding: 0.5rem 0.75rem;">Program</th>
-                <th style="padding: 0.5rem 0.75rem;">Training Site</th>
+          <table class="data-table" style="margin: 0; width: 100%; border-collapse: separate; border-spacing: 0;">
+            <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 2;">
+              <tr>
+                <th style="width: 50px; text-align: center; padding: 0.55rem 0.5rem; border-bottom: 2px solid var(--border-light);">Mark</th>
+                <th style="padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--border-light);">Student Intern</th>
+                <th style="padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--border-light);">ID Number</th>
+                <th style="padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--border-light);">Program</th>
+                <th style="padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--border-light);">Training Site</th>
               </tr>
             </thead>
             <tbody id="tagStudentListTbody">
@@ -841,7 +850,7 @@
 
       <!-- Modal Footer -->
       <div
-        style="margin-top: 0.85rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+        style="margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
           <span id="tagSelectedCountBadge" class="badge badge-success"
             style="font-size: 0.75rem; padding: 0.3rem 0.65rem; font-weight: 700;">
@@ -1208,7 +1217,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=7.8"></script>
+  <script src="js/admin.js?v=7.9"></script>
 </body>
 
 </html>
