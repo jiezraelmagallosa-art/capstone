@@ -1063,8 +1063,8 @@ body {
   display: block;
   width: 100%;
   padding: 0.38rem 0.6rem;
-  background-color: #1e3a8a;
-  color: #ffffff;
+  background-color: #eab308;
+  color: #1e293b;
   border: none;
   border-radius: 6px;
   font-size: 0.78rem;
@@ -1077,9 +1077,10 @@ body {
 }
 
 .dean-btn-tag:hover {
-  background-color: #172554;
+  background-color: #ca8a04;
+  color: #0f172a;
   transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(30, 58, 138, 0.25);
+  box-shadow: 0 2px 5px rgba(234, 179, 8, 0.35);
 }
 
 .tag-photo-slot {

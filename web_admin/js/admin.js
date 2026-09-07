@@ -871,7 +871,7 @@ function renderLogsTable(logs) {
       // 1. Morning shift only
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'morning')">Tag</button>
+          <button class="dean-btn-tag" style="background-color: #eab308; color: #1e293b;" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'morning')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
         </div>
       `;
@@ -879,7 +879,7 @@ function renderLogsTable(logs) {
       // 2. Both shifts, morning not yet reviewed
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id})">Tag</button>
+          <button class="dean-btn-tag" style="background-color: #eab308; color: #1e293b;" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id})">Tag</button>
           <button class="dean-btn-reject" title="Reject Attendance Log" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'morning')">Reject</button>
         </div>
       `;
@@ -887,7 +887,7 @@ function renderLogsTable(logs) {
       // 3. Morning already reviewed, afternoon pending
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'afternoon')">Tag</button>
+          <button class="dean-btn-tag" style="background-color: #eab308; color: #1e293b;" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'afternoon')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
         </div>
       `;
@@ -895,7 +895,7 @@ function renderLogsTable(logs) {
       // 4. Afternoon shift only
       evalControls = `
         <div class="dean-action-cell">
-          <button class="dean-btn-tag" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'afternoon')">Tag</button>
+          <button class="dean-btn-tag" style="background-color: #eab308; color: #1e293b;" title="Tag students present in group photo" onclick="openTagGroupModal(${l.attendance_id}, 'afternoon')">Tag</button>
           <button class="dean-btn-reject" onclick="reviewAttendanceLog(${l.attendance_id}, 'Rejected', 'afternoon')">Reject</button>
         </div>
       `;
