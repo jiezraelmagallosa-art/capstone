@@ -751,7 +751,8 @@
       <div class="modal-header"
         style="margin-bottom: 0.65rem; border-bottom: 1px solid var(--border-light); padding-bottom: 0.6rem;">
         <div>
-          <h3 style="margin: 0; font-size: 1.15rem; color: var(--navy-primary); font-weight: 800;">Tag Students in Group Photo</h3>
+          <h3 style="margin: 0; font-size: 1.15rem; color: var(--navy-primary); font-weight: 800;">Tag Students in Group
+            Photo</h3>
           <p id="tagModalSubtitle" style="margin: 0.2rem 0 0 0; font-size: 0.78rem; color: var(--text-muted);">
             Credit attendance to all student interns identified in this group snapshot.
           </p>
@@ -761,10 +762,12 @@
 
       <div style="overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 0.75rem;">
         <!-- 4-Photo Slide & Shift/Time Inspection Bar -->
-        <div style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.65rem;">
-          
+        <div
+          style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.65rem;">
+
           <!-- Shift to Credit Radios Header -->
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
             <span style="font-size: 0.8rem; font-weight: 700; color: var(--navy-primary);">
               Shift to Credit:
             </span>
@@ -779,24 +782,35 @@
           </div>
 
           <!-- Main Active Photo Display Slide with Prev/Next Navigation -->
-          <div style="position: relative; background: #0f172a; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 240px; max-height: 250px;">
-            <img id="tagModalPreviewImg" src="" alt="Group Snapshot" style="max-height: 240px; max-width: 100%; width: auto; object-fit: contain; cursor: pointer; display: block;" onclick="viewTagPhotoFull()" title="Click to view full high-resolution image">
-            
+          <div
+            style="position: relative; background: #0f172a; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 240px; max-height: 250px;">
+            <img id="tagModalPreviewImg" src="" alt="Group Snapshot"
+              style="max-height: 240px; max-width: 100%; width: auto; object-fit: contain; cursor: pointer; display: block;"
+              onclick="viewTagPhotoFull()" title="Click to view full high-resolution image">
+
             <!-- Prev / Next Slide Controls -->
-            <button type="button" id="btnTagPhotoPrev" onclick="navigateTagPhotoSlide(-1)" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.75); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 34px; height: 34px; font-size: 1.1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;" title="Previous Photo">
+            <button type="button" id="btnTagPhotoPrev" onclick="navigateTagPhotoSlide(-1)"
+              style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.75); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 34px; height: 34px; font-size: 1.1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;"
+              title="Previous Photo">
               &#10094;
             </button>
-            <button type="button" id="btnTagPhotoNext" onclick="navigateTagPhotoSlide(1)" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.75); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 34px; height: 34px; font-size: 1.1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;" title="Next Photo">
+            <button type="button" id="btnTagPhotoNext" onclick="navigateTagPhotoSlide(1)"
+              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(15,23,42,0.75); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 34px; height: 34px; font-size: 1.1rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;"
+              title="Next Photo">
               &#10095;
             </button>
 
             <!-- Floating Top-Left Status Badge -->
-            <div style="position: absolute; top: 10px; left: 12px; background: rgba(15,23,42,0.88); color: #f8fafc; border: 1px solid rgba(255,255,255,0.25); padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700;" id="tagPhotoSlideLabel">
+            <div
+              style="position: absolute; top: 10px; left: 12px; background: rgba(15,23,42,0.88); color: #f8fafc; border: 1px solid rgba(255,255,255,0.25); padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700;"
+              id="tagPhotoSlideLabel">
               Morning In - 05:44 AM
             </div>
 
             <!-- Floating Top-Right Slide Indicator -->
-            <div style="position: absolute; top: 10px; right: 12px; background: rgba(15,23,42,0.88); color: #38bdf8; border: 1px solid rgba(56,189,248,0.35); padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700;" id="tagPhotoSlideCounter">
+            <div
+              style="position: absolute; top: 10px; right: 12px; background: rgba(15,23,42,0.88); color: #38bdf8; border: 1px solid rgba(56,189,248,0.35); padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.72rem; font-weight: 700;"
+              id="tagPhotoSlideCounter">
               Photo 1 of 4
             </div>
           </div>
@@ -834,7 +848,9 @@
           <table class="data-table" style="margin: 0; width: 100%; border-collapse: separate; border-spacing: 0;">
             <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 2;">
               <tr>
-                <th style="width: 50px; text-align: center; padding: 0.55rem 0.5rem; border-bottom: 2px solid var(--border-light);">Mark</th>
+                <th
+                  style="width: 50px; text-align: center; padding: 0.55rem 0.5rem; border-bottom: 2px solid var(--border-light);">
+                  Mark</th>
                 <th style="padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--border-light);">Student Intern</th>
                 <th style="padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--border-light);">ID Number</th>
                 <th style="padding: 0.55rem 0.75rem; border-bottom: 2px solid var(--border-light);">Program</th>
