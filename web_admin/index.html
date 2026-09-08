@@ -849,13 +849,19 @@
                 placeholder="Search student by name, student ID, or course..." oninput="filterTagStudentList()"
                 style="font-size: 0.82rem; padding: 0.45rem 0.75rem;">
             </div>
-            <div style="width: 140px;">
+            <div style="width: 125px;">
               <select id="tagCourseFilterSelect" class="form-control" onchange="filterTagStudentList()"
                 style="font-size: 0.82rem; padding: 0.45rem 0.5rem;">
                 <option value="ALL">All Programs</option>
                 <option value="BSCS">BSCS</option>
                 <option value="BSIS">BSIS</option>
                 <option value="BLIS">BLIS</option>
+              </select>
+            </div>
+            <div style="width: 145px;">
+              <select id="tagSiteFilterSelect" class="form-control" onchange="filterTagStudentList()"
+                style="font-size: 0.82rem; padding: 0.45rem 0.5rem;">
+                <option value="ALL">All Facilities</option>
               </select>
             </div>
             <button type="button" class="btn btn-outline" onclick="selectAllFilteredStudents(true)"

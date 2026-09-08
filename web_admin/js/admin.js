@@ -577,6 +577,33 @@ function populateLogsSiteDropdown() {
     });
     reportSiteSelect.innerHTML = html;
   }
+
+  // 5. Tag Group Attendance Modal Facility Filter Dropdown
+  populateTagSiteDropdown();
+}
+
+function populateTagSiteDropdown(selectedSite = 'ALL') {
+  const select = document.getElementById('tagSiteFilterSelect');
+  if (!select) return;
+
+  const siteSet = new Set();
+  (cachedSites || []).forEach(st => {
+    if (st.site_name && st.site_name.trim()) siteSet.add(st.site_name.trim());
+  });
+  (cachedStudents || []).forEach(s => {
+    if (s.site_name && s.site_name.trim()) siteSet.add(s.site_name.trim());
+  });
+  (cachedLogs || []).forEach(l => {
+    if (l.site_name && l.site_name.trim()) siteSet.add(l.site_name.trim());
+  });
+
+  const sortedSites = Array.from(siteSet).sort((a, b) => a.localeCompare(b));
+  let html = `<option value="ALL">All Facilities</option>`;
+  sortedSites.forEach(name => {
+    const isSelected = name === selectedSite ? 'selected' : '';
+    html += `<option value="${escapeHtml(name)}" ${isSelected}>${escapeHtml(name)}</option>`;
+  });
+  select.innerHTML = html;
 }
 
 // Attendance Logs Filter Handlers
@@ -2683,6 +2710,9 @@ async function openTagGroupModal(attendanceId, preferredShift = null) {
   if (searchInput) searchInput.value = '';
   const courseFilter = document.getElementById('tagCourseFilterSelect');
   if (courseFilter) courseFilter.value = 'ALL';
+  const siteFilter = document.getElementById('tagSiteFilterSelect');
+  if (siteFilter) siteFilter.value = 'ALL';
+  populateTagSiteDropdown('ALL');
 
   // 6. Render Student Roster with student names
   renderTagStudentList();
@@ -2870,6 +2900,8 @@ function renderTagStudentList() {
   const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
   const courseFilter = document.getElementById('tagCourseFilterSelect');
   const courseQ = courseFilter ? courseFilter.value : 'ALL';
+  const siteFilter = document.getElementById('tagSiteFilterSelect');
+  const siteQ = siteFilter ? siteFilter.value : 'ALL';
 
   const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
   let submitterId = log ? Number(log.student_id) : 0;
@@ -2906,6 +2938,7 @@ function renderTagStudentList() {
 
   const filtered = sortedStudents.filter(s => {
     if (courseQ !== 'ALL' && s.course_code !== courseQ) return false;
+    if (siteQ !== 'ALL' && (s.site_name || '').trim() !== siteQ) return false;
     if (q) {
       const match = (s.full_name && s.full_name.toLowerCase().includes(q)) ||
                     (s.student_number && s.student_number.toLowerCase().includes(q)) ||
@@ -3016,6 +3049,8 @@ function selectAllFilteredStudents(selectAll) {
   const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
   const courseFilter = document.getElementById('tagCourseFilterSelect');
   const courseQ = courseFilter ? courseFilter.value : 'ALL';
+  const siteFilter = document.getElementById('tagSiteFilterSelect');
+  const siteQ = siteFilter ? siteFilter.value : 'ALL';
 
   const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
   let submitterId = log ? Number(log.student_id) : 0;
@@ -3026,6 +3061,7 @@ function selectAllFilteredStudents(selectAll) {
 
   const filtered = (cachedStudents || []).filter(s => {
     if (courseQ !== 'ALL' && s.course_code !== courseQ) return false;
+    if (siteQ !== 'ALL' && (s.site_name || '').trim() !== siteQ) return false;
     if (q) {
       const match = (s.full_name && s.full_name.toLowerCase().includes(q)) ||
                     (s.student_number && s.student_number.toLowerCase().includes(q)) ||
