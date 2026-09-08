@@ -28,10 +28,10 @@ try {
     }
 
     $attendance_id = isset($data['attendance_id']) ? intval($data['attendance_id']) : 0;
-    $dean_id       = isset($data['dean_id'])       ? intval($data['dean_id'])       : 0;
-    $action        = isset($data['action'])        ? trim($data['action'])           : 'Confirmed';
-    $shift         = isset($data['shift'])         ? strtolower(trim($data['shift'])) : 'both';
-    $remarks       = isset($data['remarks'])       ? trim($data['remarks'])          : '';
+    $dean_id = isset($data['dean_id']) ? intval($data['dean_id']) : 0;
+    $action = isset($data['action']) ? trim($data['action']) : 'Confirmed';
+    $shift = isset($data['shift']) ? strtolower(trim($data['shift'])) : 'both';
+    $remarks = isset($data['remarks']) ? trim($data['remarks']) : '';
 
     if ($attendance_id <= 0) {
         echo json_encode(["status" => "error", "message" => "Invalid or missing attendance ID."]);
@@ -101,12 +101,12 @@ try {
         updateAttendanceOverallStatus($conn, $attendance_id);
 
         echo json_encode([
-            "status"        => "success",
-            "message"       => ucfirst($shift) . " shift attendance confirmed. {$deleted_files_count} photo(s) purged.",
+            "status" => "success",
+            "message" => ucfirst($shift) . " shift attendance confirmed. {$deleted_files_count} photo(s) purged.",
             "attendance_id" => $attendance_id,
-            "shift"         => $shift,
-            "action"        => "Confirmed",
-            "remarks"       => $final_remarks
+            "shift" => $shift,
+            "action" => "Confirmed",
+            "remarks" => $final_remarks
         ]);
 
     } else {
@@ -151,12 +151,12 @@ try {
         updateAttendanceOverallStatus($conn, $attendance_id);
 
         echo json_encode([
-            "status"        => "success",
-            "message"       => ucfirst($shift) . " shift attendance rejected. Photo evidence retained.",
+            "status" => "success",
+            "message" => ucfirst($shift) . " shift attendance rejected. Photo evidence retained.",
             "attendance_id" => $attendance_id,
-            "shift"         => $shift,
-            "action"        => "Rejected",
-            "remarks"       => $final_remarks
+            "shift" => $shift,
+            "action" => "Rejected",
+            "remarks" => $final_remarks
         ]);
     }
 
@@ -164,12 +164,13 @@ try {
 
 } catch (Exception $e) {
     echo json_encode([
-        "status"  => "error",
+        "status" => "error",
         "message" => "Server error: " . $e->getMessage()
     ]);
 }
 
-function updateAttendanceOverallStatus($conn, $attendance_id) {
+function updateAttendanceOverallStatus($conn, $attendance_id)
+{
     $check = $conn->query("SELECT morning_status, afternoon_status, time_in_morning, time_in_afternoon FROM attendance WHERE attendance_id = $attendance_id");
     if ($check && $row = $check->fetch_assoc()) {
         $ms = $row['morning_status'] ?? 'Pending';
