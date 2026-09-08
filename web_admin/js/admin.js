@@ -46,8 +46,9 @@ let currentTagAttendanceId = null;
 let currentTagShift = 'morning';
 let taggedStudentIds = new Set();
 let tagModalActivePhotos = [];
-let currentTagPhotoSlotIndex = 0;
 let tagPhotoSlots = [];
+let activeSlidePhotos = [];
+let currentSlidePhotoIndex = 0;
 
 // UI Initialization & Main Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
@@ -2696,18 +2697,8 @@ async function openTagGroupModal(attendanceId, preferredShift = null) {
   // 3. Render Shift & Punch Selector Bar
   renderTagShiftSelector(log, hasMorning, hasAfternoon);
 
-  // 4. Select initial photo slot
-  let initialSlot = 0;
-  if (currentTagShift === 'afternoon_out' || currentTagShift === 'afternoon') {
-    initialSlot = tagPhotoSlots[3].photo ? 3 : (tagPhotoSlots[2].photo ? 2 : 3);
-  } else if (currentTagShift === 'afternoon_in') {
-    initialSlot = tagPhotoSlots[2].photo ? 2 : (tagPhotoSlots[3].photo ? 3 : 2);
-  } else if (currentTagShift === 'morning_out') {
-    initialSlot = tagPhotoSlots[1].photo ? 1 : (tagPhotoSlots[0].photo ? 0 : 1);
-  } else {
-    initialSlot = tagPhotoSlots[0].photo ? 0 : (tagPhotoSlots[1].photo ? 1 : 0);
-  }
-  selectTagPhotoSlot(initialSlot, false);
+  // 4. Update slide photos based on selected punch/shift
+  updateTagSlidePhotos();
 
   // 5. Reset search and filter
   const searchInput = document.getElementById('tagStudentSearchInput');
@@ -2775,83 +2766,118 @@ function buildTagPhotoSlots(log) {
       photo: aOutPhoto || (photos.length > 3 ? photos[3] : null)
     }
   ];
-
-  renderTagPhoto4Tabs();
 }
 
-function renderTagPhoto4Tabs() {
-  const container = document.getElementById('tagPhoto4TabsContainer');
-  if (!container) return;
+function updateTagSlidePhotos() {
+  let matched = [];
 
-  container.innerHTML = tagPhotoSlots.map((slot, idx) => {
-    const isActive = idx === currentTagPhotoSlotIndex;
-    const photoImg = slot.photo && slot.photo.full_url 
-      ? `<img src="${slot.photo.full_url}" style="width: 100%; height: 46px; object-fit: cover; border-radius: 4px; margin-top: 3px; display: block;" onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';">`
-      : `<div style="height: 46px; background: #e2e8f0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; color: #94a3b8; margin-top: 3px; font-weight: 600;">No Photo</div>`;
+  switch (currentTagShift) {
+    case 'morning_in':
+      matched = tagPhotoSlots.filter(s => s.target === 'morning_in');
+      break;
+    case 'morning_out':
+      matched = tagPhotoSlots.filter(s => s.target === 'morning_out');
+      break;
+    case 'morning':
+      matched = tagPhotoSlots.filter(s => s.shift === 'morning' && s.photo);
+      if (matched.length === 0) {
+        matched = tagPhotoSlots.filter(s => s.shift === 'morning');
+      }
+      break;
+    case 'afternoon_in':
+      matched = tagPhotoSlots.filter(s => s.target === 'afternoon_in');
+      break;
+    case 'afternoon_out':
+      matched = tagPhotoSlots.filter(s => s.target === 'afternoon_out');
+      break;
+    case 'afternoon':
+      matched = tagPhotoSlots.filter(s => s.shift === 'afternoon' && s.photo);
+      if (matched.length === 0) {
+        matched = tagPhotoSlots.filter(s => s.shift === 'afternoon');
+      }
+      break;
+    case 'both':
+    default:
+      matched = tagPhotoSlots.filter(s => s.photo);
+      if (matched.length === 0) {
+        matched = tagPhotoSlots;
+      }
+      break;
+  }
 
-    return `
-      <div class="tag-photo-slot ${isActive ? 'active' : ''}" onclick="selectTagPhotoSlot(${idx}, true)" title="View ${slot.label}">
-        <div style="font-weight: 700; font-size: 0.72rem; color: var(--navy-primary); display: flex; justify-content: space-between; align-items: center;">
-          <span>${slot.label}</span>
-          <span style="font-weight: 600; color: #64748b; font-size: 0.68rem;">${slot.time}</span>
-        </div>
-        ${photoImg}
-      </div>
-    `;
-  }).join('');
+  activeSlidePhotos = matched;
+  currentSlidePhotoIndex = 0;
+  renderCurrentSlidePhoto();
 }
 
-function selectTagPhotoSlot(idx, userInitiated = true) {
-  if (idx < 0 || idx >= tagPhotoSlots.length) return;
-  currentTagPhotoSlotIndex = idx;
-  const slot = tagPhotoSlots[idx];
-
-  // Update tabs highlight
-  const tabs = document.querySelectorAll('.tag-photo-slot');
-  tabs.forEach((tab, tIdx) => {
-    if (tIdx === idx) tab.classList.add('active');
-    else tab.classList.remove('active');
-  });
-
-  // Update Preview Image
+function renderCurrentSlidePhoto() {
   const previewImg = document.getElementById('tagModalPreviewImg');
   const slideLabel = document.getElementById('tagPhotoSlideLabel');
   const slideCounter = document.getElementById('tagPhotoSlideCounter');
+  const btnPrev = document.getElementById('btnTagPhotoPrev');
+  const btnNext = document.getElementById('btnTagPhotoNext');
+  const noPhotoPlaceholder = document.getElementById('tagPhotoNoPlaceholder');
 
+  const total = activeSlidePhotos.length;
+
+  if (total === 0) {
+    if (previewImg) previewImg.style.display = 'none';
+    if (slideLabel) slideLabel.textContent = 'No Punch Photo';
+    if (slideCounter) slideCounter.textContent = '0 of 0';
+    if (btnPrev) btnPrev.style.display = 'none';
+    if (btnNext) btnNext.style.display = 'none';
+    if (noPhotoPlaceholder) {
+      noPhotoPlaceholder.style.display = 'flex';
+      noPhotoPlaceholder.innerHTML = `<div style="text-align:center;"><div style="font-size: 1.6rem; opacity: 0.7; margin-bottom: 4px;">📷</div><div style="font-weight: 600; font-size: 0.82rem;">No photo evidence captured for this selection</div></div>`;
+    }
+    return;
+  }
+
+  if (currentSlidePhotoIndex < 0) currentSlidePhotoIndex = 0;
+  if (currentSlidePhotoIndex >= total) currentSlidePhotoIndex = total - 1;
+
+  const current = activeSlidePhotos[currentSlidePhotoIndex];
+
+  // Update floating label (e.g. Morning In — 05:44 AM)
   if (slideLabel) {
-    slideLabel.textContent = `${slot.label} — ${slot.time}`;
-  }
-  if (slideCounter) {
-    slideCounter.textContent = `Photo ${idx + 1} of 4`;
+    slideLabel.textContent = `${current.label} — ${current.time}`;
   }
 
-  if (previewImg) {
-    if (slot.photo && slot.photo.full_url) {
-      previewImg.src = slot.photo.full_url;
+  // Update floating counter (e.g. Photo 1 of 2)
+  if (slideCounter) {
+    slideCounter.textContent = `Photo ${currentSlidePhotoIndex + 1} of ${total}`;
+  }
+
+  // Prev / Next controls: Only show when there are 2 or more photos to toggle through!
+  const hasMultiple = total > 1;
+  if (btnPrev) btnPrev.style.display = hasMultiple ? 'flex' : 'none';
+  if (btnNext) btnNext.style.display = hasMultiple ? 'flex' : 'none';
+
+  // Display Image or Fallback
+  if (current.photo && current.photo.full_url) {
+    if (previewImg) {
+      previewImg.src = current.photo.full_url;
       previewImg.style.display = 'block';
-    } else {
+    }
+    if (noPhotoPlaceholder) noPhotoPlaceholder.style.display = 'none';
+  } else {
+    if (previewImg) {
       previewImg.src = '';
       previewImg.style.display = 'none';
     }
-  }
-
-  // If user clicked or navigated this slot, automatically align with the corresponding punch option!
-  if (userInitiated && currentTagShift !== 'both') {
-    if (slot.target) {
-      currentTagShift = slot.target;
-      const radio = document.querySelector(`input[name="tagShiftRadio"][value="${slot.target}"]`);
-      if (radio) radio.checked = true;
-      updateTagPillsHighlight();
-      updateTagSubmitButtonLabel();
+    if (noPhotoPlaceholder) {
+      noPhotoPlaceholder.style.display = 'flex';
+      noPhotoPlaceholder.innerHTML = `<div style="text-align:center;"><div style="font-size: 1.6rem; opacity: 0.7; margin-bottom: 4px;">📷</div><div style="font-weight: 600; font-size: 0.82rem;">No photo evidence uploaded for ${current.label}</div></div>`;
     }
   }
 }
 
 function navigateTagPhotoSlide(delta) {
-  let nextIdx = currentTagPhotoSlotIndex + delta;
-  if (nextIdx < 0) nextIdx = tagPhotoSlots.length - 1;
-  if (nextIdx >= tagPhotoSlots.length) nextIdx = 0;
-  selectTagPhotoSlot(nextIdx, true);
+  if (activeSlidePhotos.length <= 1) return;
+  currentSlidePhotoIndex += delta;
+  if (currentSlidePhotoIndex < 0) currentSlidePhotoIndex = activeSlidePhotos.length - 1;
+  if (currentSlidePhotoIndex >= activeSlidePhotos.length) currentSlidePhotoIndex = 0;
+  renderCurrentSlidePhoto();
 }
 
 function renderTagShiftSelector(log, hasMorning, hasAfternoon) {
@@ -2995,20 +3021,7 @@ function onTagShiftChange(newShift) {
   currentTagShift = newShift;
   updateTagPillsHighlight();
   updateTagSubmitButtonLabel();
-
-  if (newShift === 'morning_in') {
-    selectTagPhotoSlot(0, false);
-  } else if (newShift === 'morning_out') {
-    selectTagPhotoSlot(1, false);
-  } else if (newShift === 'morning') {
-    selectTagPhotoSlot(tagPhotoSlots[0].photo ? 0 : 1, false);
-  } else if (newShift === 'afternoon_in') {
-    selectTagPhotoSlot(2, false);
-  } else if (newShift === 'afternoon_out') {
-    selectTagPhotoSlot(3, false);
-  } else if (newShift === 'afternoon') {
-    selectTagPhotoSlot(tagPhotoSlots[2].photo ? 2 : 3, false);
-  }
+  updateTagSlidePhotos();
 }
 
 function renderTagStudentList() {
@@ -3223,12 +3236,14 @@ function closeTagGroupModal() {
   currentTagAttendanceId = null;
   taggedStudentIds.clear();
   tagPhotoSlots = [];
+  activeSlidePhotos = [];
+  currentSlidePhotoIndex = 0;
 }
 
 function viewTagPhotoFull() {
-  if (tagPhotoSlots[currentTagPhotoSlotIndex] && tagPhotoSlots[currentTagPhotoSlotIndex].photo) {
-    const p = tagPhotoSlots[currentTagPhotoSlotIndex].photo;
-    openImageLightbox(p.full_url, `Verification Photo (${tagPhotoSlots[currentTagPhotoSlotIndex].label})`, `Captured at ${tagPhotoSlots[currentTagPhotoSlotIndex].time}`);
+  if (activeSlidePhotos[currentSlidePhotoIndex] && activeSlidePhotos[currentSlidePhotoIndex].photo) {
+    const cur = activeSlidePhotos[currentSlidePhotoIndex];
+    openImageLightbox(cur.photo.full_url, `Verification Photo (${cur.label})`, `Captured at ${cur.time}`);
   }
 }
 
