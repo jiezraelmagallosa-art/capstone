@@ -2650,22 +2650,22 @@ async function openTagGroupModal(attendanceId, preferredShift = null) {
   const hasAfternoon = (log.time_in_afternoon && log.time_in_afternoon !== '--:--') || (log.time_out_afternoon && log.time_out_afternoon !== '--:--');
 
   // Determine initial shift
-  if (preferredShift && ['morning', 'afternoon', 'both'].includes(preferredShift)) {
+  if (preferredShift && ['morning', 'morning_in', 'morning_out', 'afternoon', 'afternoon_in', 'afternoon_out', 'both'].includes(preferredShift)) {
     currentTagShift = preferredShift;
   } else if (hasMorning && !hasAfternoon) {
-    currentTagShift = 'morning';
+    currentTagShift = (log.time_out_morning && log.time_out_morning !== '--:--') ? 'morning_out' : 'morning_in';
   } else if (!hasMorning && hasAfternoon) {
-    currentTagShift = 'afternoon';
+    currentTagShift = (log.time_out_afternoon && log.time_out_afternoon !== '--:--') ? 'afternoon_out' : 'afternoon_in';
   } else if (hasMorning && hasAfternoon) {
     if (log.morning_status === 'Pending' && log.afternoon_status === 'Pending') {
       currentTagShift = 'both';
     } else if (log.morning_status === 'Pending') {
-      currentTagShift = 'morning';
+      currentTagShift = (log.time_out_morning && log.time_out_morning !== '--:--') ? 'morning_out' : 'morning_in';
     } else {
-      currentTagShift = 'afternoon';
+      currentTagShift = (log.time_out_afternoon && log.time_out_afternoon !== '--:--') ? 'afternoon_out' : 'afternoon_in';
     }
   } else {
-    currentTagShift = 'morning';
+    currentTagShift = 'morning_in';
   }
 
   // Fallback resolve submitter ID if not in log object
@@ -2693,13 +2693,17 @@ async function openTagGroupModal(attendanceId, preferredShift = null) {
   // 2. Build 4 photo slots (Morning In, Morning Out, Afternoon In, Afternoon Out)
   buildTagPhotoSlots(log);
 
-  // 3. Render Shift Selector Bar
+  // 3. Render Shift & Punch Selector Bar
   renderTagShiftSelector(log, hasMorning, hasAfternoon);
 
   // 4. Select initial photo slot
   let initialSlot = 0;
-  if (currentTagShift === 'afternoon') {
+  if (currentTagShift === 'afternoon_out' || currentTagShift === 'afternoon') {
+    initialSlot = tagPhotoSlots[3].photo ? 3 : (tagPhotoSlots[2].photo ? 2 : 3);
+  } else if (currentTagShift === 'afternoon_in') {
     initialSlot = tagPhotoSlots[2].photo ? 2 : (tagPhotoSlots[3].photo ? 3 : 2);
+  } else if (currentTagShift === 'morning_out') {
+    initialSlot = tagPhotoSlots[1].photo ? 1 : (tagPhotoSlots[0].photo ? 0 : 1);
   } else {
     initialSlot = tagPhotoSlots[0].photo ? 0 : (tagPhotoSlots[1].photo ? 1 : 0);
   }
@@ -2742,6 +2746,7 @@ function buildTagPhotoSlots(log) {
       index: 0,
       label: 'Morning In',
       shift: 'morning',
+      target: 'morning_in',
       time: log.time_in_morning && log.time_in_morning !== '--:--' ? log.time_in_morning : '--:--',
       photo: mInPhoto || photos[0] || null
     },
@@ -2749,6 +2754,7 @@ function buildTagPhotoSlots(log) {
       index: 1,
       label: 'Morning Out',
       shift: 'morning',
+      target: 'morning_out',
       time: log.time_out_morning && log.time_out_morning !== '--:--' ? log.time_out_morning : '--:--',
       photo: mOutPhoto || (photos.length > 1 ? photos[1] : null)
     },
@@ -2756,6 +2762,7 @@ function buildTagPhotoSlots(log) {
       index: 2,
       label: 'Afternoon In',
       shift: 'afternoon',
+      target: 'afternoon_in',
       time: log.time_in_afternoon && log.time_in_afternoon !== '--:--' ? log.time_in_afternoon : '--:--',
       photo: aInPhoto || (photos.length > 2 ? photos[2] : null)
     },
@@ -2763,6 +2770,7 @@ function buildTagPhotoSlots(log) {
       index: 3,
       label: 'Afternoon Out',
       shift: 'afternoon',
+      target: 'afternoon_out',
       time: log.time_out_afternoon && log.time_out_afternoon !== '--:--' ? log.time_out_afternoon : '--:--',
       photo: aOutPhoto || (photos.length > 3 ? photos[3] : null)
     }
@@ -2827,12 +2835,14 @@ function selectTagPhotoSlot(idx, userInitiated = true) {
     }
   }
 
-  // If user clicked this slot, align the Shift to Credit radio button
+  // If user clicked or navigated this slot, automatically align with the corresponding punch option!
   if (userInitiated && currentTagShift !== 'both') {
-    if (slot.shift !== currentTagShift) {
-      currentTagShift = slot.shift;
-      const radio = document.querySelector(`input[name="tagShiftRadio"][value="${slot.shift}"]`);
+    if (slot.target) {
+      currentTagShift = slot.target;
+      const radio = document.querySelector(`input[name="tagShiftRadio"][value="${slot.target}"]`);
       if (radio) radio.checked = true;
+      updateTagPillsHighlight();
+      updateTagSubmitButtonLabel();
     }
   }
 }
@@ -2848,45 +2858,154 @@ function renderTagShiftSelector(log, hasMorning, hasAfternoon) {
   const container = document.getElementById('tagShiftSelectorContainer');
   if (!container) return;
 
-  let optionsHtml = '';
+  const mInTime = log.time_in_morning && log.time_in_morning !== '--:--' ? log.time_in_morning : '';
+  const mOutTime = log.time_out_morning && log.time_out_morning !== '--:--' ? log.time_out_morning : '';
+  const aInTime = log.time_in_afternoon && log.time_in_afternoon !== '--:--' ? log.time_in_afternoon : '';
+  const aOutTime = log.time_out_afternoon && log.time_out_afternoon !== '--:--' ? log.time_out_afternoon : '';
+
+  let html = '';
 
   if (hasMorning) {
-    const isChecked = currentTagShift === 'morning' ? 'checked' : '';
-    optionsHtml += `
-      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
-        <input type="radio" name="tagShiftRadio" value="morning" ${isChecked} onchange="onTagShiftChange('morning')">
-        <span>Morning Shift (${log.time_in_morning} - ${log.time_out_morning})</span>
-      </label>
+    html += `
+      <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; padding: 0.35rem 0.5rem; display: flex; flex-direction: column; gap: 0.25rem;">
+        <div style="font-size: 0.68rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.3px; display: flex; justify-content: space-between;">
+          <span>Morning Shift</span>
+          <span style="color: #64748b; font-weight: 600;">${mInTime || '--:--'} – ${mOutTime || '--:--'}</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+          ${mInTime ? `
+            <label class="tag-shift-pill ${currentTagShift === 'morning_in' ? 'active' : ''}">
+              <input type="radio" name="tagShiftRadio" value="morning_in" ${currentTagShift === 'morning_in' ? 'checked' : ''} onchange="onTagShiftChange('morning_in')">
+              <span>Morning In (${mInTime})</span>
+            </label>
+          ` : ''}
+          ${mOutTime ? `
+            <label class="tag-shift-pill ${currentTagShift === 'morning_out' ? 'active' : ''}">
+              <input type="radio" name="tagShiftRadio" value="morning_out" ${currentTagShift === 'morning_out' ? 'checked' : ''} onchange="onTagShiftChange('morning_out')">
+              <span>Morning Out (${mOutTime})</span>
+            </label>
+          ` : ''}
+          ${(mInTime && mOutTime) ? `
+            <label class="tag-shift-pill ${currentTagShift === 'morning' ? 'active' : ''}">
+              <input type="radio" name="tagShiftRadio" value="morning" ${currentTagShift === 'morning' ? 'checked' : ''} onchange="onTagShiftChange('morning')">
+              <span>Full Morning Shift</span>
+            </label>
+          ` : ''}
+        </div>
+      </div>
     `;
   }
 
   if (hasAfternoon) {
-    const isChecked = currentTagShift === 'afternoon' ? 'checked' : '';
-    optionsHtml += `
-      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
-        <input type="radio" name="tagShiftRadio" value="afternoon" ${isChecked} onchange="onTagShiftChange('afternoon')">
-        <span>Afternoon Shift (${log.time_in_afternoon} - ${log.time_out_afternoon})</span>
-      </label>
+    html += `
+      <div style="background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; padding: 0.35rem 0.5rem; display: flex; flex-direction: column; gap: 0.25rem;">
+        <div style="font-size: 0.68rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.3px; display: flex; justify-content: space-between;">
+          <span>Afternoon Shift</span>
+          <span style="color: #64748b; font-weight: 600;">${aInTime || '--:--'} – ${aOutTime || '--:--'}</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem;">
+          ${aInTime ? `
+            <label class="tag-shift-pill ${currentTagShift === 'afternoon_in' ? 'active' : ''}">
+              <input type="radio" name="tagShiftRadio" value="afternoon_in" ${currentTagShift === 'afternoon_in' ? 'checked' : ''} onchange="onTagShiftChange('afternoon_in')">
+              <span>Afternoon In (${aInTime})</span>
+            </label>
+          ` : ''}
+          ${aOutTime ? `
+            <label class="tag-shift-pill ${currentTagShift === 'afternoon_out' ? 'active' : ''}">
+              <input type="radio" name="tagShiftRadio" value="afternoon_out" ${currentTagShift === 'afternoon_out' ? 'checked' : ''} onchange="onTagShiftChange('afternoon_out')">
+              <span>Afternoon Out (${aOutTime})</span>
+            </label>
+          ` : ''}
+          ${(aInTime && aOutTime) ? `
+            <label class="tag-shift-pill ${currentTagShift === 'afternoon' ? 'active' : ''}">
+              <input type="radio" name="tagShiftRadio" value="afternoon" ${currentTagShift === 'afternoon' ? 'checked' : ''} onchange="onTagShiftChange('afternoon')">
+              <span>Full Afternoon Shift</span>
+            </label>
+          ` : ''}
+        </div>
+      </div>
     `;
   }
 
   if (hasMorning && hasAfternoon) {
-    const isChecked = currentTagShift === 'both' ? 'checked' : '';
-    optionsHtml += `
-      <label style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.65rem; background: #ffffff; border: 1px solid var(--border-light); border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">
-        <input type="radio" name="tagShiftRadio" value="both" ${isChecked} onchange="onTagShiftChange('both')">
-        <span>Both Shifts / Full Day</span>
-      </label>
+    html += `
+      <div style="display: flex; justify-content: flex-end;">
+        <label class="tag-shift-pill ${currentTagShift === 'both' ? 'active' : ''}" style="width: 100%; justify-content: center; padding: 0.35rem 0.6rem;">
+          <input type="radio" name="tagShiftRadio" value="both" ${currentTagShift === 'both' ? 'checked' : ''} onchange="onTagShiftChange('both')">
+          <span>Both Shifts / Full Day</span>
+        </label>
+      </div>
     `;
   }
 
-  container.innerHTML = optionsHtml;
+  container.innerHTML = html;
+  updateTagPillsHighlight();
+  updateTagSubmitButtonLabel();
+}
+
+function updateTagPillsHighlight() {
+  document.querySelectorAll('.tag-shift-pill').forEach(pill => {
+    const inp = pill.querySelector('input[name="tagShiftRadio"]');
+    if (inp && inp.checked) {
+      pill.classList.add('active');
+    } else {
+      pill.classList.remove('active');
+    }
+  });
+}
+
+function updateTagSubmitButtonLabel() {
+  const btn = document.getElementById('btnSubmitTagAttendance');
+  if (!btn) return;
+
+  const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
+  const mIn = log?.time_in_morning && log.time_in_morning !== '--:--' ? log.time_in_morning : '';
+  const mOut = log?.time_out_morning && log.time_out_morning !== '--:--' ? log.time_out_morning : '';
+  const aIn = log?.time_in_afternoon && log.time_in_afternoon !== '--:--' ? log.time_in_afternoon : '';
+  const aOut = log?.time_out_afternoon && log.time_out_afternoon !== '--:--' ? log.time_out_afternoon : '';
+
+  let label = 'Confirm & Credit Attendance';
+  switch (currentTagShift) {
+    case 'morning_in':
+      label = `Confirm & Credit Morning In ${mIn ? '(' + mIn + ')' : ''}`;
+      break;
+    case 'morning_out':
+      label = `Confirm & Credit Morning Out ${mOut ? '(' + mOut + ')' : ''}`;
+      break;
+    case 'morning':
+      label = `Confirm & Credit Morning Full Shift`;
+      break;
+    case 'afternoon_in':
+      label = `Confirm & Credit Afternoon In ${aIn ? '(' + aIn + ')' : ''}`;
+      break;
+    case 'afternoon_out':
+      label = `Confirm & Credit Afternoon Out ${aOut ? '(' + aOut + ')' : ''}`;
+      break;
+    case 'afternoon':
+      label = `Confirm & Credit Afternoon Full Shift`;
+      break;
+    case 'both':
+      label = `Confirm & Credit Full Day (Both Shifts)`;
+      break;
+  }
+  btn.textContent = label;
 }
 
 function onTagShiftChange(newShift) {
   currentTagShift = newShift;
-  if (newShift === 'morning') {
+  updateTagPillsHighlight();
+  updateTagSubmitButtonLabel();
+
+  if (newShift === 'morning_in') {
+    selectTagPhotoSlot(0, false);
+  } else if (newShift === 'morning_out') {
+    selectTagPhotoSlot(1, false);
+  } else if (newShift === 'morning') {
     selectTagPhotoSlot(tagPhotoSlots[0].photo ? 0 : 1, false);
+  } else if (newShift === 'afternoon_in') {
+    selectTagPhotoSlot(2, false);
+  } else if (newShift === 'afternoon_out') {
+    selectTagPhotoSlot(3, false);
   } else if (newShift === 'afternoon') {
     selectTagPhotoSlot(tagPhotoSlots[2].photo ? 2 : 3, false);
   }
@@ -3158,7 +3277,7 @@ async function submitTagGroupAttendance() {
   } finally {
     if (btn) {
       btn.disabled = false;
-      btn.textContent = 'Confirm & Credit Attendance';
+      updateTagSubmitButtonLabel();
     }
   }
 }

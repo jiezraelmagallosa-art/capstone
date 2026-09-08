@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InternLog | Dean's Administrative Suite</title>
-  <link rel="stylesheet" href="css/admin.css?v=7.9">
+  <link rel="stylesheet" href="css/admin.css?v=8.1">
 </head>
 
 <body>
@@ -771,11 +771,16 @@
         <div
           style="background: #f8fafc; border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 0.75rem; display: flex; flex-direction: column; gap: 0.65rem; overflow-y: auto;">
           
-          <!-- Shift to Credit -->
+          <!-- Shift/Punch to Credit -->
           <div style="display: flex; flex-direction: column; gap: 0.35rem;">
-            <span style="font-size: 0.78rem; font-weight: 700; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.5px;">
-              Shift to Credit:
-            </span>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.76rem; font-weight: 800; color: var(--navy-primary); text-transform: uppercase; letter-spacing: 0.5px;">
+                Punch / Shift to Credit:
+              </span>
+              <span style="font-size: 0.68rem; color: var(--text-muted); font-weight: 600;">
+                Click photo or pick punch
+              </span>
+            </div>
             <div id="tagShiftSelectorContainer" style="display: flex; flex-direction: column; gap: 0.35rem;">
               <!-- Dynamically populated shift radio buttons -->
             </div>
@@ -1266,7 +1271,7 @@
   </div>
 
   <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/admin.js?v=8.0"></script>
+  <script src="js/admin.js?v=8.1"></script>
 </body>
 
 </html>

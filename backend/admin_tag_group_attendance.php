@@ -38,7 +38,8 @@ try {
         exit();
     }
 
-    if (!in_array($shift, ['morning', 'afternoon', 'both'])) {
+    $valid_shifts = ['morning_in', 'morning_out', 'morning', 'afternoon_in', 'afternoon_out', 'afternoon', 'both'];
+    if (!in_array($shift, $valid_shifts)) {
         $shift = 'morning';
     }
 
@@ -83,18 +84,43 @@ try {
     $submitter_name      = $ref['submitter_name'];
     $ref_site_id         = intval($ref['site_id'] ?? 1);
 
-    // 2. Format default credit remark
-    $default_tag_remark = !empty($custom_remarks) 
-        ? $custom_remarks 
-        : "Present in group photo submitted by " . $submitter_name;
+    // 2. Format default credit remark based on punch/shift target
+    if (!empty($custom_remarks)) {
+        $default_tag_remark = $custom_remarks;
+    } else {
+        switch ($shift) {
+            case 'morning_in':
+                $default_tag_remark = "Present in Morning In group photo submitted by " . $submitter_name;
+                break;
+            case 'morning_out':
+                $default_tag_remark = "Present in Morning Out group photo submitted by " . $submitter_name;
+                break;
+            case 'morning':
+                $default_tag_remark = "Present in Morning Shift group photo submitted by " . $submitter_name;
+                break;
+            case 'afternoon_in':
+                $default_tag_remark = "Present in Afternoon In group photo submitted by " . $submitter_name;
+                break;
+            case 'afternoon_out':
+                $default_tag_remark = "Present in Afternoon Out group photo submitted by " . $submitter_name;
+                break;
+            case 'afternoon':
+                $default_tag_remark = "Present in Afternoon Shift group photo submitted by " . $submitter_name;
+                break;
+            case 'both':
+            default:
+                $default_tag_remark = "Present in group photo submitted by " . $submitter_name;
+                break;
+        }
+    }
 
-    // 3. Always confirm the submitter's own shift
-    if ($shift === 'morning') {
+    // 3. Always confirm the submitter's own shift/punch
+    if (in_array($shift, ['morning', 'morning_in', 'morning_out'])) {
         $stmt_sub = $conn->prepare("UPDATE attendance SET morning_status = 'Confirmed', morning_remarks = COALESCE(NULLIF(morning_remarks, ''), ?) WHERE attendance_id = ?");
         $stmt_sub->bind_param("si", $default_tag_remark, $attendance_id);
         $stmt_sub->execute();
         $stmt_sub->close();
-    } elseif ($shift === 'afternoon') {
+    } elseif (in_array($shift, ['afternoon', 'afternoon_in', 'afternoon_out'])) {
         $stmt_sub = $conn->prepare("UPDATE attendance SET afternoon_status = 'Confirmed', afternoon_remarks = COALESCE(NULLIF(afternoon_remarks, ''), ?) WHERE attendance_id = ?");
         $stmt_sub->bind_param("si", $default_tag_remark, $attendance_id);
         $stmt_sub->execute();
@@ -159,12 +185,34 @@ try {
         $stmt_check->close();
 
         if ($existing_att_id > 0) {
-            // Update existing attendance record
-            if ($shift === 'morning') {
+            // Update existing attendance record based on punch/shift target
+            if ($shift === 'morning_in') {
                 $stmt_upd = $conn->prepare("
                     UPDATE attendance 
-                    SET time_in_morning = COALESCE(time_in_morning, ?),
-                        time_out_morning = COALESCE(time_out_morning, ?),
+                    SET time_in_morning = ?,
+                        morning_status = 'Confirmed',
+                        morning_remarks = ?
+                    WHERE attendance_id = ?
+                ");
+                $stmt_upd->bind_param("ssi", $time_in_morning, $default_tag_remark, $existing_att_id);
+                $stmt_upd->execute();
+                $stmt_upd->close();
+            } elseif ($shift === 'morning_out') {
+                $stmt_upd = $conn->prepare("
+                    UPDATE attendance 
+                    SET time_out_morning = ?,
+                        morning_status = 'Confirmed',
+                        morning_remarks = ?
+                    WHERE attendance_id = ?
+                ");
+                $stmt_upd->bind_param("ssi", $time_out_morning, $default_tag_remark, $existing_att_id);
+                $stmt_upd->execute();
+                $stmt_upd->close();
+            } elseif ($shift === 'morning') {
+                $stmt_upd = $conn->prepare("
+                    UPDATE attendance 
+                    SET time_in_morning = COALESCE(?, time_in_morning),
+                        time_out_morning = COALESCE(?, time_out_morning),
                         morning_status = 'Confirmed',
                         morning_remarks = ?
                     WHERE attendance_id = ?
@@ -172,11 +220,33 @@ try {
                 $stmt_upd->bind_param("sssi", $time_in_morning, $time_out_morning, $default_tag_remark, $existing_att_id);
                 $stmt_upd->execute();
                 $stmt_upd->close();
+            } elseif ($shift === 'afternoon_in') {
+                $stmt_upd = $conn->prepare("
+                    UPDATE attendance 
+                    SET time_in_afternoon = ?,
+                        afternoon_status = 'Confirmed',
+                        afternoon_remarks = ?
+                    WHERE attendance_id = ?
+                ");
+                $stmt_upd->bind_param("ssi", $time_in_afternoon, $default_tag_remark, $existing_att_id);
+                $stmt_upd->execute();
+                $stmt_upd->close();
+            } elseif ($shift === 'afternoon_out') {
+                $stmt_upd = $conn->prepare("
+                    UPDATE attendance 
+                    SET time_out_afternoon = ?,
+                        afternoon_status = 'Confirmed',
+                        afternoon_remarks = ?
+                    WHERE attendance_id = ?
+                ");
+                $stmt_upd->bind_param("ssi", $time_out_afternoon, $default_tag_remark, $existing_att_id);
+                $stmt_upd->execute();
+                $stmt_upd->close();
             } elseif ($shift === 'afternoon') {
                 $stmt_upd = $conn->prepare("
                     UPDATE attendance 
-                    SET time_in_afternoon = COALESCE(time_in_afternoon, ?),
-                        time_out_afternoon = COALESCE(time_out_afternoon, ?),
+                    SET time_in_afternoon = COALESCE(?, time_in_afternoon),
+                        time_out_afternoon = COALESCE(?, time_out_afternoon),
                         afternoon_status = 'Confirmed',
                         afternoon_remarks = ?
                     WHERE attendance_id = ?
@@ -187,12 +257,12 @@ try {
             } else { // both
                 $stmt_upd = $conn->prepare("
                     UPDATE attendance 
-                    SET time_in_morning = COALESCE(time_in_morning, ?),
-                        time_out_morning = COALESCE(time_out_morning, ?),
+                    SET time_in_morning = COALESCE(?, time_in_morning),
+                        time_out_morning = COALESCE(?, time_out_morning),
                         morning_status = 'Confirmed',
                         morning_remarks = ?,
-                        time_in_afternoon = COALESCE(time_in_afternoon, ?),
-                        time_out_afternoon = COALESCE(time_out_afternoon, ?),
+                        time_in_afternoon = COALESCE(?, time_in_afternoon),
+                        time_out_afternoon = COALESCE(?, time_out_afternoon),
                         afternoon_status = 'Confirmed',
                         afternoon_remarks = ?,
                         status = 'Confirmed',
@@ -216,7 +286,31 @@ try {
             updateAttendanceOverallStatus($conn, $existing_att_id);
         } else {
             // Insert brand new attendance record for this tagged student
-            if ($shift === 'morning') {
+            if ($shift === 'morning_in') {
+                $stmt_ins = $conn->prepare("
+                    INSERT INTO attendance 
+                        (date, time_in_morning, morning_status, morning_remarks, status, remarks, ojt_id)
+                    VALUES 
+                        (?, ?, 'Confirmed', ?, 'Pending', ?, ?)
+                ");
+                $stmt_ins->bind_param("ssssi", $ref_date, $time_in_morning, $default_tag_remark, $default_tag_remark, $ojt_id);
+                $stmt_ins->execute();
+                $new_id = $stmt_ins->insert_id;
+                $stmt_ins->close();
+                updateAttendanceOverallStatus($conn, $new_id);
+            } elseif ($shift === 'morning_out') {
+                $stmt_ins = $conn->prepare("
+                    INSERT INTO attendance 
+                        (date, time_out_morning, morning_status, morning_remarks, status, remarks, ojt_id)
+                    VALUES 
+                        (?, ?, 'Confirmed', ?, 'Pending', ?, ?)
+                ");
+                $stmt_ins->bind_param("ssssi", $ref_date, $time_out_morning, $default_tag_remark, $default_tag_remark, $ojt_id);
+                $stmt_ins->execute();
+                $new_id = $stmt_ins->insert_id;
+                $stmt_ins->close();
+                updateAttendanceOverallStatus($conn, $new_id);
+            } elseif ($shift === 'morning') {
                 $stmt_ins = $conn->prepare("
                     INSERT INTO attendance 
                         (date, time_in_morning, time_out_morning, morning_status, morning_remarks, status, remarks, ojt_id)
@@ -224,6 +318,30 @@ try {
                         (?, ?, ?, 'Confirmed', ?, 'Pending', ?, ?)
                 ");
                 $stmt_ins->bind_param("sssssi", $ref_date, $time_in_morning, $time_out_morning, $default_tag_remark, $default_tag_remark, $ojt_id);
+                $stmt_ins->execute();
+                $new_id = $stmt_ins->insert_id;
+                $stmt_ins->close();
+                updateAttendanceOverallStatus($conn, $new_id);
+            } elseif ($shift === 'afternoon_in') {
+                $stmt_ins = $conn->prepare("
+                    INSERT INTO attendance 
+                        (date, time_in_afternoon, afternoon_status, afternoon_remarks, status, remarks, ojt_id)
+                    VALUES 
+                        (?, ?, 'Confirmed', ?, 'Pending', ?, ?)
+                ");
+                $stmt_ins->bind_param("ssssi", $ref_date, $time_in_afternoon, $default_tag_remark, $default_tag_remark, $ojt_id);
+                $stmt_ins->execute();
+                $new_id = $stmt_ins->insert_id;
+                $stmt_ins->close();
+                updateAttendanceOverallStatus($conn, $new_id);
+            } elseif ($shift === 'afternoon_out') {
+                $stmt_ins = $conn->prepare("
+                    INSERT INTO attendance 
+                        (date, time_out_afternoon, afternoon_status, afternoon_remarks, status, remarks, ojt_id)
+                    VALUES 
+                        (?, ?, 'Confirmed', ?, 'Pending', ?, ?)
+                ");
+                $stmt_ins->bind_param("ssssi", $ref_date, $time_out_afternoon, $default_tag_remark, $default_tag_remark, $ojt_id);
                 $stmt_ins->execute();
                 $new_id = $stmt_ins->insert_id;
                 $stmt_ins->close();
@@ -272,7 +390,16 @@ try {
         $processed_students[] = $st_id;
     }
 
-    $shift_label = $shift === 'both' ? 'Both Shifts (Full Day)' : ucfirst($shift) . ' Shift';
+    $shift_labels = [
+        'morning_in'    => 'Morning Time-In (' . ($time_in_morning ? date("h:i A", strtotime($time_in_morning)) : '--:--') . ')',
+        'morning_out'   => 'Morning Time-Out (' . ($time_out_morning ? date("h:i A", strtotime($time_out_morning)) : '--:--') . ')',
+        'morning'       => 'Full Morning Shift',
+        'afternoon_in'  => 'Afternoon Time-In (' . ($time_in_afternoon ? date("h:i A", strtotime($time_in_afternoon)) : '--:--') . ')',
+        'afternoon_out' => 'Afternoon Time-Out (' . ($time_out_afternoon ? date("h:i A", strtotime($time_out_afternoon)) : '--:--') . ')',
+        'afternoon'     => 'Full Afternoon Shift',
+        'both'          => 'Both Shifts (Full Day)'
+    ];
+    $shift_label = $shift_labels[$shift] ?? ucfirst($shift);
 
     echo json_encode([
         "status"         => "success",

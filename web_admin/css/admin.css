@@ -1861,6 +1861,41 @@ body {
   box-shadow: 0 0 0 1px #1e3a8a;
 }
 
+.tag-shift-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.55rem;
+  background: #f8fafc;
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: var(--navy-primary);
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.tag-shift-pill:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.tag-shift-pill.active,
+.tag-shift-pill:has(input:checked) {
+  background: #eff6ff !important;
+  border-color: #2563eb !important;
+  color: #1d4ed8 !important;
+  font-weight: 700;
+}
+
+.tag-shift-pill input[type="radio"] {
+  accent-color: #2563eb;
+  cursor: pointer;
+  margin: 0;
+}
+
 @media (max-width: 840px) {
   .tag-modal-grid {
     grid-template-columns: 1fr !important;
