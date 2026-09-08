@@ -1821,3 +1821,50 @@ body {
     width: 100%;
   }
 }
+
+/* ==================== TAG GROUP ATTENDANCE MODAL POLISH ==================== */
+.tag-student-row {
+  cursor: pointer;
+  transition: background 0.15s ease, border-left 0.15s ease;
+}
+
+.tag-student-row:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.tag-student-row.is-submitter {
+  background-color: #f0fdf4 !important;
+  cursor: default;
+}
+
+.tag-student-row.is-checked:not(.is-submitter) {
+  background-color: #eff6ff !important;
+}
+
+.tag-photo-slot {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 0.35rem 0.45rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tag-photo-slot:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+}
+
+.tag-photo-slot.active {
+  border-color: #1e3a8a;
+  background: #eff6ff;
+  box-shadow: 0 0 0 1px #1e3a8a;
+}
+
+@media (max-width: 840px) {
+  .tag-modal-grid {
+    grid-template-columns: 1fr !important;
+    overflow-y: auto !important;
+    max-height: calc(85vh - 120px) !important;
+  }
+}

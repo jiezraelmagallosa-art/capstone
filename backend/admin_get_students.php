@@ -25,6 +25,7 @@ require_once 'db_connect.php';
     $dean_id = isset($_GET['dean_id']) ? intval($_GET['dean_id']) : (isset($_POST['dean_id']) ? intval($_POST['dean_id']) : 0);
     $course_code_filter = isset($_GET['course_code']) ? trim($_GET['course_code']) : (isset($_POST['course_code']) ? trim($_POST['course_code']) : '');
     $course_id_filter = isset($_GET['course_id']) ? intval($_GET['course_id']) : (isset($_POST['course_id']) ? intval($_POST['course_id']) : 0);
+    $show_all = isset($_GET['all']) ? intval($_GET['all']) : (isset($_POST['all']) ? intval($_POST['all']) : 0);
 
     $sql = "SELECT
                 s.student_id,
@@ -54,7 +55,7 @@ require_once 'db_connect.php';
 
     $where = [];
     $has_specific_students = false;
-    if ($dean_id > 0) {
+    if ($dean_id > 0 && !$show_all) {
         $d_check = $conn->query("SELECT student_id FROM student WHERE dean_id = " . intval($dean_id) . " LIMIT 1");
         if ($d_check && $d_check->num_rows > 0) {
             $has_specific_students = true;
@@ -90,7 +91,7 @@ require_once 'db_connect.php';
     }
 
     $counts_sql = "SELECT c.course_code, COUNT(s.student_id) as total FROM course c LEFT JOIN student s ON c.course_id = s.course_id";
-    if ($has_specific_students && $dean_id > 0) {
+    if ($has_specific_students && $dean_id > 0 && !$show_all) {
         $counts_sql .= " WHERE s.dean_id = " . intval($dean_id);
     }
     $counts_sql .= " GROUP BY c.course_code";

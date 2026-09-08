@@ -366,7 +366,9 @@ function renderLiveCaptures(captures) {
 async function fetchStudents() {
   try {
     await fetchCourses(false);
-    const res = await fetch(API_BASE + 'admin_get_students.php' + getDeanQueryParam());
+    const deanP = getDeanQueryParam();
+    const studentUrl = API_BASE + 'admin_get_students.php' + (deanP ? deanP + '&all=1' : '?all=1');
+    const res = await fetch(studentUrl);
     const data = await res.json();
     if (data.status === 'success') {
       cachedStudents = data.data || [];
@@ -2604,10 +2606,10 @@ async function openTagGroupModal(attendanceId, preferredShift = null) {
   currentTagAttendanceId = attendanceId;
   tagModalActivePhotos = log.photos || [];
 
-  // 1. Ensure cachedStudents is fully loaded so student names always appear!
-  if (!cachedStudents || cachedStudents.length === 0) {
+  // 1. Ensure cachedStudents is fully loaded with all enrolled student interns
+  if (!cachedStudents || cachedStudents.length === 0 || !cachedStudents.find(s => Number(s.student_id) === Number(log.student_id))) {
     try {
-      const res = await fetch(API_BASE + 'admin_get_students.php' + getDeanQueryParam());
+      const res = await fetch(API_BASE + 'admin_get_students.php?all=1');
       const data = await res.json();
       if (data.status === 'success' && data.data) {
         cachedStudents = data.data;
@@ -2639,10 +2641,20 @@ async function openTagGroupModal(attendanceId, preferredShift = null) {
     currentTagShift = 'morning';
   }
 
+  // Fallback resolve submitter ID if not in log object
+  let submitterId = Number(log.student_id || 0);
+  if (!submitterId && log.student_number) {
+    const matched = (cachedStudents || []).find(s => s.student_number === log.student_number || s.full_name === log.full_name);
+    if (matched) submitterId = Number(matched.student_id);
+  }
+  if (submitterId > 0) {
+    log.student_id = submitterId;
+  }
+
   // Pre-select the submitter
   taggedStudentIds = new Set();
-  if (log.student_id) {
-    taggedStudentIds.add(Number(log.student_id));
+  if (submitterId > 0) {
+    taggedStudentIds.add(submitterId);
   }
 
   // Set Subtitle
@@ -2860,15 +2872,33 @@ function renderTagStudentList() {
   const courseQ = courseFilter ? courseFilter.value : 'ALL';
 
   const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
-  const submitterId = log ? Number(log.student_id) : 0;
+  let submitterId = log ? Number(log.student_id) : 0;
+  if (!submitterId && log && log.student_number) {
+    const matched = (cachedStudents || []).find(s => s.student_number === log.student_number || s.full_name === log.full_name);
+    if (matched) submitterId = Number(matched.student_id);
+  }
 
   // Make sure submitter is auto-checked
   if (submitterId > 0) {
     taggedStudentIds.add(submitterId);
   }
 
+  // Clone students array
+  let sortedStudents = [...(cachedStudents || [])];
+
+  // If submitter is not in sortedStudents, add them at the top
+  if (log && submitterId > 0 && !sortedStudents.some(s => Number(s.student_id) === submitterId)) {
+    sortedStudents.unshift({
+      student_id: submitterId,
+      full_name: log.full_name,
+      student_number: log.student_number,
+      course_code: log.course_code,
+      site_name: log.site_name
+    });
+  }
+
   // Sort students: submitter first, then alphabetically by full_name
-  const sortedStudents = [...(cachedStudents || [])].sort((a, b) => {
+  sortedStudents.sort((a, b) => {
     if (Number(a.student_id) === submitterId) return -1;
     if (Number(b.student_id) === submitterId) return 1;
     return (a.full_name || '').localeCompare(b.full_name || '');
@@ -2886,6 +2916,12 @@ function renderTagStudentList() {
     return true;
   });
 
+  // Update visible count label
+  const visibleBadge = document.getElementById('tagVisibleCountBadge');
+  if (visibleBadge) {
+    visibleBadge.textContent = `Showing ${filtered.length} of ${sortedStudents.length} intern${sortedStudents.length === 1 ? '' : 's'}`;
+  }
+
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
@@ -2902,11 +2938,15 @@ function renderTagStudentList() {
     const isSubmitter = Number(s.student_id) === submitterId;
     const isChecked = taggedStudentIds.has(Number(s.student_id));
     const courseBadge = getCourseBadgeClass(s.course_code);
-    const rowBg = isChecked ? (isSubmitter ? '#f0fdf4' : '#f0f9ff') : '#ffffff';
+    const rowClass = `tag-student-row ${isSubmitter ? 'is-submitter' : ''} ${isChecked ? 'is-checked' : ''}`;
+    const leftBorder = isSubmitter ? 'border-left: 3px solid #16a34a;' : (isChecked ? 'border-left: 3px solid #2563eb;' : 'border-left: 3px solid transparent;');
 
     return `
-      <tr style="background: ${rowBg}; transition: background 0.15s ease;">
-        <td style="text-align: center; vertical-align: middle; padding: 0.5rem 0.5rem;">
+      <tr id="tagRow_${s.student_id}" 
+          class="${rowClass}" 
+          style="${leftBorder} transition: background 0.15s ease;"
+          ${isSubmitter ? '' : `onclick="handleTagRowClick(event, ${s.student_id})"`}>
+        <td style="text-align: center; vertical-align: middle; padding: 0.45rem 0.4rem;">
           <input type="checkbox" 
                  id="chkStudent_${s.student_id}" 
                  value="${s.student_id}" 
@@ -2914,19 +2954,19 @@ function renderTagStudentList() {
                  ${isSubmitter ? 'disabled title="Submitter is automatically included"' : `onchange="toggleTaggedStudent(${s.student_id}, this.checked)"`}
                  style="cursor: pointer; width: 17px; height: 17px; accent-color: #1e3a8a;">
         </td>
-        <td style="vertical-align: middle; padding: 0.5rem 0.75rem;">
+        <td style="vertical-align: middle; padding: 0.45rem 0.65rem;">
           <div style="font-weight: 700; color: var(--navy-primary); font-size: 0.86rem; display: flex; align-items: center; gap: 0.4rem;">
             ${escapeHtml(s.full_name)}
             ${isSubmitter ? '<span class="badge badge-success" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;">Submitter</span>' : ''}
           </div>
         </td>
-        <td style="vertical-align: middle; padding: 0.5rem 0.75rem; font-size: 0.82rem; color: var(--text-muted); font-family: monospace; font-weight: 600;">
+        <td style="vertical-align: middle; padding: 0.45rem 0.65rem; font-size: 0.82rem; color: var(--text-muted); font-family: monospace; font-weight: 600;">
           ${escapeHtml(s.student_number || '--')}
         </td>
-        <td style="vertical-align: middle; padding: 0.5rem 0.75rem;">
+        <td style="vertical-align: middle; padding: 0.45rem 0.65rem;">
           <span class="badge ${courseBadge}" style="font-size: 0.72rem;">${s.course_code || 'N/A'}</span>
         </td>
-        <td style="vertical-align: middle; padding: 0.5rem 0.75rem; font-size: 0.8rem; color: #64748b;">
+        <td style="vertical-align: middle; padding: 0.45rem 0.65rem; font-size: 0.8rem; color: #64748b;">
           ${escapeHtml(s.site_name || 'Unassigned')}
         </td>
       </tr>
@@ -2934,6 +2974,19 @@ function renderTagStudentList() {
   }).join('');
 
   updateTagSelectedCounter();
+}
+
+function handleTagRowClick(event, studentId) {
+  if (event.target.tagName === 'INPUT') return;
+  const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
+  const submitterId = log ? Number(log.student_id) : 0;
+  if (Number(studentId) === submitterId) return;
+
+  const chk = document.getElementById(`chkStudent_${studentId}`);
+  if (chk && !chk.disabled) {
+    chk.checked = !chk.checked;
+    toggleTaggedStudent(studentId, chk.checked);
+  }
 }
 
 function toggleTaggedStudent(studentId, isChecked) {
@@ -2944,6 +2997,18 @@ function toggleTaggedStudent(studentId, isChecked) {
     taggedStudentIds.delete(sid);
   }
   updateTagSelectedCounter();
+
+  // Instant visual feedback on the row
+  const row = document.getElementById(`tagRow_${sid}`);
+  if (row && !row.classList.contains('is-submitter')) {
+    if (isChecked) {
+      row.classList.add('is-checked');
+      row.style.borderLeft = '3px solid #2563eb';
+    } else {
+      row.classList.remove('is-checked');
+      row.style.borderLeft = '3px solid transparent';
+    }
+  }
 }
 
 function selectAllFilteredStudents(selectAll) {
@@ -2953,7 +3018,11 @@ function selectAllFilteredStudents(selectAll) {
   const courseQ = courseFilter ? courseFilter.value : 'ALL';
 
   const log = (cachedLogs || []).find(x => x.attendance_id == currentTagAttendanceId);
-  const submitterId = log ? Number(log.student_id) : 0;
+  let submitterId = log ? Number(log.student_id) : 0;
+  if (!submitterId && log && log.student_number) {
+    const matched = (cachedStudents || []).find(s => s.student_number === log.student_number || s.full_name === log.full_name);
+    if (matched) submitterId = Number(matched.student_id);
+  }
 
   const filtered = (cachedStudents || []).filter(s => {
     if (courseQ !== 'ALL' && s.course_code !== courseQ) return false;

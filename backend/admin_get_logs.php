@@ -106,6 +106,7 @@ try {
 
             $logs[] = [
                 "attendance_id" => $att_id,
+                "student_id" => intval($row['student_id']),
                 "date" => date("M d, Y", strtotime($row['date'])),
                 "raw_date" => $row['date'],
                 "student_number" => $row['student_number'],
