@@ -867,10 +867,21 @@ function renderLogsTable(logs) {
       mBadgeHtml = `<div style="margin-top: 0.2rem;"><span class="badge badge-warning" style="font-size: 0.68rem;">Pending</span></div>`;
     }
 
-    const cleanRemarkText = (txt) => (txt || '').replace(/\s*\/\s*in car/gi, '').trim();
+    const cleanRemarkText = (txt, isMorning = true, hasBoth = false) => {
+      let cleaned = (txt || '').replace(/\s*\/\s*in car/gi, '').trim();
+      if (hasBoth) {
+        if (isMorning && (/morning time-out taken off-site/i.test(cleaned) || /morning time-in taken off-site/i.test(cleaned))) {
+          cleaned = 'Morning Shift taken off-site';
+        } else if (!isMorning && (/afternoon time-out taken off-site/i.test(cleaned) || /afternoon time-in taken off-site/i.test(cleaned) || /afternoon photo invalid \/ off-site/i.test(cleaned))) {
+          cleaned = 'Afternoon Shift taken off-site';
+        }
+      }
+      return cleaned;
+    };
 
+    const hasBothMorning = (l.time_in_morning && l.time_in_morning !== '--:--') && (l.time_out_morning && l.time_out_morning !== '--:--');
     const mRemarksHtml = (l.morning_status === 'Rejected' && l.morning_remarks)
-      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(cleanRemarkText(l.morning_remarks))}</div>`
+      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(cleanRemarkText(l.morning_remarks, true, hasBothMorning))}</div>`
       : '';
 
     // Afternoon shift badge & remarks: remove 'Confirmed' badge if confirmed; display badge only if Rejected or Pending
@@ -881,8 +892,9 @@ function renderLogsTable(logs) {
       aBadgeHtml = `<div style="margin-top: 0.2rem;"><span class="badge badge-warning" style="font-size: 0.68rem;">Pending</span></div>`;
     }
 
+    const hasBothAfternoon = (l.time_in_afternoon && l.time_in_afternoon !== '--:--') && (l.time_out_afternoon && l.time_out_afternoon !== '--:--');
     const aRemarksHtml = (l.afternoon_status === 'Rejected' && l.afternoon_remarks)
-      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(cleanRemarkText(l.afternoon_remarks))}</div>`
+      ? `<div style="font-size: 0.72rem; color: #b91c1c; font-style: italic; margin-top: 2px;">${escapeHtml(cleanRemarkText(l.afternoon_remarks, false, hasBothAfternoon))}</div>`
       : '';
 
     // Overall status badge
@@ -2579,9 +2591,40 @@ async function reviewAttendanceLog(attendanceId, action, shift = 'morning') {
   if (shift === 'afternoon') shiftLabel = 'Afternoon Shift';
   if (shift === 'both') shiftLabel = 'Entire Day';
 
-  const defaultPrompt = action === 'Rejected'
-    ? (shift === 'morning' ? 'Morning Time-Out taken off-site' : (shift === 'afternoon' ? 'Afternoon photo invalid / off-site' : 'Selfie photo invalid / not on-site'))
-    : (shift === 'morning' ? 'Morning shift verified and confirmed' : (shift === 'afternoon' ? 'Afternoon shift verified and confirmed' : 'Attendance log confirmed by Dean of Student Affairs'));
+  const log = (cachedLogs || []).find(x => x.attendance_id == attendanceId);
+  const hasMIn = log && log.time_in_morning && log.time_in_morning !== '--:--';
+  const hasMOut = log && log.time_out_morning && log.time_out_morning !== '--:--';
+  const hasAIn = log && log.time_in_afternoon && log.time_in_afternoon !== '--:--';
+  const hasAOut = log && log.time_out_afternoon && log.time_out_afternoon !== '--:--';
+
+  let defaultPrompt = '';
+  if (action === 'Rejected') {
+    if (shift === 'morning') {
+      if (hasMIn && hasMOut) {
+        defaultPrompt = 'Morning Shift taken off-site';
+      } else if (hasMOut) {
+        defaultPrompt = 'Morning Time-Out taken off-site';
+      } else if (hasMIn) {
+        defaultPrompt = 'Morning Time-In taken off-site';
+      } else {
+        defaultPrompt = 'Morning Shift taken off-site';
+      }
+    } else if (shift === 'afternoon') {
+      if (hasAIn && hasAOut) {
+        defaultPrompt = 'Afternoon Shift taken off-site';
+      } else if (hasAOut) {
+        defaultPrompt = 'Afternoon Time-Out taken off-site';
+      } else if (hasAIn) {
+        defaultPrompt = 'Afternoon Time-In taken off-site';
+      } else {
+        defaultPrompt = 'Afternoon Shift taken off-site';
+      }
+    } else {
+      defaultPrompt = 'Selfie photo invalid / not on-site';
+    }
+  } else {
+    defaultPrompt = (shift === 'morning' ? 'Morning shift verified and confirmed' : (shift === 'afternoon' ? 'Afternoon shift verified and confirmed' : 'Attendance log confirmed by Dean of Student Affairs'));
+  }
 
   const remarks = prompt(`[${shiftLabel}] Enter Dean Administrative Remarks (${action}):\n(Type the exact remark you want to record and show to the student intern)`, defaultPrompt);
   if (remarks === null) return; // Dean clicked cancel

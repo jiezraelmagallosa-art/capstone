@@ -2,6 +2,7 @@
 // File: main.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:camera/camera.dart';
 import 'screens/login_screen.dart';
 
@@ -9,6 +10,9 @@ List<CameraDescription> cameras = [];
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
 
   try {
     cameras = await availableCameras();

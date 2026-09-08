@@ -213,6 +213,49 @@ try {
             }
 
             if ($image_base64_decoded !== false && strlen($image_base64_decoded) > 0) {
+                // Ensure received photo is normalized to portrait orientation (height >= width)
+                if (function_exists('imagecreatefromstring')) {
+                    $img = @imagecreatefromstring($image_base64_decoded);
+                    if ($img !== false) {
+                        $orientation = 1;
+                        if (function_exists('exif_read_data')) {
+                            $stream = fopen('php://memory', 'r+');
+                            fwrite($stream, $image_base64_decoded);
+                            rewind($stream);
+                            $exif = @exif_read_data($stream);
+                            if (!empty($exif['Orientation'])) {
+                                $orientation = intval($exif['Orientation']);
+                            }
+                            fclose($stream);
+                        }
+
+                        $rotated = false;
+                        if ($orientation == 6) {
+                            $rotated = imagerotate($img, 270, 0);
+                        } elseif ($orientation == 8) {
+                            $rotated = imagerotate($img, 90, 0);
+                        } elseif ($orientation == 3) {
+                            $rotated = imagerotate($img, 180, 0);
+                        } else {
+                            // If dimensions are landscape (width > height), rotate 270 degrees to portrait
+                            $w = imagesx($img);
+                            $h = imagesy($img);
+                            if ($w > $h) {
+                                $rotated = imagerotate($img, 270, 0);
+                            }
+                        }
+
+                        if ($rotated !== false) {
+                            ob_start();
+                            imagejpeg($rotated, null, 92);
+                            $image_base64_decoded = ob_get_clean();
+                            imagedestroy($rotated);
+                            $image_type = 'jpg';
+                        }
+                        imagedestroy($img);
+                    }
+                }
+
                 $file_name = "live_" . $resolved_ojt_id . "_" . time() . "." . $image_type;
                 $file_path = $upload_dir . $file_name;
                 $db_image_path = "uploads/live_captures/" . $file_name;

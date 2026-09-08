@@ -104,30 +104,43 @@ try {
                 ? date("h:i A", strtotime($row['time_out_afternoon']))
                 : '--:--';
 
-            $logs[] = [
-                "attendance_id" => $att_id,
-                "student_id" => intval($row['student_id']),
-                "date" => date("M d, Y", strtotime($row['date'])),
-                "raw_date" => $row['date'],
-                "student_number" => $row['student_number'],
-                "full_name" => $row['full_name'],
-                "dean_name" => $row['dean_name'] ?? 'Unassigned Dean',
-                "course_code" => $row['course_code'] ?? 'BSIS',
-                "site_name" => $row['site_name'] ?? 'SBC IT Department',
-                "time_in_morning" => $m_in,
-                "time_out_morning" => $m_out,
-                "time_in_afternoon" => $a_in,
-                "time_out_afternoon" => $a_out,
-                "status" => $status,
-                "remarks" => trim(preg_replace('/\s*\/\s*in car/i', '', $row['attendance_remarks'] ?? '')),
-                "morning_status" => $row['morning_status'] ?? 'Pending',
-                "morning_remarks" => trim(preg_replace('/\s*\/\s*in car/i', '', $row['morning_remarks'] ?? '')),
-                "afternoon_status" => $row['afternoon_status'] ?? 'Pending',
-                "afternoon_remarks" => trim(preg_replace('/\s*\/\s*in car/i', '', $row['afternoon_remarks'] ?? '')),
-                "is_confirmed" => ($raw_att_status === 'Confirmed'),
-                "is_rejected" => ($raw_att_status === 'Rejected'),
-                "photos" => $photos
-            ];
+                $m_remarks = trim(preg_replace('/\s*\/\s*in car/i', '', $row['morning_remarks'] ?? ''));
+                if (!empty($m_in) && !empty($m_out) && $m_in !== '--:--' && $m_out !== '--:--' && ($row['morning_status'] ?? '') === 'Rejected') {
+                    if (strcasecmp($m_remarks, 'Morning Time-Out taken off-site') === 0 || strcasecmp($m_remarks, 'Morning Time-In taken off-site') === 0) {
+                        $m_remarks = 'Morning Shift taken off-site';
+                    }
+                }
+
+                $a_remarks = trim(preg_replace('/\s*\/\s*in car/i', '', $row['afternoon_remarks'] ?? ''));
+                if (!empty($a_in) && !empty($a_out) && $a_in !== '--:--' && $a_out !== '--:--' && ($row['afternoon_status'] ?? '') === 'Rejected') {
+                    if (strcasecmp($a_remarks, 'Afternoon Time-Out taken off-site') === 0 || strcasecmp($a_remarks, 'Afternoon Time-In taken off-site') === 0 || strcasecmp($a_remarks, 'Afternoon photo invalid / off-site') === 0) {
+                        $a_remarks = 'Afternoon Shift taken off-site';
+                    }
+                }
+
+                $logs[] = [
+                    "attendance_id" => intval($row['attendance_id']),
+                    "student_id" => intval($row['student_id'] ?? 0),
+                    "date" => date("M d, Y", strtotime($row['date'])),
+                    "raw_date" => $row['date'],
+                    "full_name" => $row['full_name'] ?? 'Unknown Intern',
+                    "student_number" => $row['student_number'] ?? 'N/A',
+                    "course_code" => $row['course_code'] ?? 'BSIS',
+                    "site_name" => $row['site_name'] ?? 'SBC IT Department',
+                    "time_in_morning" => $m_in,
+                    "time_out_morning" => $m_out,
+                    "time_in_afternoon" => $a_in,
+                    "time_out_afternoon" => $a_out,
+                    "status" => $status,
+                    "remarks" => trim(preg_replace('/\s*\/\s*in car/i', '', $row['attendance_remarks'] ?? '')),
+                    "morning_status" => $row['morning_status'] ?? 'Pending',
+                    "morning_remarks" => $m_remarks,
+                    "afternoon_status" => $row['afternoon_status'] ?? 'Pending',
+                    "afternoon_remarks" => $a_remarks,
+                    "is_confirmed" => ($raw_att_status === 'Confirmed'),
+                    "is_rejected" => ($raw_att_status === 'Rejected'),
+                    "photos" => $photos
+                ];
         }
     }
 

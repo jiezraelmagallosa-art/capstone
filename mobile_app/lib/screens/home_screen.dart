@@ -3,7 +3,10 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:camera/camera.dart';
 import '../main.dart';
@@ -116,10 +119,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         frontCamera,
         ResolutionPreset.high,
         enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
       );
 
       try {
         await _cameraController!.initialize();
+        try {
+          await _cameraController!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+        } catch (_) {}
         try {
           final double minZoom = await _cameraController!.getMinZoomLevel();
           await _cameraController!.setZoomLevel(minZoom);
@@ -232,6 +239,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
 
     try {
+      try {
+        await _cameraController!.lockCaptureOrientation(DeviceOrientation.portraitUp);
+      } catch (_) {}
       final XFile imageFile = await _cameraController!.takePicture();
       debugPrint('Image captured at path: ${imageFile.path}');
       return imageFile;
@@ -404,7 +414,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
     if (capturedPhoto != null) {
       try {
-        final bytes = await capturedPhoto.readAsBytes();
+        Uint8List bytes = await capturedPhoto.readAsBytes();
+
+        // Ensure captured photo is normalized to portrait orientation
+        try {
+          final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+          final ui.FrameInfo frameInfo = await codec.getNextFrame();
+          final ui.Image decodedImage = frameInfo.image;
+
+          if (decodedImage.width > decodedImage.height) {
+            final recorder = ui.PictureRecorder();
+            final canvas = Canvas(recorder);
+            final int newWidth = decodedImage.height;
+            final int newHeight = decodedImage.width;
+
+            // Rotate 90 degrees clockwise to portrait orientation
+            canvas.translate(newWidth.toDouble(), 0);
+            canvas.rotate(math.pi / 2);
+            canvas.drawImage(decodedImage, Offset.zero, Paint());
+
+            final ui.Image rotatedUiImage = await recorder.endRecording().toImage(newWidth, newHeight);
+            final ByteData? byteData = await rotatedUiImage.toByteData(format: ui.ImageByteFormat.png);
+            if (byteData != null) {
+              bytes = byteData.buffer.asUint8List();
+            }
+          }
+        } catch (rotErr) {
+          debugPrint("Orientation normalization error: $rotErr");
+        }
+
         imageBase64 = base64Encode(bytes);
         debugPrint(
           "Photo encoded to base64 successfully, length: ${imageBase64.length}",
@@ -607,236 +645,255 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           const SizedBox(height: 16),
 
 
-          Container(
-            height: 280,
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: primaryNavy, width: 2),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                if (_isCameraActive &&
-                    _isCameraInitialized &&
-                    _cameraController != null &&
-                    _cameraController!.value.isInitialized)
-                  Center(
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: SizedBox(
-                        width: _cameraController!.value.previewSize!.height,
-                        height: _cameraController!.value.previewSize!.width,
-                        child: CameraPreview(_cameraController!),
-                      ),
-                    ),
-                  )
-                else if (_isInitializingCamera)
-                  const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: accentGold),
-                      SizedBox(height: 12),
-                      Text(
-                        'Opening Camera...',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                    ],
-                  )
-                else
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.camera_alt_outlined,
-                        size: 48,
-                        color: accentGold,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Camera is OFF',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'Tap button below to open camera for photo verification',
-                        style: TextStyle(color: Colors.white70, fontSize: 12),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: _openCamera,
-                        icon: const Icon(
-                          Icons.videocam_rounded,
-                          color: primaryNavy,
-                        ),
-                        label: const Text(
-                          'OPEN CAMERA',
-                          style: TextStyle(
-                            color: primaryNavy,
-                            fontWeight: FontWeight.bold,
+          AspectRatio(
+            aspectRatio: 3 / 4,
+            child: Container(
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: primaryNavy, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                fit: StackFit.expand,
+                children: [
+                  if (_isCameraActive &&
+                      _isCameraInitialized &&
+                      _cameraController != null &&
+                      _cameraController!.value.isInitialized)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SizedBox.expand(
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: SizedBox(
+                            width: _cameraController!.value.previewSize!.height,
+                            height: _cameraController!.value.previewSize!.width,
+                            child: CameraPreview(_cameraController!),
                           ),
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: accentGold,
+                      ),
+                    )
+                  else if (_isInitializingCamera)
+                    const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(color: accentGold),
+                          SizedBox(height: 12),
+                          Text(
+                            'Opening Camera in Portrait...',
+                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.camera_alt_outlined,
+                              size: 52,
+                              color: accentGold,
+                            ),
+                            const SizedBox(height: 10),
+                            const Text(
+                              'Camera is OFF',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Tap button below to open camera in portrait mode for photo verification',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: _openCamera,
+                              icon: const Icon(
+                                Icons.videocam_rounded,
+                                color: primaryNavy,
+                              ),
+                              label: const Text(
+                                'OPEN CAMERA',
+                                style: TextStyle(
+                                  color: primaryNavy,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: accentGold,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 22,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  if (_isCountingDown) ...[
+                    Container(color: Colors.black.withValues(alpha: 0.25)),
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: primaryNavy.withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: accentGold, width: 1.5),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.camera_alt_rounded,
+                              color: accentGold,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _countdownSeconds > 0
+                                  ? 'Get ready to pose!'
+                                  : 'Smile! 📸',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 16,
+                      child: Text(
+                        _countdownSeconds > 0 ? '$_countdownSeconds' : '📸',
+                        style: TextStyle(
+                          color: accentGold,
+                          fontSize: _countdownSeconds > 0 ? 48 : 36,
+                          fontWeight: FontWeight.w900,
+                          shadows: const [
+                            Shadow(
+                              color: Colors.black87,
+                              blurRadius: 10,
+                              offset: Offset(1, 2),
+                            ),
+                            Shadow(
+                              color: Colors.black54,
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 12,
+                      child: TextButton.icon(
+                        onPressed: _cancelCountdown,
+                        icon: const Icon(
+                          Icons.cancel_outlined,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        label: const Text(
+                          'Cancel Timer',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          backgroundColor: Colors.red.withValues(alpha: 0.85),
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 10,
+                            horizontal: 16,
+                            vertical: 6,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-
-
-                if (_isCountingDown) ...[
-                  Container(color: Colors.black.withValues(alpha: 0.25)),
-                  Positioned(
-                    top: 12,
-                    left: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: primaryNavy.withValues(alpha: 0.85),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: accentGold, width: 1.5),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.camera_alt_rounded,
-                            color: accentGold,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            _countdownSeconds > 0
-                                ? 'Get ready to pose!'
-                                : 'Smile! 📸',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    right: 16,
-                    child: Text(
-                      _countdownSeconds > 0 ? '$_countdownSeconds' : '📸',
-                      style: TextStyle(
-                        color: accentGold,
-                        fontSize: _countdownSeconds > 0 ? 48 : 36,
-                        fontWeight: FontWeight.w900,
-                        shadows: const [
-                          Shadow(
-                            color: Colors.black87,
-                            blurRadius: 10,
-                            offset: Offset(1, 2),
-                          ),
-                          Shadow(
-                            color: Colors.black54,
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 12,
-                    child: TextButton.icon(
-                      onPressed: _cancelCountdown,
-                      icon: const Icon(
-                        Icons.cancel_outlined,
-                        color: Colors.white,
-                        size: 18,
-                      ),
-                      label: const Text(
-                        'Cancel Timer',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.red.withValues(alpha: 0.85),
+                  ],
+
+                  if (_isCameraActive &&
+                      _isCameraInitialized &&
+                      !_isCountingDown) ...[
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                        decoration: BoxDecoration(
+                          color: accentGold,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-                    ),
-                  ),
-                ],
-
-
-                if (_isCameraActive &&
-                    _isCameraInitialized &&
-                    !_isCountingDown) ...[
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: accentGold,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(radius: 4, backgroundColor: Colors.red),
-                          SizedBox(width: 4),
-                          Text(
-                            'LIVE CAMERA',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircleAvatar(radius: 4, backgroundColor: Colors.red),
+                            SizedBox(width: 4),
+                            Text(
+                              'LIVE CAMERA',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: IconButton(
-                      onPressed: _closeCamera,
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.white,
-                      ),
-                      tooltip: 'Close Camera',
-                      style: IconButton.styleFrom(
-                        backgroundColor: Colors.black54,
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: IconButton(
+                        onPressed: _closeCamera,
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                        ),
+                        tooltip: 'Close Camera',
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black54,
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           const SizedBox(height: 20),

@@ -111,14 +111,30 @@ try {
 
     } else {
         // Rejected — save custom Dean remarks, DO NOT delete photos (preserve evidence)
+        $att_info = null;
+        $q_att = $conn->query("SELECT time_in_morning, time_out_morning, time_in_afternoon, time_out_afternoon FROM attendance WHERE attendance_id = $attendance_id LIMIT 1");
+        if ($q_att && $att_row = $q_att->fetch_assoc()) {
+            $att_info = $att_row;
+        }
+
         if ($shift === 'morning') {
-            $final_remarks = $remarks !== '' ? $remarks : 'Morning shift attendance rejected by Dean';
+            $has_both_m = $att_info && !empty($att_info['time_in_morning']) && !empty($att_info['time_out_morning']);
+            if ($has_both_m && (empty($remarks) || strcasecmp($remarks, 'Morning Time-Out taken off-site') === 0 || strcasecmp($remarks, 'Morning Time-In taken off-site') === 0)) {
+                $final_remarks = 'Morning Shift taken off-site';
+            } else {
+                $final_remarks = $remarks !== '' ? $remarks : 'Morning shift attendance rejected by Dean';
+            }
             $stmt_upd = $conn->prepare("UPDATE attendance SET morning_status = 'Rejected', morning_remarks = ? WHERE attendance_id = ?");
             $stmt_upd->bind_param("si", $final_remarks, $attendance_id);
             $stmt_upd->execute();
             $stmt_upd->close();
         } elseif ($shift === 'afternoon') {
-            $final_remarks = $remarks !== '' ? $remarks : 'Afternoon shift attendance rejected by Dean';
+            $has_both_a = $att_info && !empty($att_info['time_in_afternoon']) && !empty($att_info['time_out_afternoon']);
+            if ($has_both_a && (empty($remarks) || strcasecmp($remarks, 'Afternoon Time-Out taken off-site') === 0 || strcasecmp($remarks, 'Afternoon Time-In taken off-site') === 0 || strcasecmp($remarks, 'Afternoon photo invalid / off-site') === 0)) {
+                $final_remarks = 'Afternoon Shift taken off-site';
+            } else {
+                $final_remarks = $remarks !== '' ? $remarks : 'Afternoon shift attendance rejected by Dean';
+            }
             $stmt_upd = $conn->prepare("UPDATE attendance SET afternoon_status = 'Rejected', afternoon_remarks = ? WHERE attendance_id = ?");
             $stmt_upd->bind_param("si", $final_remarks, $attendance_id);
             $stmt_upd->execute();

@@ -62,6 +62,49 @@ if (!empty($image_base64)) {
         $image_base64_decoded = base64_decode($image_base64);
     }
 
+    if ($image_base64_decoded !== false && strlen($image_base64_decoded) > 0) {
+        if (function_exists('imagecreatefromstring')) {
+            $img = @imagecreatefromstring($image_base64_decoded);
+            if ($img !== false) {
+                $orientation = 1;
+                if (function_exists('exif_read_data')) {
+                    $stream = fopen('php://memory', 'r+');
+                    fwrite($stream, $image_base64_decoded);
+                    rewind($stream);
+                    $exif = @exif_read_data($stream);
+                    if (!empty($exif['Orientation'])) {
+                        $orientation = intval($exif['Orientation']);
+                    }
+                    fclose($stream);
+                }
+
+                $rotated = false;
+                if ($orientation == 6) {
+                    $rotated = imagerotate($img, 270, 0);
+                } elseif ($orientation == 8) {
+                    $rotated = imagerotate($img, 90, 0);
+                } elseif ($orientation == 3) {
+                    $rotated = imagerotate($img, 180, 0);
+                } else {
+                    $w = imagesx($img);
+                    $h = imagesy($img);
+                    if ($w > $h) {
+                        $rotated = imagerotate($img, 270, 0);
+                    }
+                }
+
+                if ($rotated !== false) {
+                    ob_start();
+                    imagejpeg($rotated, null, 92);
+                    $image_base64_decoded = ob_get_clean();
+                    imagedestroy($rotated);
+                    $image_type = 'jpg';
+                }
+                imagedestroy($img);
+            }
+        }
+    }
+
     $file_name = "abs_" . $student_id . "_" . time() . "." . $image_type;
     $file_path = $upload_dir . $file_name;
     $db_doc_path = "uploads/absence_docs/" . $file_name;

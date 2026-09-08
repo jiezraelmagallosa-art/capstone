@@ -91,6 +91,22 @@ while ($row = $result->fetch_assoc()) {
     $day_hours = floor($day_total_mins / 60);
     $day_rem_mins = $day_total_mins % 60;
 
+    $m_rem = trim(preg_replace('/\s*\/\s*in car/i', '', $row['morning_remarks'] ?? ''));
+    $has_both_m = !empty($row['time_in_morning']) && !empty($row['time_out_morning']);
+    if ($has_both_m && $raw_m_status === 'Rejected') {
+        if (strcasecmp($m_rem, 'Morning Time-Out taken off-site') === 0 || strcasecmp($m_rem, 'Morning Time-In taken off-site') === 0) {
+            $m_rem = 'Morning Shift taken off-site';
+        }
+    }
+
+    $a_rem = trim(preg_replace('/\s*\/\s*in car/i', '', $row['afternoon_remarks'] ?? ''));
+    $has_both_a = !empty($row['time_in_afternoon']) && !empty($row['time_out_afternoon']);
+    if ($has_both_a && $raw_a_status === 'Rejected') {
+        if (strcasecmp($a_rem, 'Afternoon Time-Out taken off-site') === 0 || strcasecmp($a_rem, 'Afternoon Time-In taken off-site') === 0 || strcasecmp($a_rem, 'Afternoon photo invalid / off-site') === 0) {
+            $a_rem = 'Afternoon Shift taken off-site';
+        }
+    }
+
     $status = "Present";
     if (empty($row['time_in_morning']) && empty($row['time_in_afternoon'])) {
         $status = "Absent";
@@ -113,9 +129,9 @@ while ($row = $result->fetch_assoc()) {
         "status" => $status,
         "remarks" => trim(preg_replace('/\s*\/\s*in car/i', '', $row['remarks'] ?? '')),
         "morning_status" => $raw_m_status,
-        "morning_remarks" => trim(preg_replace('/\s*\/\s*in car/i', '', $row['morning_remarks'] ?? '')),
+        "morning_remarks" => $m_rem,
         "afternoon_status" => $raw_a_status,
-        "afternoon_remarks" => trim(preg_replace('/\s*\/\s*in car/i', '', $row['afternoon_remarks'] ?? '')),
+        "afternoon_remarks" => $a_rem,
         "credited_minutes" => $day_total_mins,
         "credited_hours" => $day_hours,
         "credited_remaining_minutes" => $day_rem_mins,

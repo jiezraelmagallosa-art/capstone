@@ -185,28 +185,39 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               child: Column(
                 children: [
 
-                  Container(
-                    height: 240,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.black12,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.primaryNavy.withValues(alpha: 0.2)),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: _isCameraInitialized && _cameraController != null
-                          ? CameraPreview(_cameraController!)
-                          : const Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.camera_alt_outlined, size: 48, color: Colors.grey),
-                                  SizedBox(height: 8),
-                                  Text("Camera Ready"),
-                                ],
+                  AspectRatio(
+                    aspectRatio: 3 / 4,
+                    child: Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.primaryNavy.withValues(alpha: 0.2)),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: _isCameraInitialized && _cameraController != null
+                            ? SizedBox.expand(
+                                child: FittedBox(
+                                  fit: BoxFit.cover,
+                                  child: SizedBox(
+                                    width: _cameraController!.value.previewSize!.height,
+                                    height: _cameraController!.value.previewSize!.width,
+                                    child: CameraPreview(_cameraController!),
+                                  ),
+                                ),
+                              )
+                            : const Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.camera_alt_outlined, size: 48, color: Colors.grey),
+                                    SizedBox(height: 8),
+                                    Text("Camera Ready (Portrait Mode)"),
+                                  ],
+                                ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),
