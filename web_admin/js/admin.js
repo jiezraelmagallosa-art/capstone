@@ -1323,7 +1323,7 @@ function renderJournalsTable(journals) {
       const todayFormatted = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
       emptyMsg = `
         <tr>
-          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
+          <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
             <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
               No Daily Journals Submitted for Today (${todayFormatted})
             </div>
@@ -1335,7 +1335,7 @@ function renderJournalsTable(journals) {
     } else {
       emptyMsg = `
         <tr>
-          <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
+          <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 3rem 1.5rem;">
             <div style="font-size: 1.05rem; font-weight: 700; color: var(--navy-primary); margin-bottom: 0.35rem;">
               No Daily Journals Match Filter Criteria
             </div>
@@ -1353,11 +1353,11 @@ function renderJournalsTable(journals) {
   }
 
   tbody.innerHTML = journals.map(j => {
-    let statusBadge = `<span class="journal-badge-pending">⏳ Pending Review</span>`;
+    let statusBadge = `<span class="journal-badge-pending">Pending Review</span>`;
     if (j.dean_status === 'Reviewed') {
-      statusBadge = `<span class="journal-badge-reviewed">✓ Reviewed</span>`;
+      statusBadge = `<span class="journal-badge-reviewed">Reviewed</span>`;
     } else if (j.dean_status === 'Commended') {
-      statusBadge = `<span class="journal-badge-commended">⭐ Commended</span>`;
+      statusBadge = `<span class="journal-badge-commended">Commended</span>`;
     }
 
     const courseBadge = getCourseBadgeClass(j.course_code);
@@ -1384,26 +1384,16 @@ function renderJournalsTable(journals) {
           </div>
         </td>
         <td>
-          <div class="journal-excerpt-box" title="${escapeHtml(j.tasks_completed)}">
-            ${escapeHtml(j.tasks_completed)}
-          </div>
-        </td>
-        <td>
-          <div class="journal-excerpt-box" title="${escapeHtml(j.learnings_reflection || 'None')}">
-            ${escapeHtml(j.learnings_reflection || 'None')}
-          </div>
-        </td>
-        <td>
           <div>${statusBadge}</div>
           ${feedbackHtml}
         </td>
         <td>
           <div style="display: flex; gap: 0.35rem; align-items: center;">
             <button type="button" class="btn btn-navy" style="font-size: 0.72rem; padding: 0.3rem 0.65rem;" onclick="openJournalModal(${j.journal_id})">
-              📖 Read & Feedback
+              Read & Feedback
             </button>
             <button type="button" class="btn btn-danger" style="font-size: 0.72rem; padding: 0.3rem 0.55rem;" title="Permanently Delete Journal from Database" onclick="deleteJournal(${j.journal_id})">
-              🗑️
+              Delete
             </button>
           </div>
         </td>
