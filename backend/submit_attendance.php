@@ -91,7 +91,7 @@ try {
 
     // Shift time window validation
     // Morning shift: 5:00 AM (05:00:00) to 12:30 PM (12:30:00)
-    // Afternoon shift: 12:30 PM (12:30:00) to 5:00 PM (17:00:00)
+    // Afternoon shift: 12:30 PM (12:30:00) to 7:00 PM (19:00:00)
     $time_formatted = date('H:i:s', strtotime($current_time));
 
     if (in_array($column_to_update, ['time_in_morning', 'time_out_morning'])) {
@@ -103,10 +103,10 @@ try {
             exit();
         }
     } elseif (in_array($column_to_update, ['time_in_afternoon', 'time_out_afternoon'])) {
-        if ($time_formatted < '12:30:00' || $time_formatted > '17:00:00') {
+        if ($time_formatted < '12:30:00' || $time_formatted > '19:00:00') {
             echo json_encode([
                 "status" => "error",
-                "message" => "Afternoon shift attendance can only be recorded between 12:30 PM and 5:00 PM."
+                "message" => "Afternoon shift attendance can only be recorded between 12:30 PM and 7:00 PM."
             ]);
             exit();
         }

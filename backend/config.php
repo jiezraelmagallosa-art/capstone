@@ -41,7 +41,7 @@ define('MAX_UPLOAD_BYTES', 8 * 1024 * 1024); // 8 MB
 define('MORNING_IN_START',   '05:00:00');
 define('MORNING_IN_END',     '12:30:00');
 define('AFTERNOON_IN_START', '12:30:00');
-define('AFTERNOON_IN_END',   '17:00:00');
+define('AFTERNOON_IN_END',   '19:00:00');
 
 // ------------------------------------------------------------
 // CORS SETTINGS

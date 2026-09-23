@@ -2074,16 +2074,11 @@ async function generatePDFReport() {
       </tbody>
     </table>
 
-    <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+    <div style="margin-top: 20px; display: flex; justify-content: flex-start;">
       <div style="width: 44%; text-align: center;">
         <div style="border-bottom: 1.5px solid #002d56; height: 26px; margin-bottom: 5px;"></div>
         <p style="font-weight: 700; font-size: 10px; color: #002d56; margin: 0;">${escapeHtml(deanName)}</p>
         <p style="font-size: 8.5px; color: #64748b; margin: 2px 0 0 0;">Dean of Student Affairs / Department Head</p>
-      </div>
-      <div style="width: 44%; text-align: center;">
-        <div style="border-bottom: 1.5px solid #002d56; height: 26px; margin-bottom: 5px;"></div>
-        <p style="font-weight: 700; font-size: 10px; color: #002d56; margin: 0;">Institutional OJT Placement Coordinator</p>
-        <p style="font-size: 8.5px; color: #64748b; margin: 2px 0 0 0;">Office of Industrial Placement &amp; Verification</p>
       </div>
     </div>
 

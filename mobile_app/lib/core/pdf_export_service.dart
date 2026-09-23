@@ -131,7 +131,7 @@ class PdfExportService {
                     ),
                     pw.SizedBox(height: 4),
                     pw.Text(
-                      'Supervisor / Dean Signature',
+                      'Employee Signature',
                       style: const pw.TextStyle(fontSize: 10),
                     ),
                   ],

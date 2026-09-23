@@ -91,10 +91,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         return;
       }
     } else if (action.contains('afternoon')) {
-      if (currentDecimalHour < 12.5 || currentDecimalHour > 17.0) {
+      if (currentDecimalHour < 12.5 || currentDecimalHour > 19.0) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Afternoon shift attendance can only be recorded between 12:30 PM and 5:00 PM.'),
+            content: Text('Afternoon shift attendance can only be recorded between 12:30 PM and 7:00 PM.'),
             backgroundColor: Colors.redAccent,
           ),
         );

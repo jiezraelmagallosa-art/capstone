@@ -1,7 +1,7 @@
 <?php
 /**
  * SBC Internship Attendance System - Automated Photo Cleanup
- * Standalone cron endpoint to delete live capture photos older than 30 days.
+ * Standalone cron endpoint to delete live capture photos immediately (or custom retention).
  * 
  * Safe execution:
  * - Can be called via Web Cron (e.g. cron-job.org) using:
@@ -9,7 +9,7 @@
  * - Can also be run via Command Line (CLI / Windows Task Scheduler):
  *     php cron_cleanup_photos.php
  * 
- * Retention: 30 Days (Default, can be adjusted via ?days=30)
+ * Retention: Immediate / 0 Days (Default, can be adjusted via ?days=N)
  * Note: Leaves all existing application code untouched.
  */
 
@@ -42,10 +42,10 @@ try {
     // Connect to database using existing system connection
     require_once __DIR__ . '/db_connect.php';
 
-    // 1. Configure Retention Window (Default: 30 Days)
-    $retention_days = isset($_GET['days']) ? intval($_GET['days']) : (isset($_POST['days']) ? intval($_POST['days']) : 30);
-    if ($retention_days <= 0) {
-        $retention_days = 30;
+    // 1. Configure Retention Window (Default: 0 Days - Immediate Deletion)
+    $retention_days = isset($_GET['days']) ? intval($_GET['days']) : (isset($_POST['days']) ? intval($_POST['days']) : 0);
+    if ($retention_days < 0) {
+        $retention_days = 0;
     }
 
     $project_root = dirname(__DIR__) . DIRECTORY_SEPARATOR;
@@ -58,8 +58,8 @@ try {
     $db_files_unlinked = 0;
     $orphaned_files_deleted = 0;
 
-    // 2. Fetch and delete photos older than $retention_days from database
-    $stmt_find = $conn->prepare("SELECT photo_id, image_path, captured_at FROM photo WHERE captured_at < (NOW() - INTERVAL ? DAY)");
+    // 2. Fetch and delete photos older than or equal to $retention_days cutoff from database
+    $stmt_find = $conn->prepare("SELECT photo_id, image_path, captured_at FROM photo WHERE captured_at <= (NOW() - INTERVAL ? DAY)");
     if ($stmt_find) {
         $stmt_find->bind_param("i", $retention_days);
         $stmt_find->execute();
@@ -87,7 +87,7 @@ try {
         }
     }
 
-    // 3. Scan physical uploads/live_captures/ for any leftover/orphaned files older than 30 days
+    // 3. Scan physical uploads/live_captures/ for any leftover/orphaned files
     if (is_dir($captures_dir)) {
         $dir_files = scandir($captures_dir);
         if ($dir_files !== false) {
@@ -99,7 +99,7 @@ try {
                 $file_path = $captures_dir . $file;
                 if (is_file($file_path)) {
                     $file_mtime = filemtime($file_path);
-                    if ($file_mtime !== false && $file_mtime < $cutoff_timestamp) {
+                    if ($file_mtime !== false && $file_mtime <= $cutoff_timestamp) {
                         if (@unlink($file_path)) {
                             $orphaned_files_deleted++;
                         }
@@ -113,7 +113,7 @@ try {
     echo json_encode([
         "status" => "success",
         "message" => "Automated cleanup completed successfully.",
-        "retention_period" => "{$retention_days} days",
+        "retention_period" => $retention_days === 0 ? "Immediate (0 days)" : "{$retention_days} days",
         "cutoff_threshold" => $cutoff_date_str,
         "database_records_purged" => $db_photos_deleted,
         "physical_files_deleted" => ($db_files_unlinked + $orphaned_files_deleted),
